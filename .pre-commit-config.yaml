@@ -1,0 +1,111 @@
+# .pre-commit-config.yaml — DevRail pre-commit hooks
+# Install: make install-hooks
+# Docs: https://pre-commit.com/
+
+repos:
+  # --- Conventional Commits ---
+  # Enforces type(scope): description format on commit messages
+  - repo: https://github.com/devrail-dev/pre-commit-conventional-commits
+    rev: v1.1.0
+    hooks:
+      - id: conventional-commits
+
+  # --- Python (uncomment if languages includes python) ---
+  # Linting and formatting with ruff — fast, unified Python tooling
+  # - repo: https://github.com/astral-sh/ruff-pre-commit
+  #   rev: v0.9.7
+  #   hooks:
+  #     - id: ruff
+  #       args: [--fix]
+  #     - id: ruff-format
+
+  # --- Bash (uncomment if languages includes bash) ---
+  # Static analysis for shell scripts
+  # - repo: https://github.com/shellcheck-py/shellcheck-py
+  #   rev: v0.10.0.1
+  #   hooks:
+  #     - id: shellcheck
+  # Consistent shell script formatting
+  # - repo: https://github.com/scop/pre-commit-shfmt
+  #   rev: v3.9.0-1
+  #   hooks:
+  #     - id: shfmt
+  #       args: [--diff]
+
+  # --- Terraform (uncomment if languages includes terraform) ---
+  # Terraform formatting and linting
+  # - repo: https://github.com/antonbabenko/pre-commit-terraform
+  #   rev: v1.96.3
+  #   hooks:
+  #     - id: terraform_fmt
+  #     - id: terraform_tflint
+  #     # Uncomment if using Terragrunt:
+  #     # - id: terragrunt_fmt
+
+  # --- Ruby (uncomment if languages includes ruby) ---
+  # Linting and formatting with rubocop
+  # - repo: https://github.com/rubocop/rubocop
+  #   rev: v1.73.2
+  #   hooks:
+  #     - id: rubocop
+
+  # --- Go (uncomment if languages includes go) ---
+  # Linting with golangci-lint v2
+  # - repo: https://github.com/golangci/golangci-lint
+  #   rev: v2.1.6
+  #   hooks:
+  #     - id: golangci-lint-full
+
+  # --- JavaScript/TypeScript (uncomment if languages includes javascript) ---
+  # Linting with ESLint v9 (flat config)
+  # - repo: https://github.com/pre-commit/mirrors-eslint
+  #   rev: v9.27.0
+  #   hooks:
+  #     - id: eslint
+  #       additional_dependencies:
+  #         - eslint
+  #         - "@eslint/js"
+  #         - typescript-eslint
+  #         - typescript
+  # Formatting with Prettier
+  # - repo: https://github.com/pre-commit/mirrors-prettier
+  #   rev: v4.0.0-alpha.8
+  #   hooks:
+  #     - id: prettier
+
+  # --- Rust (uncomment if languages includes rust) ---
+  # Formatting and linting with cargo
+  # - repo: https://github.com/AndrejOrsula/pre-commit-cargo
+  #   rev: v0.4.0
+  #   hooks:
+  #     - id: cargo-fmt
+  #       args: ["--all", "--", "--check"]
+  #     - id: cargo-clippy
+  #       args: ["--all-targets", "--all-features", "--workspace", "--", "-D", "warnings"]
+
+  # --- Secret Detection ---
+  # Detects hardcoded secrets, API keys, and credentials in code
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.22.1
+    hooks:
+      - id: gitleaks
+
+  # --- Terraform Docs (uncomment if languages includes terraform) ---
+  # Auto-generates README documentation for Terraform modules
+  # - repo: https://github.com/terraform-docs/terraform-docs
+  #   rev: v0.19.0
+  #   hooks:
+  #     - id: terraform-docs-go
+  #       args: [--output-file, README.md]
+
+  # --- Pre-Push: Full Check Gate ---
+  # Runs make check before every push. Skip with: git push --no-verify
+  - repo: local
+    hooks:
+      - id: make-check
+        name: make check
+        entry: make check
+        language: system
+        always_run: true
+        pass_filenames: false
+        stages: [pre-push]

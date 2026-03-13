@@ -1,0 +1,23 @@
+# Scan workflow — runs universal scanners (trivy, gitleaks) via the dev-toolchain container.
+# This workflow runs as a separate status check on PRs.
+# To block merges on failure, enable branch protection:
+#   Settings > Branches > Require status checks > Select "scan"
+name: Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/devrail-dev/dev-toolchain:v1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run scan
+        run: make _scan

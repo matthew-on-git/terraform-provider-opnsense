@@ -1,0 +1,21 @@
+# Lint workflow — runs all linters via the dev-toolchain container.
+# This workflow runs as a separate status check on PRs.
+# To block merges on failure, enable branch protection:
+#   Settings > Branches > Require status checks > Select "lint"
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/devrail-dev/dev-toolchain:v1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run lint
+        run: make _lint

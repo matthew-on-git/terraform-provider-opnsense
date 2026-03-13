@@ -1,0 +1,14 @@
+# .github/CODEOWNERS
+# GitHub Code Owners file
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Each line defines a file pattern and the users/teams responsible.
+# The last matching pattern takes precedence.
+#
+# Examples:
+# * @default-team
+# Makefile @devops-team
+# .github/ @devops-team
+# .devrail.yml @devops-team
+# *.py @python-team
+# *.tf @infra-team

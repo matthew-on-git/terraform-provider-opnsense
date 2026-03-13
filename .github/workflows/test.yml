@@ -1,0 +1,21 @@
+# Test workflow — runs all tests via the dev-toolchain container.
+# This workflow runs as a separate status check on PRs.
+# To block merges on failure, enable branch protection:
+#   Settings > Branches > Require status checks > Select "test"
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/devrail-dev/dev-toolchain:v1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run test
+        run: make _test

@@ -1,0 +1,21 @@
+# Security workflow — runs security scanners via the dev-toolchain container.
+# This workflow runs as a separate status check on PRs.
+# To block merges on failure, enable branch protection:
+#   Settings > Branches > Require status checks > Select "security"
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/devrail-dev/dev-toolchain:v1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run security
+        run: make _security

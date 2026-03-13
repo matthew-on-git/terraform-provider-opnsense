@@ -1,0 +1,15 @@
+# .devrail.yml — DevRail project configuration
+# Uncomment the languages used in this project.
+
+languages:
+  # - python
+  # - bash
+  # - terraform
+  # - ansible
+  # - ruby
+  # - go
+  # - javascript
+  # - rust
+
+# fail_fast: false          # default: false (run-all-report-all)
+# log_format: json          # default: json | options: json, human

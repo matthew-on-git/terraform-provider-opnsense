@@ -1,0 +1,14 @@
+# .gitleaksignore — Gitleaks false positive allowlist
+#
+# When gitleaks flags a false positive (e.g., example tokens in docs,
+# content hashes, or test fixtures), add its fingerprint here.
+#
+# To find the fingerprint, run:
+#   make scan
+# or inside the container:
+#   gitleaks detect -v
+#
+# Copy the "Fingerprint" value for the finding you want to allow.
+# Format: <file>:<rule>:<line>
+#
+# See: https://github.com/gitleaks/gitleaks#configuration
