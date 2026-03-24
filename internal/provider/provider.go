@@ -19,6 +19,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/firewall"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/haproxy"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
@@ -223,12 +225,15 @@ func envOrBoolValue(val types.Bool, envVar string) bool {
 
 // Resources returns the list of resource types supported by this provider.
 func (p *OpnsenseProvider) Resources(_ context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	var resources []func() resource.Resource
+	resources = append(resources, firewall.Resources()...)
+	resources = append(resources, haproxy.Resources()...)
+	return resources
 }
 
 // DataSources returns the list of data source types supported by this provider.
 func (p *OpnsenseProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return firewall.DataSources()
 }
 
 // New returns a new provider factory function.

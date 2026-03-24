@@ -1,5 +1,5 @@
 # generated: 2026-03-18
-# last_updated: 2026-03-18
+# last_updated: 2026-03-23
 # project: terraform-provider-opnsense
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-18
-last_updated: 2026-03-18
+last_updated: 2026-03-23
 project: terraform-provider-opnsense
 project_key: NOKEY
 tracking_system: file-system
@@ -43,7 +43,7 @@ story_location: _bmad-output/implementation-artifacts
 
 development_status:
   # Epic 1: Provider Scaffold & API Client
-  epic-1: in-progress
+  epic-1: done
   1-1-initialize-project-and-api-client-core: done
   1-2-provider-configuration-with-credential-validation: done
   1-3-global-mutex-and-reconfigure-infrastructure: done
@@ -53,13 +53,13 @@ development_status:
   1-7-type-conversion-utilities: done
   1-8-vagrant-test-environment: done
   1-9-basic-ci-pipeline: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   # Epic 2: First Resources & Lifecycle Validation
-  epic-2: backlog
-  2-1-firewall-alias-resource: backlog
-  2-2-haproxy-server-resource: backlog
-  2-3-firewall-alias-data-source: backlog
+  epic-2: in-progress
+  2-1-firewall-alias-resource: done
+  2-2-haproxy-server-resource: done
+  2-3-firewall-alias-data-source: done
   epic-2-retrospective: optional
 
   # Epic 3: Firewall Management
