@@ -1,0 +1,48 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# OPNsense Test Environment for terraform-provider-opnsense
+#
+# Provisions an ephemeral OPNsense VM for local acceptance testing.
+# After `vagrant up`, the API credentials are printed as export commands.
+#
+# Usage:
+#   cd test
+#   vagrant up
+#   <copy export commands from output>
+#   TF_ACC=1 go test -p 1 ./...
+#   vagrant destroy -f
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "puzzle/opnsense"
+  config.vm.box_version = "~> 25.7"
+  config.vm.hostname = "opnsense-test"
+
+  # Disable default synced folder — OPNsense (FreeBSD) doesn't support
+  # VirtualBox Guest Additions.
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # Forward HTTPS (API/GUI) to host port 10443.
+  config.vm.network "forwarded_port", guest: 443, host: 10443, host_ip: "127.0.0.1"
+
+  # VirtualBox provider settings.
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "opnsense-test"
+    vb.memory = 2048
+    vb.cpus = 2
+    vb.gui = false
+
+    # OPNsense needs a second NIC for LAN.
+    vb.customize ["modifyvm", :id, "--nic2", "intnet"]
+    vb.customize ["modifyvm", :id, "--intnet2", "opnsense-lan"]
+  end
+
+  # SSH settings — OPNsense uses root with key auth.
+  config.ssh.username = "root"
+  config.ssh.shell = "/bin/sh"
+
+  # Generate API key after VM is booted.
+  config.vm.provision "shell",
+    path: "scripts/create-apikey.sh",
+    privileged: true
+end

@@ -1,0 +1,148 @@
+# generated: 2026-03-18
+# last_updated: 2026-03-18
+# project: terraform-provider-opnsense
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-03-18
+last_updated: 2026-03-18
+project: terraform-provider-opnsense
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # Epic 1: Provider Scaffold & API Client
+  epic-1: in-progress
+  1-1-initialize-project-and-api-client-core: done
+  1-2-provider-configuration-with-credential-validation: done
+  1-3-global-mutex-and-reconfigure-infrastructure: done
+  1-4-custom-error-types-and-response-parsing: done
+  1-5-generic-crud-functions: done
+  1-6-search-with-pagination: done
+  1-7-type-conversion-utilities: done
+  1-8-vagrant-test-environment: done
+  1-9-basic-ci-pipeline: done
+  epic-1-retrospective: optional
+
+  # Epic 2: First Resources & Lifecycle Validation
+  epic-2: backlog
+  2-1-firewall-alias-resource: backlog
+  2-2-haproxy-server-resource: backlog
+  2-3-firewall-alias-data-source: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Firewall Management
+  epic-3: backlog
+  3-1-firewall-savepoint-reconfigure-implementation: backlog
+  3-2-firewall-category-resource: backlog
+  3-3-firewall-filter-rule-resource: backlog
+  3-4-firewall-nat-port-forward-resource: backlog
+  3-5-firewall-nat-outbound-resource: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: HAProxy Load Balancing
+  epic-4: backlog
+  4-1-haproxy-backend-resource-with-server-linking: backlog
+  4-2-haproxy-frontend-resource-with-acl-routing: backlog
+  4-3-haproxy-acl-resource: backlog
+  4-4-haproxy-health-check-resource: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Core Infrastructure
+  epic-5: backlog
+  5-1-interface-resource: backlog
+  5-2-vlan-resource: backlog
+  5-3-virtual-ip-resource: backlog
+  5-4-static-route-resource: backlog
+  5-5-gateway-resource: backlog
+  5-6-gateway-group-resource: backlog
+  5-7-system-general-settings-resource: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Code Generation Pipeline
+  epic-6: backlog
+  6-1-yaml-schema-format-definition: backlog
+  6-2-code-generation-pipeline-with-text-template: backlog
+  6-3-generate-remaining-module-skeletons: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7: BGP Dynamic Routing
+  epic-7: backlog
+  7-1-frr-general-settings-resource: backlog
+  7-2-bgp-global-configuration-resource: backlog
+  7-3-bgp-neighbor-resource: backlog
+  7-4-bgp-prefix-list-resource: backlog
+  7-5-bgp-route-map-resource: backlog
+  epic-7-retrospective: optional
+
+  # Epic 8: ACME Certificate Management
+  epic-8: backlog
+  8-1-acme-account-resource: backlog
+  8-2-acme-certificate-resource-with-issuance: backlog
+  8-3-acme-challenge-configuration-resource: backlog
+  epic-8-retrospective: optional
+
+  # Epic 9: DNS Management
+  epic-9: backlog
+  9-1-unbound-host-override-resource: backlog
+  9-2-unbound-domain-override-resource: backlog
+  9-3-unbound-acl-resource: backlog
+  9-4-dynamic-dns-account-resource: backlog
+  9-5-dynamic-dns-provider-configuration-resource: backlog
+  epic-9-retrospective: optional
+
+  # Epic 10: VPN Management
+  epic-10: backlog
+  10-1-wireguard-server-resource: backlog
+  10-2-wireguard-peer-resource: backlog
+  10-3-ipsec-phase-1-connection-resource: backlog
+  10-4-ipsec-phase-2-tunnel-resource: backlog
+  10-5-ipsec-pre-shared-key-resource: backlog
+  epic-10-retrospective: optional
+
+  # Epic 11: DHCP Management
+  epic-11: backlog
+  11-1-dhcpv4-pool-resource: backlog
+  11-2-dhcpv4-static-mapping-resource: backlog
+  11-3-dhcpv4-option-resource: backlog
+  epic-11-retrospective: optional
+
+  # Epic 12: Data Sources, Documentation & Registry Release
+  epic-12: backlog
+  12-1-remaining-data-sources: backlog
+  12-2-provider-index-documentation: backlog
+  12-3-composition-examples: backlog
+  12-4-ci-cd-pipeline-and-registry-release: backlog
+  12-5-changelog-and-v0-1-0-release: backlog
+  epic-12-retrospective: optional

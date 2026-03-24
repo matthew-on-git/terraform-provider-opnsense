@@ -14,7 +14,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/devrail-dev/dev-toolchain:v1
+      image: ghcr.io/devrail-dev/dev-toolchain:1.8.1
     steps:
       - uses: actions/checkout@v4
       - name: Run test

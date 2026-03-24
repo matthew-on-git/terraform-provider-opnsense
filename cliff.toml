@@ -1,0 +1,62 @@
+# DevRail default git-cliff configuration
+# https://git-cliff.org/docs/configuration
+#
+# Used by `make changelog` to generate CHANGELOG.md from conventional commits.
+# Projects can override this by placing a cliff.toml in their root directory.
+# To scaffold a project-local copy, run `make init`.
+
+[changelog]
+header = """
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+"""
+
+body = """
+{% if version %}\
+    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+    ## [Unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+    ### {{ group | striptags | trim | upper_first }}
+    {% for commit in commits %}
+        - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
+            {% if commit.breaking %}[**breaking**] {% endif %}\
+            {{ commit.message | upper_first }}\
+    {% endfor %}
+{% endfor %}
+"""
+
+trim = true
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+split_commits = false
+protect_breaking_commits = true
+filter_commits = false
+topo_order_commits = true
+sort_commits = "oldest"
+
+commit_parsers = [
+    { message = "^feat", group = "<!-- 0 -->Added" },
+    { message = "^fix", group = "<!-- 1 -->Fixed" },
+    { message = "^perf", group = "<!-- 2 -->Changed" },
+    { message = "^refactor", group = "<!-- 3 -->Changed" },
+    { message = "^docs", group = "<!-- 4 -->Documentation" },
+    { message = "^style", group = "<!-- 5 -->Changed" },
+    { message = "^test", group = "<!-- 6 -->Testing" },
+    { message = "^build", group = "<!-- 7 -->Build" },
+    { message = "^ci", group = "<!-- 8 -->CI" },
+    { message = "^chore\\(release\\)", skip = true },
+    { message = "^chore\\(deps\\)", skip = true },
+    { message = "^chore\\(pr\\)", skip = true },
+    { message = "^chore\\(pull\\)", skip = true },
+    { message = "^chore", group = "<!-- 9 -->Miscellaneous" },
+    { message = "^revert", group = "<!-- 10 -->Reverted" },
+    { body = ".*security", group = "<!-- 11 -->Security" },
+]

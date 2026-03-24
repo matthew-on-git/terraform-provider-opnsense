@@ -86,3 +86,8 @@ override.tf.json
 *.pem
 *.key
 credentials.json
+
+# --- IDE/CLI config ---
+.claude/
+.cursor/
+.windsurf/
