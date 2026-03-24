@@ -1,0 +1,19 @@
+version: "2"
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - gosec
+    - ineffassign
+    - unused
+    - gocritic
+    #- gofumpt  # gofumpt is a formatter, not a linter in golangci-lint v2
+    - misspell
+    - revive
+
+issues:
+  exclude-dirs:
+    - vendor
+    - node_modules

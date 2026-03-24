@@ -1,0 +1,30 @@
+# CI workflow — runs all DevRail checks and generated code validation.
+# All jobs run inside the dev-toolchain container for consistent tooling.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    name: DevRail Check (lint, format, test, security, scan, docs)
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/devrail-dev/dev-toolchain:1.8.1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run all checks
+        run: make _check
+
+  generate-check:
+    name: Generated Code Check
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/devrail-dev/dev-toolchain:1.8.1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run go generate and verify no uncommitted changes
+        run: go generate ./... && git diff --exit-code

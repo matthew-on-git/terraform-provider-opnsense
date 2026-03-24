@@ -7,7 +7,7 @@ languages:
   # - terraform
   # - ansible
   # - ruby
-  # - go
+  - go
   # - javascript
   # - rust
 
