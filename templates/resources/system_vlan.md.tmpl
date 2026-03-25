@@ -1,0 +1,20 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "System"
+description: |-
+  Manages a VLAN on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Manages a VLAN on OPNsense.
+
+## Example Usage
+
+{{tffile "examples/resources/opnsense_system_vlan/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{codefile "shell" "examples/resources/opnsense_system_vlan/import.sh"}}

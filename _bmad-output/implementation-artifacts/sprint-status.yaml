@@ -80,12 +80,12 @@ development_status:
   epic-4-retrospective: optional
 
   # Epic 5: Core Infrastructure
-  epic-5: backlog
+  epic-5: in-progress
   5-1-interface-resource: backlog
-  5-2-vlan-resource: backlog
-  5-3-virtual-ip-resource: backlog
-  5-4-static-route-resource: backlog
-  5-5-gateway-resource: backlog
+  5-2-vlan-resource: done
+  5-3-virtual-ip-resource: done
+  5-4-static-route-resource: done
+  5-5-gateway-resource: done
   5-6-gateway-group-resource: backlog
   5-7-system-general-settings-resource: backlog
   epic-5-retrospective: optional
