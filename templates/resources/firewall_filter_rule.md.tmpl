@@ -1,0 +1,22 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Firewall"
+description: |-
+  Manages a firewall filter rule on OPNsense with savepoint rollback protection.
+---
+
+# {{.Name}} ({{.Type}})
+
+Manages a firewall filter rule on OPNsense. Filter rules control traffic flow through the firewall. Changes are protected by OPNsense's savepoint mechanism — bad rules auto-revert within 60 seconds if connectivity is lost.
+
+## Example Usage
+
+{{tffile "examples/resources/opnsense_firewall_filter_rule/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the rule UUID from OPNsense.
+
+{{codefile "shell" "examples/resources/opnsense_firewall_filter_rule/import.sh"}}

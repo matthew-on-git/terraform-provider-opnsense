@@ -140,6 +140,188 @@ func TestReconfigure_ConnectionError(t *testing.T) {
 	}
 }
 
+func TestFirewallFilterReconfigure_Success(t *testing.T) {
+	var calls []string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls = append(calls, r.URL.Path)
+		if r.Method != http.MethodPost {
+			t.Errorf("expected POST, got %s", r.Method)
+		}
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/savepoint"):
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"revision":"1234.5678"}`))
+		case strings.Contains(r.URL.Path, "/apply/"):
+			w.WriteHeader(http.StatusOK)
+		case strings.Contains(r.URL.Path, "/cancelRollback/"):
+			w.WriteHeader(http.StatusOK)
+		default:
+			t.Errorf("unexpected path: %s", r.URL.Path)
+			w.WriteHeader(http.StatusBadRequest)
+		}
+	}))
+	defer server.Close()
+
+	client := newReconfigureTestClient(t, server.URL)
+	fn := FirewallFilterReconfigure(client)
+
+	err := fn(context.Background())
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	if len(calls) != 3 {
+		t.Fatalf("expected 3 calls, got %d: %v", len(calls), calls)
+	}
+	if calls[0] != "/api/firewall/filter/savepoint" {
+		t.Errorf("step 1: expected savepoint, got %q", calls[0])
+	}
+	if calls[1] != "/api/firewall/filter/apply/1234.5678" {
+		t.Errorf("step 2: expected apply/1234.5678, got %q", calls[1])
+	}
+	if calls[2] != "/api/firewall/filter/cancelRollback/1234.5678" {
+		t.Errorf("step 3: expected cancelRollback/1234.5678, got %q", calls[2])
+	}
+}
+
+func TestFirewallFilterReconfigure_SavepointFailure(t *testing.T) {
+	var calls []string
+
+	// Use 400 — non-retryable.
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls = append(calls, r.URL.Path)
+		w.WriteHeader(http.StatusBadRequest)
+	}))
+	defer server.Close()
+
+	client := newReconfigureTestClient(t, server.URL)
+	fn := FirewallFilterReconfigure(client)
+
+	err := fn(context.Background())
+	if err == nil {
+		t.Fatal("expected error on savepoint failure")
+	}
+	if !strings.Contains(err.Error(), "savepoint failed") {
+		t.Errorf("expected savepoint error, got: %v", err)
+	}
+	// Only savepoint should have been called — apply/cancelRollback should NOT.
+	if len(calls) != 1 {
+		t.Errorf("expected 1 call (savepoint only), got %d: %v", len(calls), calls)
+	}
+}
+
+func TestFirewallFilterReconfigure_ApplyFailure(t *testing.T) {
+	var calls []string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls = append(calls, r.URL.Path)
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/savepoint"):
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"revision":"rev123"}`))
+		case strings.Contains(r.URL.Path, "/apply/"):
+			w.WriteHeader(http.StatusBadRequest) // Apply fails
+		default:
+			t.Errorf("unexpected path: %s", r.URL.Path)
+			w.WriteHeader(http.StatusBadRequest)
+		}
+	}))
+	defer server.Close()
+
+	client := newReconfigureTestClient(t, server.URL)
+	fn := FirewallFilterReconfigure(client)
+
+	err := fn(context.Background())
+	if err == nil {
+		t.Fatal("expected error on apply failure")
+	}
+	if !strings.Contains(err.Error(), "apply") {
+		t.Errorf("expected apply error, got: %v", err)
+	}
+	// Savepoint + apply called, but NOT cancelRollback.
+	if len(calls) != 2 {
+		t.Errorf("expected 2 calls (savepoint + apply), got %d: %v", len(calls), calls)
+	}
+}
+
+func TestFirewallFilterReconfigure_CancelRollbackFailure(t *testing.T) {
+	var calls []string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls = append(calls, r.URL.Path)
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/savepoint"):
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"revision":"rev456"}`))
+		case strings.Contains(r.URL.Path, "/apply/"):
+			w.WriteHeader(http.StatusOK)
+		case strings.Contains(r.URL.Path, "/cancelRollback/"):
+			w.WriteHeader(http.StatusBadRequest) // CancelRollback fails
+		default:
+			t.Errorf("unexpected path: %s", r.URL.Path)
+			w.WriteHeader(http.StatusBadRequest)
+		}
+	}))
+	defer server.Close()
+
+	client := newReconfigureTestClient(t, server.URL)
+	fn := FirewallFilterReconfigure(client)
+
+	err := fn(context.Background())
+	if err == nil {
+		t.Fatal("expected error on cancelRollback failure")
+	}
+	if !strings.Contains(err.Error(), "cancelRollback") {
+		t.Errorf("expected cancelRollback error, got: %v", err)
+	}
+	if !strings.Contains(err.Error(), "auto-revert in 60 seconds") {
+		t.Errorf("expected auto-revert warning, got: %v", err)
+	}
+	// All 3 calls should have been made.
+	if len(calls) != 3 {
+		t.Errorf("expected 3 calls, got %d: %v", len(calls), calls)
+	}
+}
+
+func TestFirewallFilterReconfigure_RevisionPassedCorrectly(t *testing.T) {
+	const expectedRevision = "1679912345.9876"
+	var applyPath, cancelPath string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/savepoint"):
+			w.WriteHeader(http.StatusOK)
+			_, _ = fmt.Fprintf(w, `{"revision":"%s"}`, expectedRevision)
+		case strings.Contains(r.URL.Path, "/apply/"):
+			applyPath = r.URL.Path
+			w.WriteHeader(http.StatusOK)
+		case strings.Contains(r.URL.Path, "/cancelRollback/"):
+			cancelPath = r.URL.Path
+			w.WriteHeader(http.StatusOK)
+		}
+	}))
+	defer server.Close()
+
+	client := newReconfigureTestClient(t, server.URL)
+	fn := FirewallFilterReconfigure(client)
+
+	err := fn(context.Background())
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	expectedApply := "/api/firewall/filter/apply/" + expectedRevision
+	if applyPath != expectedApply {
+		t.Errorf("apply path: expected %q, got %q", expectedApply, applyPath)
+	}
+
+	expectedCancel := "/api/firewall/filter/cancelRollback/" + expectedRevision
+	if cancelPath != expectedCancel {
+		t.Errorf("cancelRollback path: expected %q, got %q", expectedCancel, cancelPath)
+	}
+}
+
 func newReconfigureTestClient(t *testing.T, url string) *Client {
 	t.Helper()
 	client, err := NewClient(ClientConfig{

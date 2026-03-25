@@ -1,0 +1,22 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Firewall"
+description: |-
+  Manages an outbound NAT (source NAT) rule on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Manages an outbound NAT (source NAT) rule on OPNsense. Outbound NAT rules control how internal traffic is translated when leaving through an interface, typically translating private source addresses to the WAN IP.
+
+## Example Usage
+
+{{tffile "examples/resources/opnsense_firewall_nat_outbound/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the rule UUID from OPNsense.
+
+{{codefile "shell" "examples/resources/opnsense_firewall_nat_outbound/import.sh"}}
