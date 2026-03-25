@@ -1,0 +1,22 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "HAProxy"
+description: |-
+  Manages an HAProxy frontend on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Manages an HAProxy frontend on OPNsense. Frontends define how HAProxy listens for incoming traffic and routes it to backends. Supports SSL offloading and ACL-based routing via linked actions. Requires the `os-haproxy` plugin.
+
+## Example Usage
+
+{{tffile "examples/resources/opnsense_haproxy_frontend/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the frontend UUID from OPNsense.
+
+{{codefile "shell" "examples/resources/opnsense_haproxy_frontend/import.sh"}}

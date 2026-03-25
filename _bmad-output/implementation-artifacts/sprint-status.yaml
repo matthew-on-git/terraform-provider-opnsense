@@ -72,11 +72,11 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: HAProxy Load Balancing
-  epic-4: backlog
-  4-1-haproxy-backend-resource-with-server-linking: backlog
-  4-2-haproxy-frontend-resource-with-acl-routing: backlog
-  4-3-haproxy-acl-resource: backlog
-  4-4-haproxy-health-check-resource: backlog
+  epic-4: in-progress
+  4-1-haproxy-backend-resource-with-server-linking: done
+  4-2-haproxy-frontend-resource-with-acl-routing: done
+  4-3-haproxy-acl-resource: done
+  4-4-haproxy-health-check-resource: done
   epic-4-retrospective: optional
 
   # Epic 5: Core Infrastructure
