@@ -21,6 +21,7 @@ import (
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/firewall"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/haproxy"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/quagga"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/system"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
@@ -229,6 +230,7 @@ func (p *OpnsenseProvider) Resources(_ context.Context) []func() resource.Resour
 	var resources []func() resource.Resource
 	resources = append(resources, firewall.Resources()...)
 	resources = append(resources, haproxy.Resources()...)
+	resources = append(resources, quagga.Resources()...)
 	resources = append(resources, system.Resources()...)
 	return resources
 }
