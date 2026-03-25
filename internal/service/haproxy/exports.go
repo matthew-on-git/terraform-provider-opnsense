@@ -13,6 +13,10 @@ import (
 func Resources() []func() resource.Resource {
 	return []func() resource.Resource{
 		newServerResource,
+		newBackendResource,
+		newFrontendResource,
+		newACLResource,
+		newHealthcheckResource,
 	}
 }
 
