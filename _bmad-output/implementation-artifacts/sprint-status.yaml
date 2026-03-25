@@ -63,12 +63,12 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic 3: Firewall Management
-  epic-3: backlog
-  3-1-firewall-savepoint-reconfigure-implementation: backlog
-  3-2-firewall-category-resource: backlog
-  3-3-firewall-filter-rule-resource: backlog
-  3-4-firewall-nat-port-forward-resource: backlog
-  3-5-firewall-nat-outbound-resource: backlog
+  epic-3: in-progress
+  3-1-firewall-savepoint-reconfigure-implementation: done
+  3-2-firewall-category-resource: done
+  3-3-firewall-filter-rule-resource: done
+  3-4-firewall-nat-port-forward-resource: done
+  3-5-firewall-nat-outbound-resource: done
   epic-3-retrospective: optional
 
   # Epic 4: HAProxy Load Balancing

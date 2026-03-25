@@ -27,6 +27,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run go generate and verify no uncommitted changes
-        run: go generate ./... && git diff --exit-code
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          go generate ./... && git diff --exit-code
         env:
           GOFLAGS: -buildvcs=false
