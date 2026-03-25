@@ -98,12 +98,12 @@ development_status:
   epic-6-retrospective: optional
 
   # Epic 7: BGP Dynamic Routing
-  epic-7: backlog
+  epic-7: in-progress
   7-1-frr-general-settings-resource: backlog
   7-2-bgp-global-configuration-resource: backlog
-  7-3-bgp-neighbor-resource: backlog
-  7-4-bgp-prefix-list-resource: backlog
-  7-5-bgp-route-map-resource: backlog
+  7-3-bgp-neighbor-resource: done
+  7-4-bgp-prefix-list-resource: done
+  7-5-bgp-route-map-resource: done
   epic-7-retrospective: optional
 
   # Epic 8: ACME Certificate Management
