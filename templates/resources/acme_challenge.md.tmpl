@@ -1,0 +1,13 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "ACME"
+description: |-
+  Manages an ACME challenge configuration on OPNsense.
+---
+# {{.Name}} ({{.Type}})
+Manages an ACME challenge/validation configuration on OPNsense. Requires `os-acme-client`.
+## Example Usage
+{{tffile "examples/resources/opnsense_acme_challenge/resource.tf"}}
+{{ .SchemaMarkdown | trimspace }}
+## Import
+{{codefile "shell" "examples/resources/opnsense_acme_challenge/import.sh"}}

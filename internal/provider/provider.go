@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/acme"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/firewall"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/haproxy"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/quagga"
@@ -228,6 +229,7 @@ func envOrBoolValue(val types.Bool, envVar string) bool {
 // Resources returns the list of resource types supported by this provider.
 func (p *OpnsenseProvider) Resources(_ context.Context) []func() resource.Resource {
 	var resources []func() resource.Resource
+	resources = append(resources, acme.Resources()...)
 	resources = append(resources, firewall.Resources()...)
 	resources = append(resources, haproxy.Resources()...)
 	resources = append(resources, quagga.Resources()...)

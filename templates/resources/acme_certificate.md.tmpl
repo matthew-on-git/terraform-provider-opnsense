@@ -1,0 +1,13 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "ACME"
+description: |-
+  Manages an ACME certificate on OPNsense.
+---
+# {{.Name}} ({{.Type}})
+Manages an ACME certificate on OPNsense. Requires `os-acme-client`.
+## Example Usage
+{{tffile "examples/resources/opnsense_acme_certificate/resource.tf"}}
+{{ .SchemaMarkdown | trimspace }}
+## Import
+{{codefile "shell" "examples/resources/opnsense_acme_certificate/import.sh"}}
