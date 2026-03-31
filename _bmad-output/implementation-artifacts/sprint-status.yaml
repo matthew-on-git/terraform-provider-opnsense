@@ -107,10 +107,10 @@ development_status:
   epic-7-retrospective: optional
 
   # Epic 8: ACME Certificate Management
-  epic-8: backlog
-  8-1-acme-account-resource: backlog
-  8-2-acme-certificate-resource-with-issuance: backlog
-  8-3-acme-challenge-configuration-resource: backlog
+  epic-8: in-progress
+  8-1-acme-account-resource: done
+  8-2-acme-certificate-resource-with-issuance: done
+  8-3-acme-challenge-configuration-resource: done
   epic-8-retrospective: optional
 
   # Epic 9: DNS Management

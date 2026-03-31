@@ -1,0 +1,13 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "ACME"
+description: |-
+  Manages an ACME account on OPNsense.
+---
+# {{.Name}} ({{.Type}})
+Manages an ACME account on OPNsense. Requires `os-acme-client`.
+## Example Usage
+{{tffile "examples/resources/opnsense_acme_account/resource.tf"}}
+{{ .SchemaMarkdown | trimspace }}
+## Import
+{{codefile "shell" "examples/resources/opnsense_acme_account/import.sh"}}
