@@ -1,0 +1,13 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "DNS"
+description: |-
+  Manages an Unbound ACL on OPNsense.
+---
+# {{.Name}} ({{.Type}})
+Manages an Unbound DNS access control list on OPNsense.
+## Example Usage
+{{tffile "examples/resources/opnsense_unbound_acl/resource.tf"}}
+{{ .SchemaMarkdown | trimspace }}
+## Import
+{{codefile "shell" "examples/resources/opnsense_unbound_acl/import.sh"}}

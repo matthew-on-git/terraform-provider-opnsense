@@ -114,11 +114,11 @@ development_status:
   epic-8-retrospective: optional
 
   # Epic 9: DNS Management
-  epic-9: backlog
-  9-1-unbound-host-override-resource: backlog
-  9-2-unbound-domain-override-resource: backlog
-  9-3-unbound-acl-resource: backlog
-  9-4-dynamic-dns-account-resource: backlog
+  epic-9: in-progress
+  9-1-unbound-host-override-resource: done
+  9-2-unbound-domain-override-resource: done
+  9-3-unbound-acl-resource: done
+  9-4-dynamic-dns-account-resource: done
   9-5-dynamic-dns-provider-configuration-resource: backlog
   epic-9-retrospective: optional
 
