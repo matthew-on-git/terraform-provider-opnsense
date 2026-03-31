@@ -1,0 +1,13 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "DNS"
+description: |-
+  Manages an Unbound host override on OPNsense.
+---
+# {{.Name}} ({{.Type}})
+Manages an Unbound DNS host override (local DNS record) on OPNsense.
+## Example Usage
+{{tffile "examples/resources/opnsense_unbound_host_override/resource.tf"}}
+{{ .SchemaMarkdown | trimspace }}
+## Import
+{{codefile "shell" "examples/resources/opnsense_unbound_host_override/import.sh"}}

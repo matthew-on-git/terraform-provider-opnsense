@@ -1,0 +1,13 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "DNS"
+description: |-
+  Manages a Dynamic DNS account on OPNsense.
+---
+# {{.Name}} ({{.Type}})
+Manages a Dynamic DNS (DDNS) account on OPNsense. Requires `os-ddclient`.
+## Example Usage
+{{tffile "examples/resources/opnsense_ddclient_account/resource.tf"}}
+{{ .SchemaMarkdown | trimspace }}
+## Import
+{{codefile "shell" "examples/resources/opnsense_ddclient_account/import.sh"}}

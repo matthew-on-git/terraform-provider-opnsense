@@ -1,0 +1,13 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "DNS"
+description: |-
+  Manages an Unbound domain override on OPNsense.
+---
+# {{.Name}} ({{.Type}})
+Manages an Unbound DNS domain override (forwarding rule) on OPNsense.
+## Example Usage
+{{tffile "examples/resources/opnsense_unbound_domain_override/resource.tf"}}
+{{ .SchemaMarkdown | trimspace }}
+## Import
+{{codefile "shell" "examples/resources/opnsense_unbound_domain_override/import.sh"}}
