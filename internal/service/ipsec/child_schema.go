@@ -34,7 +34,7 @@ func (r *childResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Default:             booldefault.StaticBool(true),
 				MarkdownDescription: "Whether this child SA is enabled. Defaults to `true`.",
 			},
-			"connection": schema.StringAttribute{
+			"connection_id": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "UUID of the parent IPsec connection.",
 			},

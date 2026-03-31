@@ -15,7 +15,7 @@ import (
 type ChildResourceModel struct {
 	ID           types.String `tfsdk:"id"`
 	Enabled      types.Bool   `tfsdk:"enabled"`
-	Connection   types.String `tfsdk:"connection"`
+	Connection   types.String `tfsdk:"connection_id"`
 	Description  types.String `tfsdk:"description"`
 	Mode         types.String `tfsdk:"mode"`
 	LocalTS      types.String `tfsdk:"local_ts"`

@@ -64,7 +64,7 @@ resource "opnsense_ipsec_connection" "test" {
 }
 
 resource "opnsense_ipsec_child" "test" {
-  connection = opnsense_ipsec_connection.test.id
+  connection_id = opnsense_ipsec_connection.test.id
   mode       = %[1]q
   local_ts   = %[2]q
   remote_ts  = "10.0.1.0/24"
