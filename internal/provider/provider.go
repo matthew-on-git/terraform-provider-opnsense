@@ -21,6 +21,7 @@ import (
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/acme"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/ddclient"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/dhcp"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/firewall"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/haproxy"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/ipsec"
@@ -242,6 +243,7 @@ func (p *OpnsenseProvider) Resources(_ context.Context) []func() resource.Resour
 	resources = append(resources, wireguard.Resources()...)
 	resources = append(resources, ipsec.Resources()...)
 	resources = append(resources, ddclient.Resources()...)
+	resources = append(resources, dhcp.Resources()...)
 	return resources
 }
 

@@ -1,0 +1,13 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "DHCP"
+description: |-
+  Manages a dhcpv4 subnet on OPNsense.
+---
+# {{.Name}} ({{.Type}})
+Manages a dhcpv4 subnet on OPNsense via the Kea DHCP server.
+## Example Usage
+{{tffile "examples/resources/opnsense_dhcpv4_subnet/resource.tf"}}
+{{ .SchemaMarkdown | trimspace }}
+## Import
+{{codefile "shell" "examples/resources/opnsense_dhcpv4_subnet/import.sh"}}

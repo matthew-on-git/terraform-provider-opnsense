@@ -1,0 +1,1 @@
+terraform import opnsense_dhcpv4_reservation.example 12345678-1234-1234-1234-123456789012

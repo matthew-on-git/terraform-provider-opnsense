@@ -132,9 +132,9 @@ development_status:
   epic-10-retrospective: optional
 
   # Epic 11: DHCP Management
-  epic-11: backlog
-  11-1-dhcpv4-pool-resource: backlog
-  11-2-dhcpv4-static-mapping-resource: backlog
+  epic-11: in-progress
+  11-1-dhcpv4-pool-resource: done
+  11-2-dhcpv4-static-mapping-resource: done
   11-3-dhcpv4-option-resource: backlog
   epic-11-retrospective: optional
 
