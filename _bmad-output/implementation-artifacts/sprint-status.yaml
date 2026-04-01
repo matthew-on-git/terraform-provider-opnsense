@@ -123,12 +123,12 @@ development_status:
   epic-9-retrospective: optional
 
   # Epic 10: VPN Management
-  epic-10: backlog
-  10-1-wireguard-server-resource: backlog
-  10-2-wireguard-peer-resource: backlog
-  10-3-ipsec-phase-1-connection-resource: backlog
-  10-4-ipsec-phase-2-tunnel-resource: backlog
-  10-5-ipsec-pre-shared-key-resource: backlog
+  epic-10: in-progress
+  10-1-wireguard-server-resource: done
+  10-2-wireguard-peer-resource: done
+  10-3-ipsec-phase-1-connection-resource: done
+  10-4-ipsec-phase-2-tunnel-resource: done
+  10-5-ipsec-pre-shared-key-resource: done
   epic-10-retrospective: optional
 
   # Epic 11: DHCP Management

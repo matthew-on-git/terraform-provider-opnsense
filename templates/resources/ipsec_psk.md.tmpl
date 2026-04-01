@@ -1,0 +1,13 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "IPsec"
+description: |-
+  Manages a ipsec psk on OPNsense.
+---
+# {{.Name}} ({{.Type}})
+Manages a ipsec psk on OPNsense.
+## Example Usage
+{{tffile "examples/resources/opnsense_ipsec_psk/resource.tf"}}
+{{ .SchemaMarkdown | trimspace }}
+## Import
+{{codefile "shell" "examples/resources/opnsense_ipsec_psk/import.sh"}}

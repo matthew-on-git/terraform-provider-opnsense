@@ -1,0 +1,13 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "WireGuard"
+description: |-
+  Manages a wireguard peer on OPNsense.
+---
+# {{.Name}} ({{.Type}})
+Manages a wireguard peer on OPNsense.
+## Example Usage
+{{tffile "examples/resources/opnsense_wireguard_peer/resource.tf"}}
+{{ .SchemaMarkdown | trimspace }}
+## Import
+{{codefile "shell" "examples/resources/opnsense_wireguard_peer/import.sh"}}
