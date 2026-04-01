@@ -16,7 +16,8 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "puzzle/opnsense"
   config.vm.box_version = "~> 25.7"
-  config.vm.hostname = "opnsense-test"
+  # Don't set hostname — OPNsense doesn't use /etc/rc.conf.
+  # config.vm.hostname = "opnsense-test"
 
   # Disable default synced folder — OPNsense (FreeBSD) doesn't support
   # VirtualBox Guest Additions.
@@ -37,9 +38,11 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--intnet2", "opnsense-lan"]
   end
 
-  # SSH settings — OPNsense uses root with key auth.
+  # SSH settings — OPNsense default credentials.
   config.ssh.username = "root"
+  config.ssh.password = "opnsense"
   config.ssh.shell = "/bin/sh"
+  config.ssh.insert_key = false
 
   # Generate API key after VM is booted.
   config.vm.provision "shell",

@@ -8,16 +8,21 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
+
+var aliasReqOpts = opnsense.ReqOpts{
+	GetEndpoint: "/api/firewall/alias/getItem",
+	Monad:       "alias",
+}
 
 func TestAccFirewallAlias_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckFirewallAliasDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_firewall_alias", aliasReqOpts),
 		Steps: []resource.TestStep{
 			// Step 1: Create and verify.
 			{
@@ -44,23 +49,6 @@ func TestAccFirewallAlias_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-// testAccCheckFirewallAliasDestroy verifies all firewall alias resources
-// created during the test have been removed from OPNsense.
-func testAccCheckFirewallAliasDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_firewall_alias" {
-			continue
-		}
-		// If the resource still exists in state after destroy, report it.
-		// The acceptance test framework calls Read after destroy — if Read
-		// returns without error and doesn't remove the resource, this check
-		// catches it. The framework handles the API call; we just verify
-		// no alias resources remain in the final state.
-		return fmt.Errorf("firewall alias %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccFirewallAliasConfig(name, aliasType, content string) string {

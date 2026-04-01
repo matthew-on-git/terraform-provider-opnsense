@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
 )
@@ -17,7 +17,7 @@ func TestAccFirewallFilterRule_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckFirewallFilterRuleDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_firewall_filter_rule", opnsense.ReqOpts{GetEndpoint: "/api/firewall/filter/getRule", Monad: "rule"}),
 		Steps: []resource.TestStep{
 			// Step 1: Create and verify.
 			{
@@ -27,7 +27,7 @@ func TestAccFirewallFilterRule_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("opnsense_firewall_filter_rule.test", "action", "pass"),
 					resource.TestCheckResourceAttr("opnsense_firewall_filter_rule.test", "direction", "in"),
 					resource.TestCheckResourceAttr("opnsense_firewall_filter_rule.test", "enabled", "true"),
-					resource.TestCheckResourceAttr("opnsense_firewall_filter_rule.test", "protocol", "tcp"),
+					resource.TestCheckResourceAttr("opnsense_firewall_filter_rule.test", "protocol", "TCP"),
 				),
 			},
 			// Step 2: Import and verify state matches.
@@ -47,22 +47,12 @@ func TestAccFirewallFilterRule_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckFirewallFilterRuleDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_firewall_filter_rule" {
-			continue
-		}
-		return fmt.Errorf("firewall filter rule %s still exists", rs.Primary.ID)
-	}
-	return nil
-}
-
 func testAccFirewallFilterRuleConfig(action, direction, destPort string) string {
 	return fmt.Sprintf(`
 resource "opnsense_firewall_filter_rule" "test" {
   action           = %[1]q
   direction        = %[2]q
-  protocol         = "tcp"
+  protocol         = "TCP"
   destination_port = %[3]q
   description      = "Terraform test rule"
 }
