@@ -72,7 +72,7 @@ func (p *OpnsenseProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 		MarkdownDescription: "The OPNsense provider enables management of OPNsense appliance configuration through Terraform.",
 		Attributes: map[string]schema.Attribute{
 			"uri": schema.StringAttribute{
-				Required:            true,
+				Optional:            true,
 				MarkdownDescription: "The URI of the OPNsense appliance (e.g., `https://opnsense.example.com`). Can also be set with the `OPNSENSE_URI` environment variable.",
 			},
 			"api_key": schema.StringAttribute{

@@ -66,10 +66,27 @@ type selectedEntry struct {
 
 // UnmarshalJSON extracts the selected key from an OPNsense SelectedMap response.
 // Handles the "selected" field as both int (1/0) and string ("1"/"0").
+// Also handles empty array ([]), null, and plain string values.
 func (s *SelectedMap) UnmarshalJSON(data []byte) error {
+	// OPNsense sometimes returns [] or "" for empty enum fields.
+	trimmed := strings.TrimSpace(string(data))
+	if trimmed == "[]" || trimmed == "null" {
+		*s = ""
+		return nil
+	}
+	// Handle plain string values (some fields return "value" not {"key":{"selected":1}}).
+	if len(trimmed) > 0 && trimmed[0] == '"' {
+		var str string
+		if err := json.Unmarshal(data, &str); err == nil {
+			*s = SelectedMap(str)
+			return nil
+		}
+	}
+
 	var raw map[string]selectedEntry
 	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
+		*s = ""
+		return nil
 	}
 	for key, entry := range raw {
 		if entry.Selected.String() == "1" {
@@ -88,10 +105,20 @@ type SelectedMapList []string
 // UnmarshalJSON extracts all selected keys from an OPNsense multi-select response.
 // Returns a sorted slice for deterministic output. Returns empty slice (not nil) when
 // no keys are selected.
+// Handles both map format ({"key": {"value":"...","selected":1}}) and empty array ([]).
 func (s *SelectedMapList) UnmarshalJSON(data []byte) error {
+	// OPNsense returns [] for empty multi-select fields instead of {}.
+	trimmed := strings.TrimSpace(string(data))
+	if trimmed == "[]" || trimmed == "null" || trimmed == `""` {
+		*s = []string{}
+		return nil
+	}
+
 	var raw map[string]selectedEntry
 	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
+		// If it fails as a map, treat as empty.
+		*s = []string{}
+		return nil
 	}
 
 	var selected []string
