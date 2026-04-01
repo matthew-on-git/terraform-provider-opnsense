@@ -44,8 +44,15 @@ Vagrant.configure("2") do |config|
   config.ssh.shell = "/bin/sh"
   config.ssh.insert_key = false
 
-  # Generate API key after VM is booted.
+  # Step 1: Install plugins required for acceptance tests.
   config.vm.provision "shell",
+    name: "install-plugins",
+    path: "scripts/install-plugins.sh",
+    privileged: true
+
+  # Step 2: Generate API key for test authentication.
+  config.vm.provision "shell",
+    name: "create-apikey",
     path: "scripts/create-apikey.sh",
     privileged: true
 end
