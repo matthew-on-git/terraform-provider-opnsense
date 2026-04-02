@@ -11,13 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccDHCPv4Reservation_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckDHCPv4ReservationDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_dhcpv4_reservation", opnsense.ReqOpts{GetEndpoint: "/api/kea/dhcpv4/get_reservation", Monad: "reservation"}),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDHCPv4ReservationConfig("10.99.0.50", "00:11:22:33:44:55"),

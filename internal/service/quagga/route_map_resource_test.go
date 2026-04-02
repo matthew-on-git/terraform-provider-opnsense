@@ -11,13 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccQuaggaRouteMap_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckQuaggaRouteMapDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_quagga_route_map", opnsense.ReqOpts{GetEndpoint: "/api/quagga/bgp/get_routemap", Monad: "routemap"}),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccQuaggaRouteMapConfig("permit"),

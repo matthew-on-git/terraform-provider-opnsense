@@ -11,13 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccQuaggaPrefixList_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckQuaggaPrefixListDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_quagga_prefix_list", opnsense.ReqOpts{GetEndpoint: "/api/quagga/bgp/get_prefixlist", Monad: "prefixlist"}),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccQuaggaPrefixListConfig("10.0.0.0/8"),

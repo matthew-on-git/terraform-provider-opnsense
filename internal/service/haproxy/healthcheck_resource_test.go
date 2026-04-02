@@ -11,13 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccHAProxyHealthcheck_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckHAProxyHealthcheckDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_haproxy_healthcheck", opnsense.ReqOpts{GetEndpoint: "/api/haproxy/settings/getHealthcheck", Monad: "healthcheck"}),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccHAProxyHealthcheckConfig("tf_test_hc", "http", "/health"),
