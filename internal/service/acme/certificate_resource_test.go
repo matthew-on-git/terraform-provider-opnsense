@@ -11,13 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccAcmeCertificate_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckAcmeCertificateDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_acme_certificate", opnsense.ReqOpts{GetEndpoint: "/api/acmeclient/certificates/get", Monad: "certificate"}),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAcmeCertificateConfig("test.example.com"),

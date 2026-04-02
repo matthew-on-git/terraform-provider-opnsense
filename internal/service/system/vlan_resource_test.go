@@ -11,13 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccSystemVlan_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckSystemVlanDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_system_vlan", opnsense.ReqOpts{GetEndpoint: "/api/interfaces/vlan_settings/get_item", Monad: "vlan"}),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSystemVlanConfig(100),

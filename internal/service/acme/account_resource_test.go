@@ -11,13 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccAcmeAccount_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckAcmeAccountDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_acme_account", opnsense.ReqOpts{GetEndpoint: "/api/acmeclient/accounts/get", Monad: "account"}),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAcmeAccountConfig("tf_test_acme", "letsencrypt_test"),

@@ -11,13 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccDDClientAccount_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckDDClientAccountDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_ddclient_account", opnsense.ReqOpts{GetEndpoint: "/api/dyndns/accounts/get_item", Monad: "account"}),
 		Steps: []resource.TestStep{
 			// Step 1: Create and verify.
 			{

@@ -11,13 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccSystemGateway_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckSystemGatewayDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_system_gateway", opnsense.ReqOpts{GetEndpoint: "/api/routing/settings/get_gateway", Monad: "gateway"}),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSystemGatewayConfig("tf_test_gw", "10.0.0.1"),

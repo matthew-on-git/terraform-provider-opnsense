@@ -11,13 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccHAProxyServer_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckHAProxyServerDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_haproxy_server", opnsense.ReqOpts{GetEndpoint: "/api/haproxy/settings/getServer", Monad: "server"}),
 		Steps: []resource.TestStep{
 			// Step 1: Create and verify.
 			{
