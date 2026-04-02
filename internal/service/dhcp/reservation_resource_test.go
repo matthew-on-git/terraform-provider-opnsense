@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
@@ -31,16 +30,6 @@ func TestAccDHCPv4Reservation_basic(t *testing.T) {
 			{ResourceName: "opnsense_dhcpv4_reservation.test", ImportState: true, ImportStateVerify: true},
 		},
 	})
-}
-
-func testAccCheckDHCPv4ReservationDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_dhcpv4_reservation" {
-			continue
-		}
-		return fmt.Errorf("DHCPv4 reservation %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccDHCPv4ReservationConfig(ip, mac string) string {

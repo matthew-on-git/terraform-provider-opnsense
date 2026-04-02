@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
@@ -31,16 +30,6 @@ func TestAccAcmeAccount_basic(t *testing.T) {
 			{ResourceName: "opnsense_acme_account.test", ImportState: true, ImportStateVerify: true},
 		},
 	})
-}
-
-func testAccCheckAcmeAccountDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_acme_account" {
-			continue
-		}
-		return fmt.Errorf("ACME account %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccAcmeAccountConfig(name, ca string) string {

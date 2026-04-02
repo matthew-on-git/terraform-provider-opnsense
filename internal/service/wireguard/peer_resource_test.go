@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
@@ -44,18 +43,6 @@ func TestAccWireguardPeer_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-// testAccCheckWireguardPeerDestroy verifies all WireGuard peer resources
-// created during the test have been removed from OPNsense.
-func testAccCheckWireguardPeerDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_wireguard_peer" {
-			continue
-		}
-		return fmt.Errorf("WireGuard peer %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccWireguardPeerConfig(name, pubkey, tunnelAddr string) string {

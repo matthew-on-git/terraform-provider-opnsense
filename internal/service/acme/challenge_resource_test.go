@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
@@ -30,16 +29,6 @@ func TestAccAcmeChallenge_basic(t *testing.T) {
 			{ResourceName: "opnsense_acme_challenge.test", ImportState: true, ImportStateVerify: true},
 		},
 	})
-}
-
-func testAccCheckAcmeChallengeDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_acme_challenge" {
-			continue
-		}
-		return fmt.Errorf("ACME challenge %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccAcmeChallengeConfig(name, method string) string {

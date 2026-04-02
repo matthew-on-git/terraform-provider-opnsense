@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
@@ -46,16 +45,6 @@ func TestAccHAProxyFrontend_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckHAProxyFrontendDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_haproxy_frontend" {
-			continue
-		}
-		return fmt.Errorf("HAProxy frontend %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccHAProxyFrontendConfig(name, bind string) string {

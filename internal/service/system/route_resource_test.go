@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
@@ -35,16 +34,6 @@ func TestAccSystemRoute_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckSystemRouteDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_system_route" {
-			continue
-		}
-		return fmt.Errorf("static route %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccSystemRouteConfig(network string) string {

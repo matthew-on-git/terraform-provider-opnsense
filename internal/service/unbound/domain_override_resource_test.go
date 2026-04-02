@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
@@ -46,18 +45,6 @@ func TestAccUnboundDomainOverride_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-// testAccCheckUnboundDomainOverrideDestroy verifies all Unbound domain override resources
-// created during the test have been removed from OPNsense.
-func testAccCheckUnboundDomainOverrideDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_unbound_domain_override" {
-			continue
-		}
-		return fmt.Errorf("Unbound domain override %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccUnboundDomainOverrideConfig(domain, server string) string {
