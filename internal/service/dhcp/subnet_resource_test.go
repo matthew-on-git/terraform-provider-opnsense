@@ -8,16 +8,16 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccDHCPv4Subnet_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckDHCPv4SubnetDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_dhcpv4_subnet", opnsense.ReqOpts{GetEndpoint: "/api/kea/dhcpv4/get_subnet", Monad: "subnet"}),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDHCPv4SubnetConfig("10.99.0.0/24"),
@@ -29,16 +29,6 @@ func TestAccDHCPv4Subnet_basic(t *testing.T) {
 			{ResourceName: "opnsense_dhcpv4_subnet.test", ImportState: true, ImportStateVerify: true},
 		},
 	})
-}
-
-func testAccCheckDHCPv4SubnetDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_dhcpv4_subnet" {
-			continue
-		}
-		return fmt.Errorf("DHCPv4 subnet %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccDHCPv4SubnetConfig(subnet string) string {

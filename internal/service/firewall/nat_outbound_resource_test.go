@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
 )
@@ -17,7 +17,7 @@ func TestAccFirewallNatOutbound_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckFirewallNatOutboundDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_firewall_nat_outbound", opnsense.ReqOpts{GetEndpoint: "/api/firewall/source_nat/get_rule", Monad: "rule"}),
 		Steps: []resource.TestStep{
 			// Step 1: Create and verify.
 			{
@@ -45,16 +45,6 @@ func TestAccFirewallNatOutbound_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckFirewallNatOutboundDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_firewall_nat_outbound" {
-			continue
-		}
-		return fmt.Errorf("outbound NAT rule %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccFirewallNatOutboundConfig(sourceNet, target string) string {

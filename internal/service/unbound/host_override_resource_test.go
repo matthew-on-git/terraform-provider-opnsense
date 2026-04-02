@@ -8,16 +8,16 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccUnboundHostOverride_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckUnboundHostOverrideDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_unbound_host_override", opnsense.ReqOpts{GetEndpoint: "/api/unbound/settings/get_host_override", Monad: "host_override"}),
 		Steps: []resource.TestStep{
 			// Step 1: Create and verify.
 			{
@@ -47,18 +47,6 @@ func TestAccUnboundHostOverride_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-// testAccCheckUnboundHostOverrideDestroy verifies all Unbound host override resources
-// created during the test have been removed from OPNsense.
-func testAccCheckUnboundHostOverrideDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_unbound_host_override" {
-			continue
-		}
-		return fmt.Errorf("Unbound host override %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccUnboundHostOverrideConfig(hostname, domain, server string) string {

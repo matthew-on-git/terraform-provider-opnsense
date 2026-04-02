@@ -91,3 +91,4 @@ credentials.json
 .claude/
 .cursor/
 .windsurf/
+test/.vagrant/

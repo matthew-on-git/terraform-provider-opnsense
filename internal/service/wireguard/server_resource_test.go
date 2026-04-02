@@ -8,16 +8,16 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccWireguardServer_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckWireguardServerDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_wireguard_server", opnsense.ReqOpts{GetEndpoint: "/api/wireguard/server/get_server", Monad: "server"}),
 		Steps: []resource.TestStep{
 			// Step 1: Create and verify.
 			{
@@ -43,18 +43,6 @@ func TestAccWireguardServer_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-// testAccCheckWireguardServerDestroy verifies all WireGuard server resources
-// created during the test have been removed from OPNsense.
-func testAccCheckWireguardServerDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_wireguard_server" {
-			continue
-		}
-		return fmt.Errorf("WireGuard server %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccWireguardServerConfig(name, port string) string {

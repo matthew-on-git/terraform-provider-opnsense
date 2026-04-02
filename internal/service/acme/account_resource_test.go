@@ -8,16 +8,16 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccAcmeAccount_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckAcmeAccountDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_acme_account", opnsense.ReqOpts{GetEndpoint: "/api/acmeclient/accounts/get", Monad: "account"}),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAcmeAccountConfig("tf_test_acme", "letsencrypt_test"),
@@ -30,16 +30,6 @@ func TestAccAcmeAccount_basic(t *testing.T) {
 			{ResourceName: "opnsense_acme_account.test", ImportState: true, ImportStateVerify: true},
 		},
 	})
-}
-
-func testAccCheckAcmeAccountDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_acme_account" {
-			continue
-		}
-		return fmt.Errorf("ACME account %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccAcmeAccountConfig(name, ca string) string {

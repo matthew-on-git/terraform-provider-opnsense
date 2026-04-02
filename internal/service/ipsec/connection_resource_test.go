@@ -8,16 +8,16 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccIPsecConnection_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckIPsecConnectionDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_ipsec_connection", opnsense.ReqOpts{GetEndpoint: "/api/ipsec/connections/get_connection", Monad: "connection"}),
 		Steps: []resource.TestStep{
 			// Step 1: Create and verify.
 			{
@@ -42,18 +42,6 @@ func TestAccIPsecConnection_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-// testAccCheckIPsecConnectionDestroy verifies all IPsec connection resources
-// created during the test have been removed from OPNsense.
-func testAccCheckIPsecConnectionDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_ipsec_connection" {
-			continue
-		}
-		return fmt.Errorf("IPsec connection %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccIPsecConnectionConfig(description, remoteAddrs string) string {

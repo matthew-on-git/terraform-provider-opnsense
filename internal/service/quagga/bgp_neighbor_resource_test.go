@@ -8,16 +8,16 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccQuaggaBGPNeighbor_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckQuaggaBGPNeighborDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_quagga_bgp_neighbor", opnsense.ReqOpts{GetEndpoint: "/api/quagga/bgp/get_neighbor", Monad: "neighbor"}),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccQuaggaBGPNeighborConfig("10.0.0.2", 65001),
@@ -34,16 +34,6 @@ func TestAccQuaggaBGPNeighbor_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckQuaggaBGPNeighborDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_quagga_bgp_neighbor" {
-			continue
-		}
-		return fmt.Errorf("BGP neighbor %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccQuaggaBGPNeighborConfig(addr string, remoteAS int) string {

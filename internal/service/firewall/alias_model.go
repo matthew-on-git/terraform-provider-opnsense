@@ -31,7 +31,7 @@ type AliasResourceModel struct {
 type aliasAPIResponse struct {
 	Name        string                   `json:"name"`
 	Type        opnsense.SelectedMap     `json:"type"`
-	Content     string                   `json:"content"`
+	Content     opnsense.SelectedMapList `json:"content"`
 	Description string                   `json:"description"`
 	Enabled     string                   `json:"enabled"`
 	Proto       opnsense.SelectedMap     `json:"proto"`
@@ -91,22 +91,15 @@ func (m *AliasResourceModel) fromAPI(_ context.Context, a *aliasAPIResponse, uui
 	m.Proto = types.StringValue(string(a.Proto))
 	m.UpdateFreq = types.StringValue(a.UpdateFreq)
 
-	// Convert newline-separated content to types.Set.
-	if a.Content == "" {
+	// Convert SelectedMapList content to types.Set.
+	if len(a.Content) == 0 {
 		m.Content = types.SetValueMust(types.StringType, []attr.Value{})
 	} else {
-		parts := strings.Split(a.Content, "\n")
-		var filtered []attr.Value
-		for _, p := range parts {
-			trimmed := strings.TrimSpace(p)
-			if trimmed != "" {
-				filtered = append(filtered, types.StringValue(trimmed))
-			}
+		vals := make([]attr.Value, len(a.Content))
+		for i, v := range a.Content {
+			vals[i] = types.StringValue(v)
 		}
-		if filtered == nil {
-			filtered = []attr.Value{}
-		}
-		m.Content = types.SetValueMust(types.StringType, filtered)
+		m.Content = types.SetValueMust(types.StringType, vals)
 	}
 
 	// Convert SelectedMapList to types.Set.

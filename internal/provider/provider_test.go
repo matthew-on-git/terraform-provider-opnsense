@@ -35,8 +35,8 @@ func TestProvider_Schema_HasExpectedAttributes(t *testing.T) {
 	if !ok {
 		t.Fatal("expected 'uri' attribute in schema")
 	}
-	if !uriAttr.IsRequired() {
-		t.Error("expected 'uri' to be Required")
+	if !uriAttr.IsOptional() {
+		t.Error("expected 'uri' to be Optional (env var fallback)")
 	}
 
 	// Check api_key exists, is optional and sensitive.

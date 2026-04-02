@@ -8,16 +8,16 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccHAProxyServer_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckHAProxyServerDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_haproxy_server", opnsense.ReqOpts{GetEndpoint: "/api/haproxy/settings/getServer", Monad: "server"}),
 		Steps: []resource.TestStep{
 			// Step 1: Create and verify.
 			{
@@ -48,18 +48,6 @@ func TestAccHAProxyServer_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-// testAccCheckHAProxyServerDestroy verifies all HAProxy server resources
-// created during the test have been removed from OPNsense.
-func testAccCheckHAProxyServerDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_haproxy_server" {
-			continue
-		}
-		return fmt.Errorf("HAProxy server %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccHAProxyServerConfig(name, address string, port int) string {

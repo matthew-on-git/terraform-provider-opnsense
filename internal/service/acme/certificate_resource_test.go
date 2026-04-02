@@ -8,16 +8,16 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 func TestAccAcmeCertificate_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             testAccCheckAcmeCertificateDestroy,
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_acme_certificate", opnsense.ReqOpts{GetEndpoint: "/api/acmeclient/certificates/get", Monad: "certificate"}),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAcmeCertificateConfig("test.example.com"),
@@ -29,16 +29,6 @@ func TestAccAcmeCertificate_basic(t *testing.T) {
 			{ResourceName: "opnsense_acme_certificate.test", ImportState: true, ImportStateVerify: true},
 		},
 	})
-}
-
-func testAccCheckAcmeCertificateDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "opnsense_acme_certificate" {
-			continue
-		}
-		return fmt.Errorf("ACME certificate %s still exists", rs.Primary.ID)
-	}
-	return nil
 }
 
 func testAccAcmeCertificateConfig(domain string) string {
