@@ -92,6 +92,9 @@ func run() error {
 
 func generateResource(pkg string, r *Resource) error {
 	dir := filepath.Join("internal", "service", pkg)
+	if err := os.MkdirAll(dir, 0o750); err != nil {
+		return err
+	}
 	files := []struct {
 		kind    string
 		tmpl    *template.Template
@@ -124,6 +127,7 @@ func generateResource(pkg string, r *Resource) error {
 const (
 	pkgTypes    = `"github.com/hashicorp/terraform-plugin-framework/types"`
 	pkgOpnsense = `"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"`
+	pkgTfconv   = `"github.com/matthew-on-git/terraform-provider-opnsense/internal/tfconv"`
 )
 
 func renderImports(stdlib, framework, local []string) string {
@@ -139,12 +143,25 @@ func renderImports(stdlib, framework, local []string) string {
 	return strings.Join(parts, "\n\n")
 }
 
-func modelImports(_ *Resource) string {
+func modelImports(r *Resource) string {
+	local := []string{pkgOpnsense}
+	if hasSet(r) || hasInt(r) {
+		local = append(local, pkgTfconv)
+	}
 	return renderImports(
 		[]string{`"context"`},
 		[]string{pkgTypes},
-		[]string{pkgOpnsense},
+		local,
 	)
+}
+
+func hasInt(r *Resource) bool {
+	for _, f := range r.Fields {
+		if f.Type == "int" {
+			return true
+		}
+	}
+	return false
 }
 
 func schemaImports(r *Resource) string {
@@ -248,9 +265,9 @@ func toAPILine(f Field) string {
 		if f.Required {
 			return fmt.Sprintf("opnsense.Int64ToString(m.%s.ValueInt64())", f.Name)
 		}
-		return fmt.Sprintf("intOrEmpty(m.%s.ValueInt64())", f.Name)
+		return fmt.Sprintf("tfconv.IntOrEmpty(m.%s.ValueInt64())", f.Name)
 	case "selectmaplist", "csvset":
-		return fmt.Sprintf("setToCSV(ctx, m.%s)", f.Name)
+		return fmt.Sprintf("tfconv.SetToCSV(ctx, m.%s)", f.Name)
 	default:
 		return fmt.Sprintf("m.%s.ValueString()", f.Name)
 	}
@@ -261,13 +278,13 @@ func fromAPILine(f Field) string {
 	case "bool":
 		return fmt.Sprintf("m.%s = types.BoolValue(opnsense.StringToBool(a.%s))", f.Name, f.Name)
 	case "int":
-		return fmt.Sprintf("m.%s = types.Int64Value(intOrZero(a.%s))", f.Name, f.Name)
+		return fmt.Sprintf("m.%s = types.Int64Value(tfconv.IntOrZero(a.%s))", f.Name, f.Name)
 	case "selectmap":
 		return fmt.Sprintf("m.%s = types.StringValue(string(a.%s))", f.Name, f.Name)
 	case "selectmaplist":
-		return fmt.Sprintf("m.%s = sliceToSet(a.%s)", f.Name, f.Name)
+		return fmt.Sprintf("m.%s = tfconv.SliceToSet(a.%s)", f.Name, f.Name)
 	case "csvset":
-		return fmt.Sprintf("m.%s = sliceToSet(opnsense.CSVToSlice(a.%s))", f.Name, f.Name)
+		return fmt.Sprintf("m.%s = tfconv.SliceToSet(opnsense.CSVToSlice(a.%s))", f.Name, f.Name)
 	default:
 		return fmt.Sprintf("m.%s = types.StringValue(a.%s)", f.Name, f.Name)
 	}

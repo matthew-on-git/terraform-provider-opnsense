@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/tfconv"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
@@ -52,7 +53,7 @@ func (m *OSPF6NetworkResourceModel) fromAPI(_ context.Context, a *ospf6NetworkAP
 	m.ID = types.StringValue(id)
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.IPAddress = types.StringValue(a.IPAddress)
-	m.Netmask = types.Int64Value(intOrZero(a.Netmask))
+	m.Netmask = types.Int64Value(tfconv.IntOrZero(a.Netmask))
 	m.Area = types.StringValue(a.Area)
 	m.AreaRange = types.StringValue(a.AreaRange)
 }

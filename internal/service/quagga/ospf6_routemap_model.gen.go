@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/tfconv"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
@@ -53,6 +54,6 @@ func (m *OSPF6RouteMapResourceModel) fromAPI(_ context.Context, a *ospf6Routemap
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Name = types.StringValue(a.Name)
 	m.Action = types.StringValue(string(a.Action))
-	m.RouteMapID = types.Int64Value(intOrZero(a.RouteMapID))
+	m.RouteMapID = types.Int64Value(tfconv.IntOrZero(a.RouteMapID))
 	m.Set = types.StringValue(a.Set)
 }

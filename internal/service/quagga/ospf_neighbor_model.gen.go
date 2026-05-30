@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/tfconv"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
@@ -43,8 +44,8 @@ func (m *OSPFNeighborResourceModel) toAPI(_ context.Context) *ospfNeighborAPIReq
 		Enabled:      opnsense.BoolToString(m.Enabled.ValueBool()),
 		Description:  m.Description.ValueString(),
 		Address:      m.Address.ValueString(),
-		PollInterval: intOrEmpty(m.PollInterval.ValueInt64()),
-		Priority:     intOrEmpty(m.Priority.ValueInt64()),
+		PollInterval: tfconv.IntOrEmpty(m.PollInterval.ValueInt64()),
+		Priority:     tfconv.IntOrEmpty(m.Priority.ValueInt64()),
 	}
 }
 
@@ -53,6 +54,6 @@ func (m *OSPFNeighborResourceModel) fromAPI(_ context.Context, a *ospfNeighborAP
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Description = types.StringValue(a.Description)
 	m.Address = types.StringValue(a.Address)
-	m.PollInterval = types.Int64Value(intOrZero(a.PollInterval))
-	m.Priority = types.Int64Value(intOrZero(a.Priority))
+	m.PollInterval = types.Int64Value(tfconv.IntOrZero(a.PollInterval))
+	m.Priority = types.Int64Value(tfconv.IntOrZero(a.Priority))
 }

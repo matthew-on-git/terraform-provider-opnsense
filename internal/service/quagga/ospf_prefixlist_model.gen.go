@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/tfconv"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
@@ -52,7 +53,7 @@ func (m *OSPFPrefixListResourceModel) fromAPI(_ context.Context, a *ospfPrefixli
 	m.ID = types.StringValue(id)
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Name = types.StringValue(a.Name)
-	m.SeqNumber = types.Int64Value(intOrZero(a.SeqNumber))
+	m.SeqNumber = types.Int64Value(tfconv.IntOrZero(a.SeqNumber))
 	m.Action = types.StringValue(string(a.Action))
 	m.Network = types.StringValue(a.Network)
 }

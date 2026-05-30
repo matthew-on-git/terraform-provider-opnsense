@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/tfconv"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
@@ -59,10 +60,10 @@ func (m *OSPF6InterfaceResourceModel) toAPI(_ context.Context) *ospf6InterfaceAP
 		Interface:     m.Interface.ValueString(),
 		Area:          m.Area.ValueString(),
 		Passive:       opnsense.BoolToString(m.Passive.ValueBool()),
-		Cost:          intOrEmpty(m.Cost.ValueInt64()),
-		HelloInterval: intOrEmpty(m.HelloInterval.ValueInt64()),
-		DeadInterval:  intOrEmpty(m.DeadInterval.ValueInt64()),
-		Priority:      intOrEmpty(m.Priority.ValueInt64()),
+		Cost:          tfconv.IntOrEmpty(m.Cost.ValueInt64()),
+		HelloInterval: tfconv.IntOrEmpty(m.HelloInterval.ValueInt64()),
+		DeadInterval:  tfconv.IntOrEmpty(m.DeadInterval.ValueInt64()),
+		Priority:      tfconv.IntOrEmpty(m.Priority.ValueInt64()),
 		NetworkType:   m.NetworkType.ValueString(),
 		BFD:           opnsense.BoolToString(m.BFD.ValueBool()),
 	}
@@ -74,10 +75,10 @@ func (m *OSPF6InterfaceResourceModel) fromAPI(_ context.Context, a *ospf6Interfa
 	m.Interface = types.StringValue(string(a.Interface))
 	m.Area = types.StringValue(a.Area)
 	m.Passive = types.BoolValue(opnsense.StringToBool(a.Passive))
-	m.Cost = types.Int64Value(intOrZero(a.Cost))
-	m.HelloInterval = types.Int64Value(intOrZero(a.HelloInterval))
-	m.DeadInterval = types.Int64Value(intOrZero(a.DeadInterval))
-	m.Priority = types.Int64Value(intOrZero(a.Priority))
+	m.Cost = types.Int64Value(tfconv.IntOrZero(a.Cost))
+	m.HelloInterval = types.Int64Value(tfconv.IntOrZero(a.HelloInterval))
+	m.DeadInterval = types.Int64Value(tfconv.IntOrZero(a.DeadInterval))
+	m.Priority = types.Int64Value(tfconv.IntOrZero(a.Priority))
 	m.NetworkType = types.StringValue(string(a.NetworkType))
 	m.BFD = types.BoolValue(opnsense.StringToBool(a.BFD))
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/tfconv"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
@@ -42,7 +43,7 @@ func (m *OSPFNetworkResourceModel) toAPI(_ context.Context) *ospfNetworkAPIReque
 	return &ospfNetworkAPIRequest{
 		Enabled:   opnsense.BoolToString(m.Enabled.ValueBool()),
 		IPAddress: m.IPAddress.ValueString(),
-		Netmask:   intOrEmpty(m.Netmask.ValueInt64()),
+		Netmask:   tfconv.IntOrEmpty(m.Netmask.ValueInt64()),
 		Area:      m.Area.ValueString(),
 		AreaRange: m.AreaRange.ValueString(),
 	}
@@ -52,7 +53,7 @@ func (m *OSPFNetworkResourceModel) fromAPI(_ context.Context, a *ospfNetworkAPIR
 	m.ID = types.StringValue(id)
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.IPAddress = types.StringValue(a.IPAddress)
-	m.Netmask = types.Int64Value(intOrZero(a.Netmask))
+	m.Netmask = types.Int64Value(tfconv.IntOrZero(a.Netmask))
 	m.Area = types.StringValue(a.Area)
 	m.AreaRange = types.StringValue(a.AreaRange)
 }
