@@ -12,9 +12,20 @@ import (
 // Resources returns the list of Quagga/FRR resource types.
 func Resources() []func() resource.Resource {
 	return []func() resource.Resource{
+		newGeneralResource,
+		newBGPGlobalResource,
 		newBGPNeighborResource,
 		newPrefixListResource,
 		newRouteMapResource,
+		newRIPResource,
+		newOSPFGeneralResource,
+		newOSPF6GeneralResource,
+		newStaticGeneralResource,
+		newStaticRouteResource,
+		newBGPASPathResource,
+		newBGPCommunityListResource,
+		newBGPPeerGroupResource,
+		newBGPRedistributionResource,
 	}
 }
 
