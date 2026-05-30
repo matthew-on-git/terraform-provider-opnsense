@@ -26,6 +26,19 @@ func Resources() []func() resource.Resource {
 		newBGPCommunityListResource,
 		newBGPPeerGroupResource,
 		newBGPRedistributionResource,
+		// Generated OSPF item resources (internal/generate).
+		newOSPFNetworkResource,
+		newOSPFInterfaceResource,
+		newOSPFNeighborResource,
+		newOSPFPrefixListResource,
+		newOSPFRouteMapResource,
+		newOSPFRedistributionResource,
+		// Generated OSPFv3 item resources (internal/generate).
+		newOSPF6NetworkResource,
+		newOSPF6InterfaceResource,
+		newOSPF6PrefixListResource,
+		newOSPF6RouteMapResource,
+		newOSPF6RedistributionResource,
 	}
 }
 
