@@ -91,10 +91,10 @@ development_status:
   epic-5-retrospective: optional
 
   # Epic 6: Code Generation Pipeline
-  epic-6: backlog
-  6-1-yaml-schema-format-definition: backlog
-  6-2-code-generation-pipeline-with-text-template: backlog
-  6-3-generate-remaining-module-skeletons: backlog
+  epic-6: done
+  6-1-yaml-schema-format-definition: done   # internal/generate/schemas/*.yaml + README
+  6-2-code-generation-pipeline-with-text-template: done   # internal/generate (text/template), go:generate wired, idempotent
+  6-3-generate-remaining-module-skeletons: done   # generated 11 OSPF/OSPFv3 item resources; pipeline reusable for Wave B
   epic-6-retrospective: optional
 
   # Epic 7: BGP Dynamic Routing
@@ -186,12 +186,12 @@ development_status:
   18-2-firewall-one-to-one-nat-resource: backlog
 
   # Epic 19: Dynamic Routing Completion (FRR) — depends on Epic 13
-  epic-19: in-progress
+  epic-19: done
   19-1-frr-general-settings-resource: done   # opnsense_quagga_general (singleton); also closes 7-1
   19-2-bgp-global-config-resource: done       # opnsense_quagga_bgp_global (singleton); also closes 7-2
   19-3-bgp-aspath-communitylist-peergroup-redistribution: done   # 4 BGP item resources
-  19-4-ospf-general-and-subresources: in-progress   # ospf_general (singleton) DONE; items (network/interface/neighbor/prefixlist/routemap/redistribution) pending — codegen candidates
-  19-5-ospfv3-general-and-subresources: in-progress   # ospf6_general (singleton) DONE; items (interface/network/prefixlist/routemap/redistribution) pending — codegen candidates
+  19-4-ospf-general-and-subresources: done   # ospf_general (singleton) + 6 item resources generated via Epic 6 codegen
+  19-5-ospfv3-general-and-subresources: done   # ospf6_general (singleton) + 5 item resources generated via Epic 6 codegen
   19-6-rip-general-resource: done   # opnsense_quagga_rip (singleton)
   19-7-frr-static-general-and-routes: done   # opnsense_quagga_static (singleton) + opnsense_quagga_static_route
 
