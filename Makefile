@@ -15,7 +15,7 @@
 # ---------------------------------------------------------------------------
 # Variables (overridable via environment)
 # ---------------------------------------------------------------------------
-DEVRAIL_IMAGE     ?= ghcr.io/devrail-dev/dev-toolchain:1.11.3
+DEVRAIL_IMAGE     ?= ghcr.io/devrail-dev/dev-toolchain:1.12.0
 DEVRAIL_FAIL_FAST ?= 0
 DEVRAIL_LOG_FORMAT ?= json
 
