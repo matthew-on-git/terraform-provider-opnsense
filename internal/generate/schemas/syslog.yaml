@@ -1,0 +1,26 @@
+# Syslog remote destinations. Core module.
+package: syslog
+resources:
+  - name: destination
+    go_type: Destination
+    type_name: syslog_destination
+    title: a syslog destination
+    kind: item
+    reconfigure: /api/syslog/service/reconfigure
+    monad: destination
+    endpoints:
+      add: /api/syslog/settings/add_destination
+      get: /api/syslog/settings/get_destination
+      set: /api/syslog/settings/set_destination
+      del: /api/syslog/settings/del_destination
+      search: /api/syslog/settings/search_destination
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this destination is enabled."}
+      - {name: Transport, tf: transport, json: transport, type: selectmap, required: true, desc: "Transport: udp4, tcp4, udp6, tcp6, tls4, tls6."}
+      - {name: Hostname, tf: hostname, json: hostname, type: string, required: true, desc: "Destination hostname or IP."}
+      - {name: Port, tf: port, json: port, type: int, default: "514", desc: "Destination port."}
+      - {name: Level, tf: level, json: level, type: selectmaplist, desc: "Log levels to forward (e.g. info, warn, error)."}
+      - {name: Facility, tf: facility, json: facility, type: selectmaplist, desc: "Syslog facilities to forward (empty = all)."}
+      - {name: Certificate, tf: certificate, json: certificate, type: selectmap, default: "", desc: "Certificate reference for TLS transports."}
+      - {name: RFC5424, tf: rfc5424, json: rfc5424, type: bool, default: "false", desc: "Use RFC 5424 message format."}
+      - {name: Description, tf: description, json: description, type: string, default: "", desc: "Description."}

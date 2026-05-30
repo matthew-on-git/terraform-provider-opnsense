@@ -223,16 +223,16 @@ development_status:
   22-5-dnsmasq-resources: backlog
 
   # Epic 23: Traffic Shaping
-  epic-23: backlog
-  23-1-trafficshaper-pipe-resource: backlog
-  23-2-trafficshaper-queue-resource: backlog
-  23-3-trafficshaper-rule-resource: backlog
+  epic-23: done
+  23-1-trafficshaper-pipe-resource: done   # generated via codegen
+  23-2-trafficshaper-queue-resource: done   # generated via codegen
+  23-3-trafficshaper-rule-resource: done   # generated via codegen
 
   # Epic 24: System Services
-  epic-24: backlog
+  epic-24: in-progress
   24-1-cron-job-resource: backlog
   24-2-monit-service-test-alert-resources: backlog
-  24-3-syslog-destination-resource: backlog
+  24-3-syslog-destination-resource: done   # opnsense_syslog_destination (generated via codegen)
 
   # Epic 25: Upstream Contribution Track (the 3 blocked domains — two-front workstream)
   epic-25: backlog
