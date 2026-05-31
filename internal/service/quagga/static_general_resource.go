@@ -26,7 +26,7 @@ var staticGeneralReqOpts = opnsense.ReqOpts{
 	GetEndpoint:         "/api/quagga/static/get",
 	UpdateEndpoint:      "/api/quagga/static/set",
 	ReconfigureEndpoint: "/api/quagga/service/reconfigure",
-	Monad:               "static",
+	Monad:               "staticd",
 }
 
 type staticGeneralResource struct{ client *opnsense.Client }

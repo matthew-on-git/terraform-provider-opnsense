@@ -31,17 +31,17 @@ type BGPGlobalResourceModel struct {
 }
 
 type bgpGlobalAPIResponse struct {
-	Enabled            string `json:"enabled"`
-	ASNumber           string `json:"asnumber"`
-	RouterID           string `json:"routerid"`
-	Distance           string `json:"distance"`
-	GracefulRestart    string `json:"graceful"`
-	NetworkImportCheck string `json:"networkimportcheck"`
-	EnforceFirstAS     string `json:"enforce_first_as"`
-	LogNeighborChanges string `json:"logneighborchanges"`
-	Networks           string `json:"networks"`
-	MaximumPaths       string `json:"maximumpaths"`
-	MaximumPathsIBGP   string `json:"maximumpathsibgp"`
+	Enabled            string                   `json:"enabled"`
+	ASNumber           string                   `json:"asnumber"`
+	RouterID           string                   `json:"routerid"`
+	Distance           string                   `json:"distance"`
+	GracefulRestart    string                   `json:"graceful"`
+	NetworkImportCheck string                   `json:"networkimportcheck"`
+	EnforceFirstAS     string                   `json:"enforce_first_as"`
+	LogNeighborChanges string                   `json:"logneighborchanges"`
+	Networks           opnsense.SelectedMapList `json:"networks"`
+	MaximumPaths       string                   `json:"maximumpaths"`
+	MaximumPathsIBGP   string                   `json:"maximumpathsibgp"`
 }
 
 type bgpGlobalAPIRequest struct {
@@ -123,7 +123,7 @@ func (m *BGPGlobalResourceModel) fromAPI(_ context.Context, a *bgpGlobalAPIRespo
 	m.NetworkImportCheck = types.BoolValue(opnsense.StringToBool(a.NetworkImportCheck))
 	m.EnforceFirstAS = types.BoolValue(opnsense.StringToBool(a.EnforceFirstAS))
 	m.LogNeighborChanges = types.BoolValue(opnsense.StringToBool(a.LogNeighborChanges))
-	m.Networks = sliceToSet(opnsense.CSVToSlice(a.Networks))
+	m.Networks = sliceToSet(a.Networks)
 	m.MaximumPaths = types.Int64Value(intOrZero(a.MaximumPaths))
 	m.MaximumPathsIBGP = types.Int64Value(intOrZero(a.MaximumPathsIBGP))
 }
