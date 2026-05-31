@@ -26,6 +26,11 @@ func (r *instanceResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Computed: true, MarkdownDescription: "UUID of the OpenVPN instance.",
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
+			"vpnid": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Numeric VPN instance id, auto-assigned by OPNsense.",
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			},
 			"enabled": schema.BoolAttribute{
 				Optional: true, Computed: true, Default: booldefault.StaticBool(true),
 				MarkdownDescription: "Whether the instance is enabled. Defaults to `true`.",
@@ -72,6 +77,11 @@ func (r *instanceResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"cert": schema.StringAttribute{
 				Optional: true, Computed: true, Default: stringdefault.StaticString(""),
 				MarkdownDescription: "Server/client certificate reference (UUID/refid).",
+			},
+			"verify_client_cert": schema.StringAttribute{
+				Optional: true, Computed: true, Default: stringdefault.StaticString("require"),
+				MarkdownDescription: "Client certificate verification: `require` or `none`. Defaults to `require`.",
+				Validators:          []validator.String{stringvalidator.OneOf("require", "none")},
 			},
 			"tls_key": schema.StringAttribute{
 				Optional: true, Computed: true, Default: stringdefault.StaticString(""),

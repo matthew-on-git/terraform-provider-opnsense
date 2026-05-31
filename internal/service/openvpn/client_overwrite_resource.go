@@ -26,7 +26,7 @@ var clientOverwriteReqOpts = opnsense.ReqOpts{
 	DeleteEndpoint:      "/api/openvpn/client_overwrites/del",
 	SearchEndpoint:      "/api/openvpn/client_overwrites/search",
 	ReconfigureEndpoint: "/api/openvpn/service/reconfigure",
-	Monad:               "overwrite",
+	Monad:               "cso",
 }
 
 type clientOverwriteResource struct{ client *opnsense.Client }

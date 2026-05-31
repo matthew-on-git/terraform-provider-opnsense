@@ -34,9 +34,9 @@ type clientOverwriteAPIResponse struct {
 	Block          string                   `json:"block"`
 	PushReset      string                   `json:"push_reset"`
 	TunnelNetwork  string                   `json:"tunnel_network"`
-	LocalNetworks  string                   `json:"local_networks"`
-	RemoteNetworks string                   `json:"remote_networks"`
-	DNSServers     string                   `json:"dns_servers"`
+	LocalNetworks  opnsense.SelectedMapList `json:"local_networks"`
+	RemoteNetworks opnsense.SelectedMapList `json:"remote_networks"`
+	DNSServers     opnsense.SelectedMapList `json:"dns_servers"`
 }
 
 type clientOverwriteAPIRequest struct {
@@ -77,7 +77,7 @@ func (m *ClientOverwriteResourceModel) fromAPI(_ context.Context, a *clientOverw
 	m.TunnelNetwork = types.StringValue(a.TunnelNetwork)
 
 	m.Servers = sliceToSet(a.Servers)
-	m.LocalNetworks = sliceToSet(opnsense.CSVToSlice(a.LocalNetworks))
-	m.RemoteNetworks = sliceToSet(opnsense.CSVToSlice(a.RemoteNetworks))
-	m.DNSServers = sliceToSet(opnsense.CSVToSlice(a.DNSServers))
+	m.LocalNetworks = sliceToSet(a.LocalNetworks)
+	m.RemoteNetworks = sliceToSet(a.RemoteNetworks)
+	m.DNSServers = sliceToSet(a.DNSServers)
 }

@@ -16,6 +16,7 @@ import (
 // InstanceResourceModel is the Terraform state model for opnsense_openvpn_instance.
 type InstanceResourceModel struct {
 	ID                types.String `tfsdk:"id"`
+	VPNID             types.String `tfsdk:"vpnid"`
 	Enabled           types.Bool   `tfsdk:"enabled"`
 	Role              types.String `tfsdk:"role"`
 	Description       types.String `tfsdk:"description"`
@@ -27,6 +28,7 @@ type InstanceResourceModel struct {
 	Topology          types.String `tfsdk:"topology"`
 	CA                types.String `tfsdk:"ca"`
 	Cert              types.String `tfsdk:"cert"`
+	VerifyClientCert  types.String `tfsdk:"verify_client_cert"`
 	TLSKey            types.String `tfsdk:"tls_key"`
 	DataCiphers       types.Set    `tfsdk:"data_ciphers"`
 	Auth              types.String `tfsdk:"auth"`
@@ -40,6 +42,8 @@ type InstanceResourceModel struct {
 }
 
 type instanceAPIResponse struct {
+	VPNID             string                   `json:"vpnid"`
+	VerifyClientCert  opnsense.SelectedMap     `json:"verify_client_cert"`
 	Enabled           string                   `json:"enabled"`
 	Role              opnsense.SelectedMap     `json:"role"`
 	Description       string                   `json:"description"`
@@ -64,6 +68,8 @@ type instanceAPIResponse struct {
 }
 
 type instanceAPIRequest struct {
+	VPNID             string `json:"vpnid"`
+	VerifyClientCert  string `json:"verify_client_cert"`
 	Enabled           string `json:"enabled"`
 	Role              string `json:"role"`
 	Description       string `json:"description"`
@@ -113,6 +119,8 @@ func (m *InstanceResourceModel) toAPI(ctx context.Context) *instanceAPIRequest {
 	return &instanceAPIRequest{
 		Enabled:           opnsense.BoolToString(m.Enabled.ValueBool()),
 		Role:              m.Role.ValueString(),
+		VPNID:             m.VPNID.ValueString(),
+		VerifyClientCert:  m.VerifyClientCert.ValueString(),
 		Description:       m.Description.ValueString(),
 		DevType:           m.DevType.ValueString(),
 		Protocol:          m.Protocol.ValueString(),
@@ -146,6 +154,8 @@ func int64ToStringOrEmpty(n int64) string {
 
 func (m *InstanceResourceModel) fromAPI(_ context.Context, a *instanceAPIResponse, uuid string) {
 	m.ID = types.StringValue(uuid)
+	m.VPNID = types.StringValue(a.VPNID)
+	m.VerifyClientCert = types.StringValue(string(a.VerifyClientCert))
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Role = types.StringValue(string(a.Role))
 	m.Description = types.StringValue(a.Description)
