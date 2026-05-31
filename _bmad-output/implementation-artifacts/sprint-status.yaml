@@ -229,9 +229,9 @@ development_status:
   23-3-trafficshaper-rule-resource: done   # generated via codegen
 
   # Epic 24: System Services
-  epic-24: in-progress
-  24-1-cron-job-resource: backlog
-  24-2-monit-service-test-alert-resources: backlog
+  epic-24: done
+  24-1-cron-job-resource: done   # opnsense_cron_job (generated via codegen)
+  24-2-monit-service-test-alert-resources: done   # monit service/test/alert (generated via codegen)
   24-3-syslog-destination-resource: done   # opnsense_syslog_destination (generated via codegen)
 
   # Epic 25: Upstream Contribution Track (the 3 blocked domains — two-front workstream)
