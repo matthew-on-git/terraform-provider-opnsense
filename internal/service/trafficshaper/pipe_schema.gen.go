@@ -27,10 +27,10 @@ func (r *pipeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"enabled":          schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether this pipe is enabled."},
 			"number":           schema.Int64Attribute{Required: true, MarkdownDescription: "Pipe number (unique)."},
 			"bandwidth":        schema.Int64Attribute{Required: true, MarkdownDescription: "Bandwidth value."},
-			"bandwidth_metric": schema.StringAttribute{Required: true, MarkdownDescription: "Bandwidth unit (e.g. Mbit/s)."},
+			"bandwidth_metric": schema.StringAttribute{Required: true, MarkdownDescription: "Bandwidth unit: bit, Kbit, Mbit, Gbit."},
 			"mask":             schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("none"), MarkdownDescription: "Dynamic pipe mask: none, src-ip, dst-ip."},
 			"scheduler":        schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Scheduler type (e.g. fq_codel)."},
-			"description":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Description."},
+			"description":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Description (required by OPNsense)."},
 		},
 	}
 }

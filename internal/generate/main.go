@@ -31,6 +31,10 @@ type Field struct {
 	Default  string   `yaml:"default"`
 	Desc     string   `yaml:"desc"`
 	Options  []string `yaml:"options"`
+	// TestValue is a raw HCL literal used in the generated acceptance test for
+	// this field (e.g. `"permit"`, `["ipv4"]`, `65010`). Required for required
+	// selectmap/set fields, which have no sensible auto value.
+	TestValue string `yaml:"test_value"`
 }
 
 // Resource describes a single generated resource.
@@ -103,6 +107,7 @@ func generateResource(pkg string, r *Resource) error {
 		{"model", modelTmpl, modelImports(r)},
 		{"schema", schemaTmpl, schemaImports(r)},
 		{"resource", resourceTmpl, resourceImports(r)},
+		{"resource_test", testTmpl, testImports(r)},
 	}
 	for _, f := range files {
 		var buf strings.Builder
@@ -114,7 +119,13 @@ func generateResource(pkg string, r *Resource) error {
 		if err != nil {
 			return fmt.Errorf("%s: format: %w\n---\n%s", f.kind, err, buf.String())
 		}
-		out := filepath.Join(dir, fmt.Sprintf("%s_%s.gen.go", r.Name, f.kind))
+		// Test files must end in _test.go for Go to treat them as tests; the
+		// _gen_ infix + DO NOT EDIT header mark them generated.
+		name := fmt.Sprintf("%s_%s.gen.go", r.Name, f.kind)
+		if f.kind == "resource_test" {
+			name = fmt.Sprintf("%s_resource_gen_test.go", r.Name)
+		}
+		out := filepath.Join(dir, name)
 		if err := os.WriteFile(out, formatted, 0o600); err != nil {
 			return err
 		}
@@ -210,6 +221,42 @@ func resourceImports(r *Resource) string {
 	return renderImports(std, fw, []string{pkgOpnsense})
 }
 
+func testImports(r *Resource) string {
+	local := []string{`"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"`}
+	if r.Kind == "item" {
+		local = append(local, pkgOpnsense)
+	}
+	return renderImports(
+		[]string{`"testing"`},
+		[]string{`"github.com/hashicorp/terraform-plugin-testing/helper/resource"`},
+		local,
+	)
+}
+
+// testFieldsHCL emits HCL assignments for the fields a generated acceptance test
+// must set: every required field plus any field with an explicit test_value.
+func testFieldsHCL(r *Resource) string {
+	var b strings.Builder
+	for _, f := range r.Fields {
+		if !f.Required && f.TestValue == "" {
+			continue
+		}
+		v := f.TestValue
+		if v == "" {
+			switch f.Type {
+			case "bool":
+				v = "true"
+			case "int":
+				v = "1"
+			default:
+				v = `"test"`
+			}
+		}
+		fmt.Fprintf(&b, "  %s = %s\n", f.TF, v)
+	}
+	return b.String()
+}
+
 // --- template helpers ---
 
 var funcs = template.FuncMap{
@@ -222,6 +269,7 @@ var funcs = template.FuncMap{
 	"isItem":      func(r *Resource) bool { return r.Kind == "item" },
 	"isSingleton": func(r *Resource) bool { return r.Kind == "singleton" },
 	"hasSet":      hasSet,
+	"testFields":  testFieldsHCL,
 }
 
 func hasSet(r *Resource) bool {
@@ -333,10 +381,12 @@ func init() {
 	modelTmpl = template.Must(template.New("model").Funcs(funcs).Parse(modelText))
 	schemaTmpl = template.Must(template.New("schema").Funcs(funcs).Parse(schemaText))
 	resourceTmpl = template.Must(template.New("resource").Funcs(funcs).Parse(resourceText))
+	testTmpl = template.Must(template.New("test").Funcs(funcs).Parse(testText))
 }
 
 var (
 	modelTmpl    *template.Template
 	schemaTmpl   *template.Template
 	resourceTmpl *template.Template
+	testTmpl     *template.Template
 )

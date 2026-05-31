@@ -18,10 +18,10 @@ resources:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this pipe is enabled."}
       - {name: Number, tf: number, json: number, type: int, required: true, desc: "Pipe number (unique)."}
       - {name: Bandwidth, tf: bandwidth, json: bandwidth, type: int, required: true, desc: "Bandwidth value."}
-      - {name: BandwidthMetric, tf: bandwidth_metric, json: bandwidthMetric, type: selectmap, required: true, desc: "Bandwidth unit (e.g. Mbit/s)."}
+      - {name: BandwidthMetric, tf: bandwidth_metric, json: bandwidthMetric, type: selectmap, required: true, test_value: '"Mbit"', desc: "Bandwidth unit: bit, Kbit, Mbit, Gbit."}
       - {name: Mask, tf: mask, json: mask, type: selectmap, default: "none", desc: "Dynamic pipe mask: none, src-ip, dst-ip."}
       - {name: Scheduler, tf: scheduler, json: scheduler, type: selectmap, default: "", desc: "Scheduler type (e.g. fq_codel)."}
-      - {name: Description, tf: description, json: description, type: string, default: "", desc: "Description."}
+      - {name: Description, tf: description, json: description, type: string, default: "", test_value: '"tf-acc-pipe"', desc: "Description (required by OPNsense)."}
 
   - name: queue
     go_type: Queue
