@@ -1,0 +1,27 @@
+# Cron jobs. Core module.
+package: cron
+resources:
+  - name: job
+    go_type: Job
+    type_name: cron_job
+    title: a cron job
+    kind: item
+    reconfigure: /api/cron/service/reconfigure
+    monad: job
+    endpoints:
+      add: /api/cron/settings/add_job
+      get: /api/cron/settings/get_job
+      set: /api/cron/settings/set_job
+      del: /api/cron/settings/del_job
+      search: /api/cron/settings/search_jobs
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this job is enabled."}
+      - {name: Minutes, tf: minutes, json: minutes, type: string, default: "0", desc: "Minutes field (cron syntax)."}
+      - {name: Hours, tf: hours, json: hours, type: string, default: "0", desc: "Hours field (cron syntax)."}
+      - {name: Days, tf: days, json: days, type: string, default: "*", desc: "Day-of-month field (cron syntax)."}
+      - {name: Months, tf: months, json: months, type: string, default: "*", desc: "Month field (cron syntax)."}
+      - {name: Weekdays, tf: weekdays, json: weekdays, type: string, default: "*", desc: "Day-of-week field (cron syntax)."}
+      - {name: Who, tf: who, json: who, type: string, default: "root", desc: "User the job runs as."}
+      - {name: Command, tf: command, json: command, type: selectmap, required: true, desc: "Configd action to run."}
+      - {name: Parameters, tf: parameters, json: parameters, type: string, default: "", desc: "Parameters passed to the command."}
+      - {name: Description, tf: description, json: description, type: string, default: "", desc: "Description."}

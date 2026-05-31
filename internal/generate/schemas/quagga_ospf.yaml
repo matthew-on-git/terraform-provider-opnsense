@@ -1,0 +1,126 @@
+# OSPF (IPv4) item sub-resources for the FRR/quagga plugin.
+# Generated into internal/service/quagga by `go run ./internal/generate`.
+package: quagga
+resources:
+  - name: ospf_network
+    go_type: OSPFNetwork
+    type_name: quagga_ospf_network
+    title: an OSPF network
+    kind: item
+    reconfigure: /api/quagga/service/reconfigure
+    monad: network
+    endpoints:
+      add: /api/quagga/ospfsettings/add_network
+      get: /api/quagga/ospfsettings/get_network
+      set: /api/quagga/ospfsettings/set_network
+      del: /api/quagga/ospfsettings/del_network
+      search: /api/quagga/ospfsettings/search_network
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this network is enabled."}
+      - {name: IPAddress, tf: ip_address, json: ipaddr, type: string, required: true, desc: "Network address."}
+      - {name: Netmask, tf: netmask, json: netmask, type: int, default: "0", desc: "Netmask bits (0 = unset)."}
+      - {name: Area, tf: area, json: area, type: string, required: true, desc: "OSPF area (e.g. 0.0.0.0)."}
+      - {name: AreaRange, tf: area_range, json: arearange, type: string, desc: "Optional area range summarization."}
+
+  - name: ospf_interface
+    go_type: OSPFInterface
+    type_name: quagga_ospf_interface
+    title: an OSPF interface
+    kind: item
+    reconfigure: /api/quagga/service/reconfigure
+    monad: interface
+    endpoints:
+      add: /api/quagga/ospfsettings/add_interface
+      get: /api/quagga/ospfsettings/get_interface
+      set: /api/quagga/ospfsettings/set_interface
+      del: /api/quagga/ospfsettings/del_interface
+      search: /api/quagga/ospfsettings/search_interface
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this interface config is enabled."}
+      - {name: Interface, tf: interface, json: interfacename, type: selectmap, desc: "Interface name."}
+      - {name: Area, tf: area, json: area, type: string, desc: "OSPF area."}
+      - {name: Cost, tf: cost, json: cost, type: int, default: "0", desc: "Interface cost (0 = auto)."}
+      - {name: HelloInterval, tf: hello_interval, json: hellointerval, type: int, default: "0", desc: "Hello interval in seconds (0 = default)."}
+      - {name: DeadInterval, tf: dead_interval, json: deadinterval, type: int, default: "0", desc: "Dead interval in seconds (0 = default)."}
+      - {name: Priority, tf: priority, json: priority, type: int, default: "0", desc: "Router priority (0 = default)."}
+      - {name: NetworkType, tf: network_type, json: networktype, type: selectmap, desc: "OSPF network type."}
+      - {name: BFD, tf: bfd, json: bfd, type: bool, default: "false", desc: "Enable BFD on this interface."}
+
+  - name: ospf_neighbor
+    go_type: OSPFNeighbor
+    type_name: quagga_ospf_neighbor
+    title: an OSPF neighbor
+    kind: item
+    reconfigure: /api/quagga/service/reconfigure
+    monad: neighbor
+    endpoints:
+      add: /api/quagga/ospfsettings/add_neighbor
+      get: /api/quagga/ospfsettings/get_neighbor
+      set: /api/quagga/ospfsettings/set_neighbor
+      del: /api/quagga/ospfsettings/del_neighbor
+      search: /api/quagga/ospfsettings/search_neighbor
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this neighbor is enabled."}
+      - {name: Description, tf: description, json: description, type: string, desc: "Description."}
+      - {name: Address, tf: address, json: address, type: string, required: true, desc: "Neighbor IP address."}
+      - {name: PollInterval, tf: poll_interval, json: pollinterval, type: int, default: "0", desc: "Poll interval in seconds (0 = default)."}
+      - {name: Priority, tf: priority, json: priority, type: int, default: "0", desc: "Neighbor priority (0 = default)."}
+
+  - name: ospf_prefixlist
+    go_type: OSPFPrefixList
+    type_name: quagga_ospf_prefixlist
+    title: an OSPF prefix list
+    kind: item
+    reconfigure: /api/quagga/service/reconfigure
+    monad: prefixlist
+    endpoints:
+      add: /api/quagga/ospfsettings/add_prefixlist
+      get: /api/quagga/ospfsettings/get_prefixlist
+      set: /api/quagga/ospfsettings/set_prefixlist
+      del: /api/quagga/ospfsettings/del_prefixlist
+      search: /api/quagga/ospfsettings/search_prefixlist
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this entry is enabled."}
+      - {name: Name, tf: name, json: name, type: string, required: true, desc: "Prefix list name."}
+      - {name: SeqNumber, tf: seq_number, json: seqnumber, type: int, required: true, desc: "Sequence number."}
+      - {name: Action, tf: action, json: action, type: selectmap, required: true, options: [permit, deny], desc: "Action: permit or deny."}
+      - {name: Network, tf: network, json: network, type: string, required: true, desc: "Network/CIDR to match."}
+
+  - name: ospf_routemap
+    go_type: OSPFRouteMap
+    type_name: quagga_ospf_routemap
+    title: an OSPF route map
+    kind: item
+    reconfigure: /api/quagga/service/reconfigure
+    monad: routemap
+    endpoints:
+      add: /api/quagga/ospfsettings/add_routemap
+      get: /api/quagga/ospfsettings/get_routemap
+      set: /api/quagga/ospfsettings/set_routemap
+      del: /api/quagga/ospfsettings/del_routemap
+      search: /api/quagga/ospfsettings/search_routemap
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this route map is enabled."}
+      - {name: Name, tf: name, json: name, type: string, required: true, desc: "Route map name."}
+      - {name: Action, tf: action, json: action, type: selectmap, required: true, options: [permit, deny], desc: "Action: permit or deny."}
+      - {name: RouteMapID, tf: route_map_id, json: id, type: int, default: "0", desc: "Order/ID (0 = unset)."}
+      - {name: Set, tf: set, json: set, type: string, desc: "Set clause."}
+
+  - name: ospf_redistribution
+    go_type: OSPFRedistribution
+    type_name: quagga_ospf_redistribution
+    title: an OSPF redistribution
+    kind: item
+    reconfigure: /api/quagga/service/reconfigure
+    monad: redistribution
+    endpoints:
+      add: /api/quagga/ospfsettings/add_redistribution
+      get: /api/quagga/ospfsettings/get_redistribution
+      set: /api/quagga/ospfsettings/set_redistribution
+      del: /api/quagga/ospfsettings/del_redistribution
+      search: /api/quagga/ospfsettings/search_redistribution
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this redistribution is enabled."}
+      - {name: Description, tf: description, json: description, type: string, desc: "Description."}
+      - {name: Redistribute, tf: redistribute, json: redistribute, type: selectmap, required: true, options: [connected, kernel, static, bgp, rip], desc: "Source to redistribute into OSPF."}
+      - {name: RouteMap, tf: route_map, json: linkedRoutemap, type: selectmap, desc: "UUID of a route map to apply."}

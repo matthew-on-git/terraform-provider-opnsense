@@ -4,6 +4,8 @@
 // Package main is the entry point for the terraform-provider-opnsense binary.
 package main
 
+//go:generate go run ./internal/generate
+
 import (
 	"context"
 	"flag"

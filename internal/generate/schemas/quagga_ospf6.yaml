@@ -1,0 +1,106 @@
+# OSPFv3 (IPv6) item sub-resources for the FRR/quagga plugin.
+package: quagga
+resources:
+  - name: ospf6_network
+    go_type: OSPF6Network
+    type_name: quagga_ospf6_network
+    title: an OSPFv3 network
+    kind: item
+    reconfigure: /api/quagga/service/reconfigure
+    monad: network
+    endpoints:
+      add: /api/quagga/ospf6settings/add_network
+      get: /api/quagga/ospf6settings/get_network
+      set: /api/quagga/ospf6settings/set_network
+      del: /api/quagga/ospf6settings/del_network
+      search: /api/quagga/ospf6settings/search_network
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this network is enabled."}
+      - {name: IPAddress, tf: ip_address, json: ipaddr, type: string, required: true, desc: "Network address."}
+      - {name: Netmask, tf: netmask, json: netmask, type: int, required: true, desc: "Netmask bits."}
+      - {name: Area, tf: area, json: area, type: string, required: true, desc: "OSPFv3 area."}
+      - {name: AreaRange, tf: area_range, json: arearange, type: string, desc: "Optional area range summarization."}
+
+  - name: ospf6_interface
+    go_type: OSPF6Interface
+    type_name: quagga_ospf6_interface
+    title: an OSPFv3 interface
+    kind: item
+    reconfigure: /api/quagga/service/reconfigure
+    monad: interface
+    endpoints:
+      add: /api/quagga/ospf6settings/add_interface
+      get: /api/quagga/ospf6settings/get_interface
+      set: /api/quagga/ospf6settings/set_interface
+      del: /api/quagga/ospf6settings/del_interface
+      search: /api/quagga/ospf6settings/search_interface
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this interface config is enabled."}
+      - {name: Interface, tf: interface, json: interfacename, type: selectmap, required: true, desc: "Interface name."}
+      - {name: Area, tf: area, json: area, type: string, required: true, desc: "OSPFv3 area."}
+      - {name: Passive, tf: passive, json: passive, type: bool, default: "false", desc: "Mark interface passive."}
+      - {name: Cost, tf: cost, json: cost, type: int, default: "0", desc: "Interface cost (0 = auto)."}
+      - {name: HelloInterval, tf: hello_interval, json: hellointerval, type: int, default: "0", desc: "Hello interval in seconds (0 = default)."}
+      - {name: DeadInterval, tf: dead_interval, json: deadinterval, type: int, default: "0", desc: "Dead interval in seconds (0 = default)."}
+      - {name: Priority, tf: priority, json: priority, type: int, default: "0", desc: "Router priority (0 = default)."}
+      - {name: NetworkType, tf: network_type, json: networktype, type: selectmap, desc: "OSPFv3 network type."}
+      - {name: BFD, tf: bfd, json: bfd, type: bool, default: "false", desc: "Enable BFD on this interface."}
+
+  - name: ospf6_prefixlist
+    go_type: OSPF6PrefixList
+    type_name: quagga_ospf6_prefixlist
+    title: an OSPFv3 prefix list
+    kind: item
+    reconfigure: /api/quagga/service/reconfigure
+    monad: prefixlist
+    endpoints:
+      add: /api/quagga/ospf6settings/add_prefixlist
+      get: /api/quagga/ospf6settings/get_prefixlist
+      set: /api/quagga/ospf6settings/set_prefixlist
+      del: /api/quagga/ospf6settings/del_prefixlist
+      search: /api/quagga/ospf6settings/search_prefixlist
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this entry is enabled."}
+      - {name: Name, tf: name, json: name, type: string, required: true, desc: "Prefix list name."}
+      - {name: SeqNumber, tf: seq_number, json: seqnumber, type: int, required: true, desc: "Sequence number."}
+      - {name: Action, tf: action, json: action, type: selectmap, required: true, options: [permit, deny], desc: "Action: permit or deny."}
+      - {name: Network, tf: network, json: network, type: string, required: true, desc: "Network/CIDR to match."}
+
+  - name: ospf6_routemap
+    go_type: OSPF6RouteMap
+    type_name: quagga_ospf6_routemap
+    title: an OSPFv3 route map
+    kind: item
+    reconfigure: /api/quagga/service/reconfigure
+    monad: routemap
+    endpoints:
+      add: /api/quagga/ospf6settings/add_routemap
+      get: /api/quagga/ospf6settings/get_routemap
+      set: /api/quagga/ospf6settings/set_routemap
+      del: /api/quagga/ospf6settings/del_routemap
+      search: /api/quagga/ospf6settings/search_routemap
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this route map is enabled."}
+      - {name: Name, tf: name, json: name, type: string, required: true, desc: "Route map name."}
+      - {name: Action, tf: action, json: action, type: selectmap, required: true, options: [permit, deny], desc: "Action: permit or deny."}
+      - {name: RouteMapID, tf: route_map_id, json: id, type: int, required: true, desc: "Order/ID."}
+      - {name: Set, tf: set, json: set, type: string, desc: "Set clause."}
+
+  - name: ospf6_redistribution
+    go_type: OSPF6Redistribution
+    type_name: quagga_ospf6_redistribution
+    title: an OSPFv3 redistribution
+    kind: item
+    reconfigure: /api/quagga/service/reconfigure
+    monad: redistribution
+    endpoints:
+      add: /api/quagga/ospf6settings/add_redistribution
+      get: /api/quagga/ospf6settings/get_redistribution
+      set: /api/quagga/ospf6settings/set_redistribution
+      del: /api/quagga/ospf6settings/del_redistribution
+      search: /api/quagga/ospf6settings/search_redistribution
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this redistribution is enabled."}
+      - {name: Description, tf: description, json: description, type: string, desc: "Description."}
+      - {name: Redistribute, tf: redistribute, json: redistribute, type: selectmap, required: true, options: [connected, kernel, static, bgp, ripng], desc: "Source to redistribute into OSPFv3."}
+      - {name: RouteMap, tf: route_map, json: linkedRoutemap, type: selectmap, desc: "UUID of a route map to apply."}

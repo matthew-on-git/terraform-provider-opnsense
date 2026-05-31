@@ -1,0 +1,73 @@
+# Monit service monitoring. Core module.
+package: monit
+resources:
+  - name: service
+    go_type: Service
+    type_name: monit_service
+    title: a monit service
+    kind: item
+    reconfigure: /api/monit/service/reconfigure
+    monad: service
+    endpoints:
+      add: /api/monit/settings/add_service
+      get: /api/monit/settings/get_service
+      set: /api/monit/settings/set_service
+      del: /api/monit/settings/del_service
+      search: /api/monit/settings/search_service
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this service check is enabled."}
+      - {name: Name, tf: name, json: name, type: string, required: true, desc: "Service name."}
+      - {name: Description, tf: description, json: description, type: string, default: "", desc: "Description."}
+      - {name: Type, tf: type, json: type, type: selectmap, required: true, desc: "Service type (process, file, host, system, network, ...)."}
+      - {name: PIDFile, tf: pidfile, json: pidfile, type: string, default: "", desc: "PID file path (process type)."}
+      - {name: Match, tf: match, json: match, type: string, default: "", desc: "Process match string."}
+      - {name: Path, tf: path, json: path, type: string, default: "", desc: "Path (file/filesystem types)."}
+      - {name: Timeout, tf: timeout, json: timeout, type: int, default: "300", desc: "Restart timeout in seconds."}
+      - {name: StartTimeout, tf: start_timeout, json: starttimeout, type: int, default: "30", desc: "Start timeout in seconds."}
+      - {name: Address, tf: address, json: address, type: string, default: "", desc: "Address (host/network types)."}
+      - {name: Interface, tf: interface, json: interface, type: selectmap, default: "", desc: "Interface (network type)."}
+      - {name: Start, tf: start, json: start, type: string, default: "", desc: "Start program command."}
+      - {name: Stop, tf: stop, json: stop, type: string, default: "", desc: "Stop program command."}
+      - {name: Tests, tf: tests, json: tests, type: selectmaplist, desc: "UUIDs of monit tests applied to this service."}
+
+  - name: test
+    go_type: Test
+    type_name: monit_test
+    title: a monit test
+    kind: item
+    reconfigure: /api/monit/service/reconfigure
+    monad: test
+    endpoints:
+      add: /api/monit/settings/add_test
+      get: /api/monit/settings/get_test
+      set: /api/monit/settings/set_test
+      del: /api/monit/settings/del_test
+      search: /api/monit/settings/search_test
+    fields:
+      - {name: Name, tf: name, json: name, type: string, required: true, desc: "Test name."}
+      - {name: Type, tf: type, json: type, type: selectmap, required: true, desc: "Test type (e.g. SystemResource, ProcessMemory)."}
+      - {name: Condition, tf: condition, json: condition, type: string, required: true, desc: "Monit condition expression."}
+      - {name: Action, tf: action, json: action, type: selectmap, required: true, desc: "Action on match (alert, restart, stop, exec, ...)."}
+      - {name: Path, tf: path, json: path, type: string, default: "", desc: "Path/program for exec action."}
+
+  - name: alert
+    go_type: Alert
+    type_name: monit_alert
+    title: a monit alert
+    kind: item
+    reconfigure: /api/monit/service/reconfigure
+    monad: alert
+    endpoints:
+      add: /api/monit/settings/add_alert
+      get: /api/monit/settings/get_alert
+      set: /api/monit/settings/set_alert
+      del: /api/monit/settings/del_alert
+      search: /api/monit/settings/search_alert
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this alert is enabled."}
+      - {name: Recipient, tf: recipient, json: recipient, type: string, required: true, desc: "Email recipient."}
+      - {name: NotOn, tf: not_on, json: noton, type: bool, default: "false", desc: "Invert the event filter (alert on all except selected)."}
+      - {name: Events, tf: events, json: events, type: selectmaplist, desc: "Events to alert on (empty = all)."}
+      - {name: Format, tf: format, json: format, type: string, default: "", desc: "Custom alert message format."}
+      - {name: Reminder, tf: reminder, json: reminder, type: int, default: "0", desc: "Reminder interval in cycles (0 = unset)."}
+      - {name: Description, tf: description, json: description, type: string, default: "", desc: "Description."}

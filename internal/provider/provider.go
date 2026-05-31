@@ -20,13 +20,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/acme"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/cron"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/ddclient"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/dhcp"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/firewall"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/haproxy"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/ipsec"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/monit"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/openvpn"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/quagga"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/syslog"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/system"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/trafficshaper"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/unbound"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/wireguard"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
@@ -242,8 +247,13 @@ func (p *OpnsenseProvider) Resources(_ context.Context) []func() resource.Resour
 	resources = append(resources, unbound.Resources()...)
 	resources = append(resources, wireguard.Resources()...)
 	resources = append(resources, ipsec.Resources()...)
+	resources = append(resources, openvpn.Resources()...)
 	resources = append(resources, ddclient.Resources()...)
 	resources = append(resources, dhcp.Resources()...)
+	resources = append(resources, trafficshaper.Resources()...)
+	resources = append(resources, syslog.Resources()...)
+	resources = append(resources, cron.Resources()...)
+	resources = append(resources, monit.Resources()...)
 	return resources
 }
 

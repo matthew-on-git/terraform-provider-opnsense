@@ -166,6 +166,85 @@ func Delete(ctx context.Context, c *Client, opts ReqOpts, id string) error {
 	return Reconfigure(ctx, c, opts)
 }
 
+// GetSingleton reads a singleton settings object from a get endpoint that has
+// no UUID path segment (e.g. "/api/quagga/general/get"). The response is
+// unwrapped from the monad key and returned as a clean struct. Returns
+// NotFoundError if the monad value is missing or empty. Acquires the read
+// semaphore and never calls reconfigure.
+func GetSingleton[K any](ctx context.Context, c *Client, opts ReqOpts) (*K, error) {
+	if err := c.AcquireRead(ctx); err != nil {
+		return nil, fmt.Errorf("get %s: %w", opts.GetEndpoint, err)
+	}
+	defer c.ReleaseRead()
+
+	url := c.BaseURL() + opts.GetEndpoint
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("get %s: %w", opts.GetEndpoint, err)
+	}
+
+	resp, err := c.HTTPClient().Do(req) //nolint:gosec // URL from provider-configured ReqOpts
+	if err != nil {
+		return nil, NewServerError(opts.GetEndpoint, err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if httpErr := CheckHTTPError(resp.StatusCode, opts.GetEndpoint); httpErr != nil {
+		return nil, httpErr
+	}
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("get %s: failed to read response: %w", opts.GetEndpoint, err)
+	}
+
+	return unmarshalWrapped[K](opts.Monad, respBody)
+}
+
+// UpdateSingleton updates a singleton settings object via a set endpoint that
+// has no UUID path segment (e.g. "/api/quagga/general/set"). The resource
+// struct is wrapped in the monad key and POSTed. Acquires the write mutex and
+// calls reconfigure after success.
+func UpdateSingleton[K any](ctx context.Context, c *Client, opts ReqOpts, resource *K) error {
+	if err := c.LockMutex(ctx); err != nil {
+		return fmt.Errorf("update %s: %w", opts.UpdateEndpoint, err)
+	}
+	defer c.UnlockMutex()
+
+	body, err := marshalWrapped(opts.Monad, resource)
+	if err != nil {
+		return fmt.Errorf("update %s: %w", opts.UpdateEndpoint, err)
+	}
+
+	url := c.BaseURL() + opts.UpdateEndpoint
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("update %s: %w", opts.UpdateEndpoint, err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.HTTPClient().Do(req) //nolint:gosec // URL from provider-configured ReqOpts
+	if err != nil {
+		return NewServerError(opts.UpdateEndpoint, err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if httpErr := CheckHTTPError(resp.StatusCode, opts.UpdateEndpoint); httpErr != nil {
+		return httpErr
+	}
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("update %s: failed to read response: %w", opts.UpdateEndpoint, err)
+	}
+
+	if _, err := ParseMutationResponse(respBody); err != nil {
+		return err
+	}
+
+	return Reconfigure(ctx, c, opts)
+}
+
 // marshalWrapped marshals a resource struct wrapped in the monad key.
 // Example: monad="server", resource={Name:"web1"} → {"server":{"name":"web1"}}
 func marshalWrapped[K any](monad string, resource *K) ([]byte, error) {

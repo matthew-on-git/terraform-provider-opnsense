@@ -1,5 +1,5 @@
 # generated: 2026-03-18
-# last_updated: 2026-03-23
+# last_updated: 2026-05-30
 # project: terraform-provider-opnsense
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-18
-last_updated: 2026-03-23
+last_updated: 2026-05-30
 project: terraform-provider-opnsense
 project_key: NOKEY
 tracking_system: file-system
@@ -56,14 +56,14 @@ development_status:
   epic-1-retrospective: done
 
   # Epic 2: First Resources & Lifecycle Validation
-  epic-2: in-progress
+  epic-2: done
   2-1-firewall-alias-resource: done
   2-2-haproxy-server-resource: done
   2-3-firewall-alias-data-source: done
   epic-2-retrospective: optional
 
   # Epic 3: Firewall Management
-  epic-3: in-progress
+  epic-3: done
   3-1-firewall-savepoint-reconfigure-implementation: done
   3-2-firewall-category-resource: done
   3-3-firewall-filter-rule-resource: done
@@ -72,7 +72,7 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: HAProxy Load Balancing
-  epic-4: in-progress
+  epic-4: done
   4-1-haproxy-backend-resource-with-server-linking: done
   4-2-haproxy-frontend-resource-with-acl-routing: done
   4-3-haproxy-acl-resource: done
@@ -81,33 +81,33 @@ development_status:
 
   # Epic 5: Core Infrastructure
   epic-5: in-progress
-  5-1-interface-resource: backlog
+  5-1-interface-resource: backlog          # BLOCKED upstream — no OPNsense API for base interface assignment (PR #8436)
   5-2-vlan-resource: done
   5-3-virtual-ip-resource: done
   5-4-static-route-resource: done
   5-5-gateway-resource: done
-  5-6-gateway-group-resource: backlog
-  5-7-system-general-settings-resource: backlog
+  5-6-gateway-group-resource: backlog      # BLOCKED upstream — no gateway-group MVC API (candidate for fresh PR)
+  5-7-system-general-settings-resource: backlog  # BLOCKED upstream — legacy; on OPNsense roadmap (System Settings -> MVC)
   epic-5-retrospective: optional
 
   # Epic 6: Code Generation Pipeline
-  epic-6: backlog
-  6-1-yaml-schema-format-definition: backlog
-  6-2-code-generation-pipeline-with-text-template: backlog
-  6-3-generate-remaining-module-skeletons: backlog
+  epic-6: done
+  6-1-yaml-schema-format-definition: done   # internal/generate/schemas/*.yaml + README
+  6-2-code-generation-pipeline-with-text-template: done   # internal/generate (text/template), go:generate wired, idempotent
+  6-3-generate-remaining-module-skeletons: done   # generated 11 OSPF/OSPFv3 item resources; pipeline reusable for Wave B
   epic-6-retrospective: optional
 
   # Epic 7: BGP Dynamic Routing
-  epic-7: in-progress
-  7-1-frr-general-settings-resource: backlog
-  7-2-bgp-global-configuration-resource: backlog
+  epic-7: done
+  7-1-frr-general-settings-resource: done   # delivered as opnsense_quagga_general (see 19-1)
+  7-2-bgp-global-configuration-resource: done   # delivered as opnsense_quagga_bgp_global (see 19-2)
   7-3-bgp-neighbor-resource: done
   7-4-bgp-prefix-list-resource: done
   7-5-bgp-route-map-resource: done
   epic-7-retrospective: optional
 
   # Epic 8: ACME Certificate Management
-  epic-8: in-progress
+  epic-8: done
   8-1-acme-account-resource: done
   8-2-acme-certificate-resource-with-issuance: done
   8-3-acme-challenge-configuration-resource: done
@@ -119,11 +119,11 @@ development_status:
   9-2-unbound-domain-override-resource: done
   9-3-unbound-acl-resource: done
   9-4-dynamic-dns-account-resource: done
-  9-5-dynamic-dns-provider-configuration-resource: backlog
+  9-5-dynamic-dns-provider-configuration-resource: backlog  # CANCELLED — redundant; "provider" is the `service` field on the dyndns account
   epic-9-retrospective: optional
 
   # Epic 10: VPN Management
-  epic-10: in-progress
+  epic-10: done
   10-1-wireguard-server-resource: done
   10-2-wireguard-peer-resource: done
   10-3-ipsec-phase-1-connection-resource: done
@@ -135,7 +135,7 @@ development_status:
   epic-11: in-progress
   11-1-dhcpv4-pool-resource: done
   11-2-dhcpv4-static-mapping-resource: done
-  11-3-dhcpv4-option-resource: backlog
+  11-3-dhcpv4-option-resource: backlog     # BUILDABLE — Kea has add_option/del_option/get_option (re-confirmed Wave B)
   epic-11-retrospective: optional
 
   # Epic 12: Data Sources, Documentation & Registry Release
@@ -146,3 +146,96 @@ development_status:
   12-4-ci-cd-pipeline-and-registry-release: backlog
   12-5-changelog-and-v0-1-0-release: backlog
   epic-12-retrospective: optional
+
+  # === EXPANDED SCOPE (feature-complete-roadmap.md, 2026-05-29) ===
+
+  # Epic 13: API Client Singleton Support (FOUNDATION — unblocks all singleton resources)
+  epic-13: done
+  13-1-singleton-get-set-client-support: done   # code+review+tests green; make check passes lint/format/test/scan/docs. Residual security target = Go stdlib CVEs in dev-toolchain container, tracked upstream (devrail-dev/dev-toolchain#50)
+
+  # --- Wave A (high-impact, confirmed APIs) ---
+  # Epic 14: OpenVPN
+  epic-14: done
+  14-1-openvpn-instance-resource: done
+  14-2-openvpn-client-overwrite-resource: done
+  14-3-openvpn-static-key-resource: done   # make check passes lint/format/test/scan/docs; security target tracked upstream (dev-toolchain#50)
+
+  # Epic 15: PKI & Trust
+  epic-15: backlog
+  15-1-trust-ca-resource: backlog
+  15-2-trust-certificate-resource: backlog
+
+  # Epic 16: Users & Access
+  epic-16: backlog
+  16-1-auth-user-resource: backlog
+  16-2-auth-group-resource: backlog
+
+  # Epic 17: Interface Types
+  epic-17: backlog
+  17-1-interface-bridge-resource: backlog
+  17-2-interface-lagg-resource: backlog
+  17-3-interface-gre-resource: backlog
+  17-4-interface-gif-resource: backlog
+  17-5-interface-vxlan-resource: backlog
+  17-6-interface-loopback-resource: backlog
+  17-7-interface-neighbor-resource: backlog
+
+  # Epic 18: Firewall Completion
+  epic-18: backlog
+  18-1-firewall-source-nat-resource: backlog
+  18-2-firewall-one-to-one-nat-resource: backlog
+
+  # Epic 19: Dynamic Routing Completion (FRR) — depends on Epic 13
+  epic-19: done
+  19-1-frr-general-settings-resource: done   # opnsense_quagga_general (singleton); also closes 7-1
+  19-2-bgp-global-config-resource: done       # opnsense_quagga_bgp_global (singleton); also closes 7-2
+  19-3-bgp-aspath-communitylist-peergroup-redistribution: done   # 4 BGP item resources
+  19-4-ospf-general-and-subresources: done   # ospf_general (singleton) + 6 item resources generated via Epic 6 codegen
+  19-5-ospfv3-general-and-subresources: done   # ospf6_general (singleton) + 5 item resources generated via Epic 6 codegen
+  19-6-rip-general-resource: done   # opnsense_quagga_rip (singleton)
+  19-7-frr-static-general-and-routes: done   # opnsense_quagga_static (singleton) + opnsense_quagga_static_route
+
+  # --- Wave B (confirmed, second priority) ---
+  # Epic 20: VPN Completion (IPsec extensions)
+  epic-20: backlog
+  20-1-ipsec-local-resource: backlog
+  20-2-ipsec-remote-resource: backlog
+  20-3-ipsec-pool-resource: backlog
+  20-4-ipsec-vti-resource: backlog
+  20-5-ipsec-manual-spd-resource: backlog
+  20-6-ipsec-key-pair-resource: backlog
+
+  # Epic 21: DHCP Completion (Kea) — singletons depend on Epic 13
+  epic-21: backlog
+  21-1-kea-dhcpv6-subnet-resource: backlog
+  21-2-kea-dhcpv6-reservation-resource: backlog
+  21-3-kea-ha-peer-resource: backlog
+  21-4-kea-dhcpv4-option-resource: backlog
+  21-5-kea-ctrl-agent-settings-resource: backlog
+  21-6-kea-ddns-settings-resource: backlog
+
+  # Epic 22: DNS Completion (Unbound extensions; optional dnsmasq)
+  epic-22: backlog
+  22-1-unbound-general-settings-resource: backlog
+  22-2-unbound-forward-resource: backlog
+  22-3-unbound-host-alias-resource: backlog
+  22-4-unbound-blocklist-resource: backlog
+  22-5-dnsmasq-resources: backlog
+
+  # Epic 23: Traffic Shaping
+  epic-23: done
+  23-1-trafficshaper-pipe-resource: done   # generated via codegen
+  23-2-trafficshaper-queue-resource: done   # generated via codegen
+  23-3-trafficshaper-rule-resource: done   # generated via codegen
+
+  # Epic 24: System Services
+  epic-24: done
+  24-1-cron-job-resource: done   # opnsense_cron_job (generated via codegen)
+  24-2-monit-service-test-alert-resources: done   # monit service/test/alert (generated via codegen)
+  24-3-syslog-destination-resource: done   # opnsense_syslog_destination (generated via codegen)
+
+  # Epic 25: Upstream Contribution Track (the 3 blocked domains — two-front workstream)
+  epic-25: backlog
+  25-1-track-interface-assignment-pr-8436: backlog
+  25-2-author-gateway-group-mvc-pr: backlog
+  25-3-adopt-system-general-when-api-ships: backlog

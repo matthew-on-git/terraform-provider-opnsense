@@ -345,7 +345,174 @@ func TestDelete_DoesNotParseBody(t *testing.T) {
 	}
 }
 
+// --- Singleton tests ---
+
+func TestGetSingleton_Success(t *testing.T) {
+	var requestPath string
+	server := newCRUDTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/test/getSettings" {
+			requestPath = r.URL.Path
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"settings":{"name":"frr","address":"","port":""}}`))
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+	})
+	defer server.Close()
+
+	client := newCRUDTestClient(t, server.URL)
+	opts := testSingletonReqOpts()
+
+	result, err := GetSingleton[testResource](context.Background(), client, opts)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+	if result.Name != "frr" {
+		t.Errorf("expected name 'frr', got: %s", result.Name)
+	}
+	// Singleton GET must NOT append a UUID segment.
+	if requestPath != "/api/test/getSettings" {
+		t.Errorf("expected exact path without UUID, got: %s", requestPath)
+	}
+}
+
+func TestGetSingleton_NotFound(t *testing.T) {
+	server := newCRUDTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/test/getSettings" {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"settings":{}}`))
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+	})
+	defer server.Close()
+
+	client := newCRUDTestClient(t, server.URL)
+	opts := testSingletonReqOpts()
+
+	_, err := GetSingleton[testResource](context.Background(), client, opts)
+	if err == nil {
+		t.Fatal("expected NotFoundError, got nil")
+	}
+	var notFound *NotFoundError
+	if !errors.As(err, &notFound) {
+		t.Fatalf("expected NotFoundError, got: %T: %v", err, err)
+	}
+}
+
+func TestGetSingleton_DoesNotCallReconfigure(t *testing.T) {
+	var reconfigureCalled atomic.Bool
+	server := newCRUDTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/test/getSettings":
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"settings":{"name":"frr"}}`))
+		case "/api/test/service/reconfigure":
+			reconfigureCalled.Store(true)
+			w.WriteHeader(http.StatusOK)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
+	defer server.Close()
+
+	client := newCRUDTestClient(t, server.URL)
+	opts := testSingletonReqOpts()
+
+	_, err := GetSingleton[testResource](context.Background(), client, opts)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+	if reconfigureCalled.Load() {
+		t.Error("GetSingleton should NOT call reconfigure — it's read-only")
+	}
+}
+
+func TestUpdateSingleton_Success(t *testing.T) {
+	var reconfigureCalled atomic.Bool
+	var requestPath string
+	var receivedBody string
+	server := newCRUDTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/test/setSettings":
+			requestPath = r.URL.Path
+			body, _ := io.ReadAll(r.Body)
+			receivedBody = string(body)
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"result":"saved"}`))
+		case "/api/test/service/reconfigure":
+			reconfigureCalled.Store(true)
+			w.WriteHeader(http.StatusOK)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
+	defer server.Close()
+
+	client := newCRUDTestClient(t, server.URL)
+	opts := testSingletonReqOpts()
+	res := &testResource{Name: "frr-updated"}
+
+	err := UpdateSingleton(context.Background(), client, opts, res)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+	// Singleton SET must NOT append a UUID segment.
+	if requestPath != "/api/test/setSettings" {
+		t.Errorf("expected exact path without UUID, got: %s", requestPath)
+	}
+	// Verify monad wrapping.
+	var parsed map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(receivedBody), &parsed); err != nil {
+		t.Fatalf("failed to parse request body: %v", err)
+	}
+	if _, ok := parsed["settings"]; !ok {
+		t.Error("expected request body wrapped in monad key 'settings'")
+	}
+	if !reconfigureCalled.Load() {
+		t.Error("expected reconfigure to be called after UpdateSingleton")
+	}
+}
+
+func TestUpdateSingleton_ValidationError(t *testing.T) {
+	server := newCRUDTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/test/setSettings":
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"result":"failed","validations":{"asnumber":"invalid value"}}`))
+		case "/api/test/service/reconfigure":
+			w.WriteHeader(http.StatusOK)
+		}
+	})
+	defer server.Close()
+
+	client := newCRUDTestClient(t, server.URL)
+	opts := testSingletonReqOpts()
+	res := &testResource{Name: "frr"}
+
+	err := UpdateSingleton(context.Background(), client, opts, res)
+	if err == nil {
+		t.Fatal("expected ValidationError, got nil")
+	}
+	var validErr *ValidationError
+	if !errors.As(err, &validErr) {
+		t.Fatalf("expected ValidationError, got: %T: %v", err, err)
+	}
+	if validErr.Fields["asnumber"] != "invalid value" {
+		t.Errorf("expected asnumber validation, got: %v", validErr.Fields)
+	}
+}
+
 // --- Test helpers ---
+
+func testSingletonReqOpts() ReqOpts {
+	return ReqOpts{
+		GetEndpoint:         "/api/test/getSettings",
+		UpdateEndpoint:      "/api/test/setSettings",
+		ReconfigureEndpoint: "/api/test/service/reconfigure",
+		Monad:               "settings",
+	}
+}
 
 func testReqOpts() ReqOpts {
 	return ReqOpts{

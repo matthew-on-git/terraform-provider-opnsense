@@ -13,7 +13,7 @@ jobs:
     name: DevRail Check (lint, format, test, security, scan, docs)
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/devrail-dev/dev-toolchain:1.8.1
+      image: ghcr.io/devrail-dev/dev-toolchain:1.12.0
     steps:
       - uses: actions/checkout@v4
       - name: Run all checks
@@ -23,7 +23,7 @@ jobs:
     name: Generated Code Check
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/devrail-dev/dev-toolchain:1.8.1
+      image: ghcr.io/devrail-dev/dev-toolchain:1.12.0
     steps:
       - uses: actions/checkout@v4
       - name: Run go generate and verify no uncommitted changes
