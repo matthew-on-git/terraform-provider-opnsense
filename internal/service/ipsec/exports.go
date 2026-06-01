@@ -16,6 +16,7 @@ func Resources() []func() resource.Resource {
 		newChildResource,
 		newPSKResource,
 		newPoolResource,
+		newVTIResource,
 	}
 }
 

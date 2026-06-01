@@ -20,3 +20,27 @@ resources:
       - {name: Name, tf: name, json: name, type: string, required: true, test_value: '"tfaccpool"', desc: "Unique pool name."}
       - {name: Addresses, tf: addresses, json: addrs, type: string, required: true, test_value: '"10.20.30.0/24"', desc: "Address subnet handed out by this pool (CIDR)."}
       - {name: DNS, tf: dns, json: dns, type: selectmaplist, desc: "DNS servers offered to clients from this pool."}
+
+  - name: vti
+    go_type: VTI
+    type_name: ipsec_vti
+    title: an IPsec virtual tunnel interface (VTI)
+    kind: item
+    reconfigure: /api/ipsec/service/reconfigure
+    monad: vti
+    endpoints:
+      add: /api/ipsec/vti/add
+      get: /api/ipsec/vti/get
+      set: /api/ipsec/vti/set
+      del: /api/ipsec/vti/del
+      search: /api/ipsec/vti/search
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this VTI is enabled."}
+      - {name: ReqID, tf: req_id, json: reqid, type: int, required: true, test_value: "100", desc: "Unique request ID for this tunnel."}
+      - {name: Local, tf: local, json: local, type: string, required: true, test_value: '"192.168.56.10"', desc: "Local gateway IP address."}
+      - {name: Remote, tf: remote, json: remote, type: string, required: true, test_value: '"192.0.2.50"', desc: "Remote gateway IP address."}
+      - {name: TunnelLocal, tf: tunnel_local, json: tunnel_local, type: string, required: true, test_value: '"10.0.0.1"', desc: "Local tunnel (inside) IP address."}
+      - {name: TunnelRemote, tf: tunnel_remote, json: tunnel_remote, type: string, required: true, test_value: '"10.0.0.2"', desc: "Remote tunnel (inside) IP address."}
+      - {name: TunnelLocal2, tf: tunnel_local2, json: tunnel_local2, type: string, desc: "Optional second local tunnel IP address."}
+      - {name: TunnelRemote2, tf: tunnel_remote2, json: tunnel_remote2, type: string, desc: "Optional second remote tunnel IP address."}
+      - {name: Description, tf: description, json: description, type: string, default: "", test_value: '"tf-acc-vti"', desc: "Description."}
