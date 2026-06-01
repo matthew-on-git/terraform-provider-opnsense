@@ -1,0 +1,31 @@
+# Firewall MVC resources generated into internal/service/firewall.
+# (alias/category/filter_rule/nat_outbound/nat_port_forward remain hand-written.)
+package: firewall
+resources:
+  - name: nat_one_to_one
+    go_type: NatOneToOne
+    type_name: firewall_nat_one_to_one
+    title: a one-to-one (1:1) NAT rule
+    kind: item
+    reconfigure: /api/firewall/one_to_one/apply
+    monad: rule
+    endpoints:
+      add: /api/firewall/one_to_one/add_rule
+      get: /api/firewall/one_to_one/get_rule
+      set: /api/firewall/one_to_one/set_rule
+      del: /api/firewall/one_to_one/del_rule
+      search: /api/firewall/one_to_one/search_rule
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this rule is enabled."}
+      - {name: Log, tf: log, json: log, type: bool, default: "false", desc: "Log packets matched by this rule."}
+      - {name: Sequence, tf: sequence, json: sequence, type: int, default: "1", desc: "Rule evaluation order."}
+      - {name: Interface, tf: interface, json: interface, type: selectmap, required: true, test_value: '"wan"', desc: "Interface this rule applies to."}
+      - {name: Type, tf: type, json: type, type: selectmap, desc: "NAT type: binat or nat (defaults to binat)."}
+      - {name: External, tf: external, json: external, type: string, required: true, test_value: '"192.0.2.10"', desc: "External (public) IP address."}
+      - {name: SourceNet, tf: source_net, json: source_net, type: string, required: true, test_value: '"10.8.8.10"', desc: "Internal source network/host."}
+      - {name: SourceNot, tf: source_not, json: source_not, type: bool, default: "false", desc: "Invert the source match."}
+      - {name: DestinationNet, tf: destination_net, json: destination_net, type: string, default: "any", desc: "Destination network/host."}
+      - {name: DestinationNot, tf: destination_not, json: destination_not, type: bool, default: "false", desc: "Invert the destination match."}
+      - {name: NatReflection, tf: nat_reflection, json: natreflection, type: selectmap, desc: "NAT reflection mode (default, enable, disable)."}
+      - {name: Categories, tf: categories, json: categories, type: selectmaplist, desc: "Firewall category UUIDs."}
+      - {name: Description, tf: description, json: description, type: string, default: "", test_value: '"tf-acc-1to1"', desc: "Description."}

@@ -17,6 +17,7 @@ func Resources() []func() resource.Resource {
 		newFilterRuleResource,
 		newNatPortForwardResource,
 		newNatOutboundResource,
+		newNatOneToOneResource,
 	}
 }
 

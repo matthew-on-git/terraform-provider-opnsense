@@ -181,9 +181,9 @@ development_status:
   17-7-interface-neighbor-resource: done   # opnsense_interface_neighbor (generated, live-validated)
 
   # Epic 18: Firewall Completion
-  epic-18: backlog
-  18-1-firewall-source-nat-resource: backlog
-  18-2-firewall-one-to-one-nat-resource: backlog
+  epic-18: done
+  18-1-firewall-source-nat-resource: done   # already shipped as opnsense_firewall_nat_outbound (source_nat controller)
+  18-2-firewall-one-to-one-nat-resource: done   # opnsense_firewall_nat_one_to_one (generated, live-validated)
 
   # Epic 19: Dynamic Routing Completion (FRR) — depends on Epic 13
   epic-19: done
