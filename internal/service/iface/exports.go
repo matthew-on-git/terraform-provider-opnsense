@@ -14,6 +14,7 @@ func Resources() []func() resource.Resource {
 	return []func() resource.Resource{
 		newLoopbackResource,
 		newVxlanResource,
+		newNeighborResource,
 	}
 }
 

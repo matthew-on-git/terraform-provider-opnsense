@@ -38,3 +38,21 @@ resources:
       - {name: Remote, tf: remote, json: vxlanremote, type: string, test_value: '"192.0.2.50"', desc: "Remote peer IP (unicast mode)."}
       - {name: Group, tf: group, json: vxlangroup, type: string, desc: "Multicast group IP (multicast mode)."}
       - {name: Device, tf: device, json: vxlandev, type: selectmap, desc: "Underlying interface."}
+
+  - name: neighbor
+    go_type: Neighbor
+    type_name: interface_neighbor
+    title: a static ARP/NDP neighbor
+    kind: item
+    reconfigure: /api/interfaces/neighbor_settings/reconfigure
+    monad: neighbor
+    endpoints:
+      add: /api/interfaces/neighbor_settings/add_item
+      get: /api/interfaces/neighbor_settings/get_item
+      set: /api/interfaces/neighbor_settings/set_item
+      del: /api/interfaces/neighbor_settings/del_item
+      search: /api/interfaces/neighbor_settings/search_item
+    fields:
+      - {name: MAC, tf: mac, json: etheraddr, type: string, required: true, test_value: '"00:11:22:33:44:55"', desc: "MAC (ethernet) address."}
+      - {name: IPAddress, tf: ip_address, json: ipaddress, type: string, required: true, test_value: '"192.0.2.5"', desc: "IP address for the static entry."}
+      - {name: Description, tf: description, json: descr, type: string, desc: "Description."}
