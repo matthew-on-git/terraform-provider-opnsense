@@ -216,7 +216,7 @@ development_status:
 
   # Epic 22: DNS Completion (Unbound extensions; optional dnsmasq)
   epic-22: backlog
-  22-1-unbound-general-settings-resource: backlog
+  22-1-unbound-general-settings-resource: done   # opnsense_unbound_general singleton (codegen via dotted monad unbound.general, live-validated)
   22-2-unbound-forward-resource: backlog
   22-3-unbound-host-alias-resource: backlog
   22-4-unbound-blocklist-resource: backlog
