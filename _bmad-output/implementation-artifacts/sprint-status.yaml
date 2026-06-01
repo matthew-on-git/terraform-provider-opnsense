@@ -142,7 +142,7 @@ development_status:
   epic-12: backlog
   12-1-remaining-data-sources: done   # codegen emits a data source per item resource (32) + hand-written opnsense_system_info; provider DataSources() aggregates all packages; live-validated
   12-2-provider-index-documentation: backlog
-  12-3-composition-examples: backlog
+  12-3-composition-examples: done   # 6 compositions in examples/compositions/ (customer-onboarding, haproxy-full-stack, bgp-peering, firewall-baseline, wireguard-vpn, dns-management); fmt-clean + terraform-validate against the real provider schema
   12-4-ci-cd-pipeline-and-registry-release: backlog
   12-5-changelog-and-v0-1-0-release: backlog
   epic-12-retrospective: optional
