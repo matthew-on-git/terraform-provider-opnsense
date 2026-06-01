@@ -37,7 +37,7 @@ type pipeAPIResponse struct {
 
 type pipeAPIRequest struct {
 	Enabled         string `json:"enabled"`
-	Number          string `json:"number"`
+	Number          string `json:"number,omitempty"`
 	Bandwidth       string `json:"bandwidth"`
 	BandwidthMetric string `json:"bandwidthMetric"`
 	Mask            string `json:"mask,omitempty"`
@@ -48,7 +48,7 @@ type pipeAPIRequest struct {
 func (m *PipeResourceModel) toAPI(_ context.Context) *pipeAPIRequest {
 	return &pipeAPIRequest{
 		Enabled:         opnsense.BoolToString(m.Enabled.ValueBool()),
-		Number:          opnsense.Int64ToString(m.Number.ValueInt64()),
+		Number:          tfconv.IntOrEmpty(m.Number.ValueInt64()),
 		Bandwidth:       opnsense.Int64ToString(m.Bandwidth.ValueInt64()),
 		BandwidthMetric: m.BandwidthMetric.ValueString(),
 		Mask:            m.Mask.ValueString(),

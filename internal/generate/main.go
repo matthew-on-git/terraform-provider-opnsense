@@ -189,14 +189,11 @@ func schemaImports(r *Resource) string {
 			add[`"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"`] = true
 		case "int":
 			if !f.Required {
-				add[`"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"`] = true
+				add[`"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"`] = true
 			}
 		case "selectmaplist", "csvset":
 			add[pkgTypes] = true
 		case "string", "selectmap":
-			if !f.Required {
-				add[`"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"`] = true
-			}
 			if len(f.Options) > 0 {
 				add[`"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"`] = true
 				add[`"github.com/hashicorp/terraform-plugin-framework/schema/validator"`] = true
@@ -364,11 +361,10 @@ func schemaAttr(f Field) string {
 		if f.Required {
 			fmt.Fprintf(&b, "%q: schema.Int64Attribute{Required: true, MarkdownDescription: %q},", f.TF, f.Desc)
 		} else {
-			d := f.Default
-			if d == "" {
-				d = "0"
-			}
-			fmt.Fprintf(&b, "%q: schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(%s), MarkdownDescription: %q},", f.TF, d, f.Desc)
+			// Optional + Computed with no static default: OPNsense assigns/normalizes
+			// these (and ,omitempty drops them when unset), so UseStateForUnknown
+			// avoids "inconsistent result after apply".
+			fmt.Fprintf(&b, "%q: schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: %q, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},", f.TF, f.Desc)
 		}
 	case "selectmaplist", "csvset":
 		fmt.Fprintf(&b, "%q: schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, MarkdownDescription: %q},", f.TF, f.Desc)
@@ -376,7 +372,7 @@ func schemaAttr(f Field) string {
 		if f.Required {
 			fmt.Fprintf(&b, "%q: schema.StringAttribute{Required: true, MarkdownDescription: %q", f.TF, f.Desc)
 		} else {
-			fmt.Fprintf(&b, "%q: schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(%q), MarkdownDescription: %q", f.TF, f.Default, f.Desc)
+			fmt.Fprintf(&b, "%q: schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: %q, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}", f.TF, f.Desc)
 		}
 		if len(f.Options) > 0 {
 			quoted := make([]string, len(f.Options))

@@ -10,9 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -30,9 +29,9 @@ func (r *alertResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			"recipient":   schema.StringAttribute{Required: true, MarkdownDescription: "Email recipient."},
 			"not_on":      schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Invert the event filter (alert on all except selected)."},
 			"events":      schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, MarkdownDescription: "Events to alert on (empty = all)."},
-			"format":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Custom alert message format."},
-			"reminder":    schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0), MarkdownDescription: "Reminder interval in cycles (0 = unset)."},
-			"description": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Description."},
+			"format":      schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Custom alert message format.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"reminder":    schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "Reminder interval in cycles (0 = unset).", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"description": schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Description.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }

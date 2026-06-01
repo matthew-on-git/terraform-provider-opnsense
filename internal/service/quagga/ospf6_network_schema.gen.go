@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
@@ -28,7 +27,7 @@ func (r *ospf6NetworkResource) Schema(_ context.Context, _ resource.SchemaReques
 			"ip_address": schema.StringAttribute{Required: true, MarkdownDescription: "Network address."},
 			"netmask":    schema.Int64Attribute{Required: true, MarkdownDescription: "Netmask bits."},
 			"area":       schema.StringAttribute{Required: true, MarkdownDescription: "OSPFv3 area."},
-			"area_range": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Optional area range summarization."},
+			"area_range": schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Optional area range summarization.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }

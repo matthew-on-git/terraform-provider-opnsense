@@ -30,7 +30,6 @@ func TestAccPipe_basic(t *testing.T) {
 
 const testAccPipeConfig = `
 resource "opnsense_trafficshaper_pipe" "test" {
-  number = 1
   bandwidth = 1
   bandwidth_metric = "Mbit"
   description = "tf-acc-pipe"

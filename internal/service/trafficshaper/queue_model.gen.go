@@ -35,7 +35,7 @@ type queueAPIResponse struct {
 
 type queueAPIRequest struct {
 	Enabled     string `json:"enabled"`
-	Number      string `json:"number"`
+	Number      string `json:"number,omitempty"`
 	Pipe        string `json:"pipe"`
 	Weight      string `json:"weight"`
 	Mask        string `json:"mask,omitempty"`
@@ -45,7 +45,7 @@ type queueAPIRequest struct {
 func (m *QueueResourceModel) toAPI(_ context.Context) *queueAPIRequest {
 	return &queueAPIRequest{
 		Enabled:     opnsense.BoolToString(m.Enabled.ValueBool()),
-		Number:      opnsense.Int64ToString(m.Number.ValueInt64()),
+		Number:      tfconv.IntOrEmpty(m.Number.ValueInt64()),
 		Pipe:        m.Pipe.ValueString(),
 		Weight:      opnsense.Int64ToString(m.Weight.ValueInt64()),
 		Mask:        m.Mask.ValueString(),

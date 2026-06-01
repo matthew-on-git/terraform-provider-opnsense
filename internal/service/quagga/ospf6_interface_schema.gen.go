@@ -10,9 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
@@ -29,11 +28,11 @@ func (r *ospf6InterfaceResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"interface":      schema.StringAttribute{Required: true, MarkdownDescription: "Interface name."},
 			"area":           schema.StringAttribute{Required: true, MarkdownDescription: "OSPFv3 area."},
 			"passive":        schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Mark interface passive."},
-			"cost":           schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0), MarkdownDescription: "Interface cost (0 = auto)."},
-			"hello_interval": schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0), MarkdownDescription: "Hello interval in seconds (0 = default)."},
-			"dead_interval":  schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0), MarkdownDescription: "Dead interval in seconds (0 = default)."},
-			"priority":       schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0), MarkdownDescription: "Router priority (0 = default)."},
-			"network_type":   schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "OSPFv3 network type."},
+			"cost":           schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "Interface cost (0 = auto).", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"hello_interval": schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "Hello interval in seconds (0 = default).", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"dead_interval":  schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "Dead interval in seconds (0 = default).", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"priority":       schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "Router priority (0 = default).", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"network_type":   schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "OSPFv3 network type.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"bfd":            schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Enable BFD on this interface."},
 		},
 	}

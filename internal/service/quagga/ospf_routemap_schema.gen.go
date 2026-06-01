@@ -11,9 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
@@ -30,8 +29,8 @@ func (r *ospfRoutemapResource) Schema(_ context.Context, _ resource.SchemaReques
 			"enabled":      schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether this route map is enabled."},
 			"name":         schema.StringAttribute{Required: true, MarkdownDescription: "Route map name."},
 			"action":       schema.StringAttribute{Required: true, MarkdownDescription: "Action: permit or deny.", Validators: []validator.String{stringvalidator.OneOf("permit", "deny")}},
-			"route_map_id": schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0), MarkdownDescription: "Order/ID (0 = unset)."},
-			"set":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Set clause."},
+			"route_map_id": schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "Order/ID (0 = unset).", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"set":          schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Set clause.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }

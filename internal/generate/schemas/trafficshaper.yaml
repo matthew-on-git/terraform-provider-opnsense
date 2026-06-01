@@ -16,7 +16,7 @@ resources:
       search: /api/trafficshaper/settings/search_pipe
     fields:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this pipe is enabled."}
-      - {name: Number, tf: number, json: number, type: int, required: true, desc: "Pipe number (unique)."}
+      - {name: Number, tf: number, json: number, type: int, desc: "Pipe number (auto-assigned by OPNsense)."}
       - {name: Bandwidth, tf: bandwidth, json: bandwidth, type: int, required: true, desc: "Bandwidth value."}
       - {name: BandwidthMetric, tf: bandwidth_metric, json: bandwidthMetric, type: selectmap, required: true, test_value: '"Mbit"', desc: "Bandwidth unit: bit, Kbit, Mbit, Gbit."}
       - {name: Mask, tf: mask, json: mask, type: selectmap, default: "none", desc: "Dynamic pipe mask: none, src-ip, dst-ip."}
@@ -38,7 +38,7 @@ resources:
       search: /api/trafficshaper/settings/search_queue
     fields:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this queue is enabled."}
-      - {name: Number, tf: number, json: number, type: int, required: true, desc: "Queue number (unique)."}
+      - {name: Number, tf: number, json: number, type: int, desc: "Queue number (auto-assigned by OPNsense)."}
       - {name: Pipe, tf: pipe, json: pipe, type: selectmap, required: true, desc: "UUID of the parent pipe."}
       - {name: Weight, tf: weight, json: weight, type: int, required: true, desc: "Queue weight (1-100)."}
       - {name: Mask, tf: mask, json: mask, type: selectmap, default: "none", desc: "Dynamic queue mask: none, src-ip, dst-ip."}

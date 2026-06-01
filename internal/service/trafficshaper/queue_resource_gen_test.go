@@ -30,7 +30,6 @@ func TestAccQueue_basic(t *testing.T) {
 
 const testAccQueueConfig = `
 resource "opnsense_trafficshaper_queue" "test" {
-  number = 1
   pipe = "test"
   weight = 1
 }

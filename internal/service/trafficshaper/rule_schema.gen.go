@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
@@ -28,15 +27,15 @@ func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"sequence":         schema.Int64Attribute{Required: true, MarkdownDescription: "Rule evaluation order."},
 			"interface":        schema.StringAttribute{Required: true, MarkdownDescription: "Interface to match."},
 			"protocol":         schema.StringAttribute{Required: true, MarkdownDescription: "Protocol to match (e.g. ip, tcp, udp)."},
-			"source":           schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("any"), MarkdownDescription: "Source network/host."},
+			"source":           schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Source network/host.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"source_not":       schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Invert the source match."},
-			"source_port":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Source port (empty = any)."},
-			"destination":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("any"), MarkdownDescription: "Destination network/host."},
+			"source_port":      schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Source port (empty = any).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"destination":      schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Destination network/host.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"destination_not":  schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Invert the destination match."},
-			"destination_port": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Destination port (empty = any)."},
-			"direction":        schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Traffic direction (empty = both)."},
+			"destination_port": schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Destination port (empty = any).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"direction":        schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Traffic direction (empty = both).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"target":           schema.StringAttribute{Required: true, MarkdownDescription: "UUID of the target pipe or queue."},
-			"description":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Description."},
+			"description":      schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Description.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }

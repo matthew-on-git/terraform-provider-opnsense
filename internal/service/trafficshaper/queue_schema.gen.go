@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
@@ -25,11 +25,11 @@ func (r *queueResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"enabled":     schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether this queue is enabled."},
-			"number":      schema.Int64Attribute{Required: true, MarkdownDescription: "Queue number (unique)."},
+			"number":      schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "Queue number (auto-assigned by OPNsense).", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"pipe":        schema.StringAttribute{Required: true, MarkdownDescription: "UUID of the parent pipe."},
 			"weight":      schema.Int64Attribute{Required: true, MarkdownDescription: "Queue weight (1-100)."},
-			"mask":        schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("none"), MarkdownDescription: "Dynamic queue mask: none, src-ip, dst-ip."},
-			"description": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Description."},
+			"mask":        schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Dynamic queue mask: none, src-ip, dst-ip.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"description": schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Description.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }
