@@ -155,7 +155,10 @@ func renderImports(stdlib, framework, local []string) string {
 }
 
 func modelImports(r *Resource) string {
-	local := []string{pkgOpnsense}
+	var local []string
+	if usesOpnsense(r) {
+		local = append(local, pkgOpnsense)
+	}
 	if hasSet(r) || hasInt(r) {
 		local = append(local, pkgTfconv)
 	}
@@ -169,6 +172,21 @@ func modelImports(r *Resource) string {
 func hasInt(r *Resource) bool {
 	for _, f := range r.Fields {
 		if f.Type == "int" {
+			return true
+		}
+	}
+	return false
+}
+
+// usesOpnsense reports whether the model code references the opnsense package
+// (bool conversions, or Int64ToString for a required int). Other types use
+// tfconv or builtins, so importing opnsense unconditionally would be unused.
+func usesOpnsense(r *Resource) bool {
+	for _, f := range r.Fields {
+		switch {
+		case f.Type == "bool", f.Type == "selectmap", f.Type == "selectmaplist", f.Type == "csvset":
+			return true
+		case f.Type == "int" && f.Required:
 			return true
 		}
 	}

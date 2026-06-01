@@ -1,0 +1,19 @@
+# Interface types (bridge, lagg, gre, gif, vxlan, loopback, neighbor). Core module.
+package: iface
+resources:
+  - name: loopback
+    go_type: Loopback
+    type_name: interface_loopback
+    title: a loopback interface
+    kind: item
+    reconfigure: /api/interfaces/loopback_settings/reconfigure
+    monad: loopback
+    endpoints:
+      add: /api/interfaces/loopback_settings/add_item
+      get: /api/interfaces/loopback_settings/get_item
+      set: /api/interfaces/loopback_settings/set_item
+      del: /api/interfaces/loopback_settings/del_item
+      search: /api/interfaces/loopback_settings/search_item
+    fields:
+      - {name: DeviceID, tf: device_id, json: deviceId, type: int, desc: "Loopback device number (auto-assigned by OPNsense)."}
+      - {name: Description, tf: description, json: description, type: string, required: true, test_value: '"tf-acc-loopback"', desc: "Description."}
