@@ -20,3 +20,32 @@ resources:
       - {name: Privileges, tf: privileges, json: priv, type: selectmaplist, desc: "Assigned privilege identifiers."}
       - {name: Members, tf: members, json: member, type: selectmaplist, desc: "Member user UUIDs."}
       - {name: SourceNetworks, tf: source_networks, json: source_networks, type: selectmaplist, desc: "Restrict logins to these networks (CIDR)."}
+
+  - name: user
+    go_type: User
+    type_name: auth_user
+    title: a local user
+    kind: item
+    reconfigure: ""
+    monad: user
+    endpoints:
+      add: /api/auth/user/add
+      get: /api/auth/user/get
+      set: /api/auth/user/set
+      del: /api/auth/user/del
+      search: /api/auth/user/search
+    fields:
+      - {name: UID, tf: uid, json: uid, type: int, desc: "Numeric user ID (auto-assigned by OPNsense)."}
+      - {name: Name, tf: name, json: name, type: string, required: true, test_value: '"tfaccuser"', desc: "Login name (unique)."}
+      - {name: Password, tf: password, json: password, type: string, required: true, sensitive: true, write_only: true, test_value: '"Tf-acc-P@ssw0rd1"', desc: "User password (write-only; never read back from the API)."}
+      - {name: Disabled, tf: disabled, json: disabled, type: bool, default: "false", desc: "Whether this account is disabled."}
+      - {name: Shell, tf: shell, json: shell, type: selectmap, desc: "Login shell."}
+      - {name: FullName, tf: full_name, json: descr, type: string, default: "", desc: "Full name / description."}
+      - {name: Comment, tf: comment, json: comment, type: string, default: "", desc: "Comment."}
+      - {name: Email, tf: email, json: email, type: string, default: "", desc: "Email address."}
+      - {name: Expires, tf: expires, json: expires, type: string, default: "", desc: "Account expiry date (mm/dd/yyyy, empty = never)."}
+      - {name: LandingPage, tf: landing_page, json: landing_page, type: string, default: "", desc: "Page shown after login."}
+      - {name: AuthorizedKeys, tf: authorized_keys, json: authorizedkeys, type: string, default: "", desc: "Authorized SSH public keys."}
+      - {name: Privileges, tf: privileges, json: priv, type: selectmaplist, desc: "Assigned privilege identifiers."}
+      - {name: Language, tf: language, json: language, type: selectmap, desc: "Preferred GUI language."}
+      - {name: GroupMemberships, tf: group_memberships, json: group_memberships, type: selectmaplist, desc: "Group UUIDs the user belongs to."}

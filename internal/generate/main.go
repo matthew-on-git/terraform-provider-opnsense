@@ -35,6 +35,12 @@ type Field struct {
 	// this field (e.g. `"permit"`, `["ipv4"]`, `65010`). Required for required
 	// selectmap/set fields, which have no sensible auto value.
 	TestValue string `yaml:"test_value"`
+	// Sensitive marks the schema attribute Sensitive (value redacted in plan output).
+	Sensitive bool `yaml:"sensitive"`
+	// WriteOnly marks a secret the API never echoes back: it is sent on
+	// create/update but skipped in fromAPI (state keeps the configured value) and
+	// added to ImportStateVerifyIgnore in the generated test.
+	WriteOnly bool `yaml:"write_only"`
 }
 
 // Resource describes a single generated resource.
@@ -275,17 +281,18 @@ func testFieldsHCL(r *Resource) string {
 // --- template helpers ---
 
 var funcs = template.FuncMap{
-	"camel":       camelName,
-	"goType":      goType,
-	"respType":    respType,
-	"toAPI":       toAPILine,
-	"fromAPI":     fromAPILine,
-	"schemaAttr":  schemaAttr,
-	"isItem":      func(r *Resource) bool { return r.Kind == "item" },
-	"isSingleton": func(r *Resource) bool { return r.Kind == "singleton" },
-	"hasSet":      hasSet,
-	"testFields":  testFieldsHCL,
-	"reqTag":      reqTag,
+	"camel":        camelName,
+	"goType":       goType,
+	"respType":     respType,
+	"toAPI":        toAPILine,
+	"fromAPI":      fromAPILine,
+	"schemaAttr":   schemaAttr,
+	"importIgnore": importIgnore,
+	"isItem":       func(r *Resource) bool { return r.Kind == "item" },
+	"isSingleton":  func(r *Resource) bool { return r.Kind == "singleton" },
+	"hasSet":       hasSet,
+	"testFields":   testFieldsHCL,
+	"reqTag":       reqTag,
 }
 
 // reqTag builds the request struct json tag. Optional, non-bool fields get
@@ -350,6 +357,12 @@ func toAPILine(f Field) string {
 }
 
 func fromAPILine(f Field) string {
+	if f.WriteOnly {
+		// Write-only secret: the API never returns it, so keep the value already
+		// in the model (the configured plan value on create/update, prior state on
+		// read) instead of clobbering it with the empty API response.
+		return fmt.Sprintf("// %s is write-only; preserved from configuration (API never returns it).", f.Name)
+	}
 	switch f.Type {
 	case "bool":
 		return fmt.Sprintf("m.%s = types.BoolValue(opnsense.StringToBool(a.%s))", f.Name, f.Name)
@@ -399,9 +412,27 @@ func schemaAttr(f Field) string {
 			}
 			fmt.Fprintf(&b, ", Validators: []validator.String{stringvalidator.OneOf(%s)}", strings.Join(quoted, ", "))
 		}
+		if f.Sensitive {
+			b.WriteString(", Sensitive: true")
+		}
 		b.WriteString("},")
 	}
 	return b.String()
+}
+
+// importIgnore renders the ImportStateVerifyIgnore clause for a resource's
+// write-only fields, or an empty string when there are none.
+func importIgnore(r *Resource) string {
+	var names []string
+	for _, f := range r.Fields {
+		if f.WriteOnly {
+			names = append(names, fmt.Sprintf("%q", f.TF))
+		}
+	}
+	if len(names) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("ImportStateVerifyIgnore: []string{%s}, ", strings.Join(names, ", "))
 }
 
 func init() {

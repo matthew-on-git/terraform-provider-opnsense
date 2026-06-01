@@ -167,7 +167,7 @@ development_status:
 
   # Epic 16: Users & Access
   epic-16: in-progress
-  16-1-auth-user-resource: backlog
+  16-1-auth-user-resource: done   # opnsense_auth_user (codegen; sensitive+write_only password via new generator flags, live-validated)
   16-2-auth-group-resource: done   # opnsense_auth_group (generated, live-validated)
 
   # Epic 17: Interface Types

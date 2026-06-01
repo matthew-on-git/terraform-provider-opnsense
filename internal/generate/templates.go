@@ -42,7 +42,7 @@ func TestAcc{{.R.GoType}}_basic(t *testing.T) {
 				Config: testAcc{{.R.GoType}}Config,
 				Check:  resource.TestCheckResourceAttrSet("opnsense_{{.R.TypeName}}.test", "id"),
 			},
-			{ResourceName: "opnsense_{{.R.TypeName}}.test", ImportState: true, {{if isSingleton .R}}ImportStateId: "{{.R.ID}}", {{end}}ImportStateVerify: true},
+			{ResourceName: "opnsense_{{.R.TypeName}}.test", ImportState: true, {{if isSingleton .R}}ImportStateId: "{{.R.ID}}", {{end}}{{importIgnore .R}}ImportStateVerify: true},
 		},
 	})
 }
