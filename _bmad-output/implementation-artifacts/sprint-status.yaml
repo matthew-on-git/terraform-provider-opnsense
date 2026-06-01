@@ -144,7 +144,7 @@ development_status:
   12-2-provider-index-documentation: done   # templates/index.md.tmpl + examples/provider/provider.tf; tfplugindocs generates docs/index.md + 90 resource + 34 data-source pages; //go:generate directive added
   12-3-composition-examples: done   # 6 compositions in examples/compositions/ (customer-onboarding, haproxy-full-stack, bgp-peering, firewall-baseline, wireguard-vpn, dns-management); fmt-clean + terraform-validate against the real provider schema
   12-4-ci-cd-pipeline-and-registry-release: done   # release.yml (GoReleaser+GPG on v* tags), acceptance.yml (workflow_dispatch, live box), test/scripts/validate-structure.sh wired into CI generate-check; docs gen already wired via tools/tools.go
-  12-5-changelog-and-v0-1-0-release: backlog
+  12-5-changelog-and-v0-1-0-release: in-progress   # CHANGELOG.md v0.1.0 (TF format, 90 resources + 34 data sources) DONE; live publish (GPG secrets + v0.1.0 tag push + Registry account link) PENDING user
   epic-12-retrospective: optional
 
   # === EXPANDED SCOPE (feature-complete-roadmap.md, 2026-05-29) ===
