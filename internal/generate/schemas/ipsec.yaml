@@ -44,3 +44,25 @@ resources:
       - {name: TunnelLocal2, tf: tunnel_local2, json: tunnel_local2, type: string, desc: "Optional second local tunnel IP address."}
       - {name: TunnelRemote2, tf: tunnel_remote2, json: tunnel_remote2, type: string, desc: "Optional second remote tunnel IP address."}
       - {name: Description, tf: description, json: description, type: string, default: "", test_value: '"tf-acc-vti"', desc: "Description."}
+
+  - name: manual_spd
+    go_type: ManualSPD
+    type_name: ipsec_manual_spd
+    title: an IPsec manual security policy (SPD)
+    kind: item
+    reconfigure: /api/ipsec/service/reconfigure
+    monad: spd
+    endpoints:
+      add: /api/ipsec/manual_spd/add
+      get: /api/ipsec/manual_spd/get
+      set: /api/ipsec/manual_spd/set
+      del: /api/ipsec/manual_spd/del
+      search: /api/ipsec/manual_spd/search
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this SPD entry is enabled."}
+      - {name: Protocol, tf: protocol, json: protocol, type: selectmap, desc: "Security protocol: esp or ah (defaults to esp)."}
+      - {name: ReqID, tf: req_id, json: reqid, type: int, required: true, test_value: "100", desc: "Request ID linking this policy to a tunnel."}
+      - {name: ConnectionChild, tf: connection_child, json: connection_child, type: selectmap, desc: "UUID of an associated connection child (optional)."}
+      - {name: Source, tf: source, json: source, type: string, required: true, test_value: '"10.1.0.0/24"', desc: "Source network (CIDR)."}
+      - {name: Destination, tf: destination, json: destination, type: string, required: true, test_value: '"10.2.0.0/24"', desc: "Destination network (CIDR)."}
+      - {name: Description, tf: description, json: description, type: string, default: "", test_value: '"tf-acc-spd"', desc: "Description."}
