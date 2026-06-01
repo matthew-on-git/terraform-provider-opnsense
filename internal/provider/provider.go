@@ -32,6 +32,7 @@ import (
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/syslog"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/system"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/trafficshaper"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/trust"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/unbound"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/wireguard"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
@@ -254,6 +255,7 @@ func (p *OpnsenseProvider) Resources(_ context.Context) []func() resource.Resour
 	resources = append(resources, syslog.Resources()...)
 	resources = append(resources, cron.Resources()...)
 	resources = append(resources, monit.Resources()...)
+	resources = append(resources, trust.Resources()...)
 	return resources
 }
 
