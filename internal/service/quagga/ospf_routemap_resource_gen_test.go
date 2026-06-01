@@ -31,6 +31,6 @@ func TestAccOSPFRouteMap_basic(t *testing.T) {
 const testAccOSPFRouteMapConfig = `
 resource "opnsense_quagga_ospf_routemap" "test" {
   name = "test"
-  action = "test"
+  action = "permit"
 }
 `

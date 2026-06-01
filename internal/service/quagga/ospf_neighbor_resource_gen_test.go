@@ -30,6 +30,6 @@ func TestAccOSPFNeighbor_basic(t *testing.T) {
 
 const testAccOSPFNeighborConfig = `
 resource "opnsense_quagga_ospf_neighbor" "test" {
-  address = "test"
+  address = "192.0.2.10"
 }
 `

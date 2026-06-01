@@ -27,7 +27,7 @@ func (r *ospfNetworkResource) Schema(_ context.Context, _ resource.SchemaRequest
 			},
 			"enabled":    schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether this network is enabled."},
 			"ip_address": schema.StringAttribute{Required: true, MarkdownDescription: "Network address."},
-			"netmask":    schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0), MarkdownDescription: "Netmask bits (0 = unset)."},
+			"netmask":    schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0), MarkdownDescription: "Netmask bits."},
 			"area":       schema.StringAttribute{Required: true, MarkdownDescription: "OSPF area (e.g. 0.0.0.0)."},
 			"area_range": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Optional area range summarization."},
 		},

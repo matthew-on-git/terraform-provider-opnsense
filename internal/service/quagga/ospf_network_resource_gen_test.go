@@ -30,7 +30,8 @@ func TestAccOSPFNetwork_basic(t *testing.T) {
 
 const testAccOSPFNetworkConfig = `
 resource "opnsense_quagga_ospf_network" "test" {
-  ip_address = "test"
-  area = "test"
+  ip_address = "192.0.2.0"
+  netmask = 24
+  area = "0.0.0.0"
 }
 `

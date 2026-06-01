@@ -30,6 +30,6 @@ func TestAccOSPFRedistribution_basic(t *testing.T) {
 
 const testAccOSPFRedistributionConfig = `
 resource "opnsense_quagga_ospf_redistribution" "test" {
-  redistribute = "test"
+  redistribute = "connected"
 }
 `

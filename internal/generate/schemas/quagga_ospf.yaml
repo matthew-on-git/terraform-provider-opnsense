@@ -17,9 +17,9 @@ resources:
       search: /api/quagga/ospfsettings/search_network
     fields:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this network is enabled."}
-      - {name: IPAddress, tf: ip_address, json: ipaddr, type: string, required: true, desc: "Network address."}
-      - {name: Netmask, tf: netmask, json: netmask, type: int, default: "0", desc: "Netmask bits (0 = unset)."}
-      - {name: Area, tf: area, json: area, type: string, required: true, desc: "OSPF area (e.g. 0.0.0.0)."}
+      - {name: IPAddress, tf: ip_address, json: ipaddr, type: string, required: true, test_value: '"192.0.2.0"', desc: "Network address."}
+      - {name: Netmask, tf: netmask, json: netmask, type: int, default: "0", test_value: "24", desc: "Netmask bits."}
+      - {name: Area, tf: area, json: area, type: string, required: true, test_value: '"0.0.0.0"', desc: "OSPF area (e.g. 0.0.0.0)."}
       - {name: AreaRange, tf: area_range, json: arearange, type: string, desc: "Optional area range summarization."}
 
   - name: ospf_interface
@@ -62,7 +62,7 @@ resources:
     fields:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this neighbor is enabled."}
       - {name: Description, tf: description, json: description, type: string, desc: "Description."}
-      - {name: Address, tf: address, json: address, type: string, required: true, desc: "Neighbor IP address."}
+      - {name: Address, tf: address, json: address, type: string, required: true, test_value: '"192.0.2.10"', desc: "Neighbor IP address."}
       - {name: PollInterval, tf: poll_interval, json: pollinterval, type: int, default: "0", desc: "Poll interval in seconds (0 = default)."}
       - {name: Priority, tf: priority, json: priority, type: int, default: "0", desc: "Neighbor priority (0 = default)."}
 
@@ -82,9 +82,9 @@ resources:
     fields:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this entry is enabled."}
       - {name: Name, tf: name, json: name, type: string, required: true, desc: "Prefix list name."}
-      - {name: SeqNumber, tf: seq_number, json: seqnumber, type: int, required: true, desc: "Sequence number."}
-      - {name: Action, tf: action, json: action, type: selectmap, required: true, options: [permit, deny], desc: "Action: permit or deny."}
-      - {name: Network, tf: network, json: network, type: string, required: true, desc: "Network/CIDR to match."}
+      - {name: SeqNumber, tf: seq_number, json: seqnumber, type: int, required: true, test_value: "1", desc: "Sequence number."}
+      - {name: Action, tf: action, json: action, type: selectmap, required: true, options: [permit, deny], test_value: '"permit"', desc: "Action: permit or deny."}
+      - {name: Network, tf: network, json: network, type: string, required: true, test_value: '"192.0.2.0/24"', desc: "Network/CIDR to match."}
 
   - name: ospf_routemap
     go_type: OSPFRouteMap
@@ -102,7 +102,7 @@ resources:
     fields:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this route map is enabled."}
       - {name: Name, tf: name, json: name, type: string, required: true, desc: "Route map name."}
-      - {name: Action, tf: action, json: action, type: selectmap, required: true, options: [permit, deny], desc: "Action: permit or deny."}
+      - {name: Action, tf: action, json: action, type: selectmap, required: true, options: [permit, deny], test_value: '"permit"', desc: "Action: permit or deny."}
       - {name: RouteMapID, tf: route_map_id, json: id, type: int, default: "0", desc: "Order/ID (0 = unset)."}
       - {name: Set, tf: set, json: set, type: string, desc: "Set clause."}
 
@@ -122,5 +122,5 @@ resources:
     fields:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this redistribution is enabled."}
       - {name: Description, tf: description, json: description, type: string, desc: "Description."}
-      - {name: Redistribute, tf: redistribute, json: redistribute, type: selectmap, required: true, options: [connected, kernel, static, bgp, rip], desc: "Source to redistribute into OSPF."}
+      - {name: Redistribute, tf: redistribute, json: redistribute, type: selectmap, required: true, options: [connected, kernel, static, bgp, rip], test_value: '"connected"', desc: "Source to redistribute into OSPF."}
       - {name: RouteMap, tf: route_map, json: linkedRoutemap, type: selectmap, desc: "UUID of a route map to apply."}

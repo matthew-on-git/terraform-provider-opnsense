@@ -32,7 +32,7 @@ const testAccOSPFPrefixListConfig = `
 resource "opnsense_quagga_ospf_prefixlist" "test" {
   name = "test"
   seq_number = 1
-  action = "test"
-  network = "test"
+  action = "permit"
+  network = "192.0.2.0/24"
 }
 `
