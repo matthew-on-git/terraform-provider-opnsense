@@ -198,7 +198,7 @@ development_status:
   # --- Wave B (confirmed, second priority) ---
   # Epic 20: VPN Completion (IPsec extensions)
   epic-20: backlog
-  20-1-ipsec-local-resource: backlog
+  20-1-ipsec-local-resource: done   # opnsense_ipsec_local (hand-written, composition-tested; also fixed connection proposals/remote_addrs/version field-type bugs)
   20-2-ipsec-remote-resource: backlog
   20-3-ipsec-pool-resource: done   # opnsense_ipsec_pool (generated, live-validated)
   20-4-ipsec-vti-resource: done   # opnsense_ipsec_vti (generated, live-validated)

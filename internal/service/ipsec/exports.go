@@ -18,6 +18,7 @@ func Resources() []func() resource.Resource {
 		newPoolResource,
 		newVTIResource,
 		newManualSPDResource,
+		newLocalResource,
 	}
 }
 

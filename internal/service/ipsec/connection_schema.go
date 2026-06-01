@@ -47,8 +47,8 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"version": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Default:             stringdefault.StaticString("0"),
-				MarkdownDescription: "IKE version: `0` (auto), `1` (IKEv1), or `2` (IKEv2). Defaults to `0`.",
+				Default:             stringdefault.StaticString("2"),
+				MarkdownDescription: "IKE version: `0` (IKEv1+IKEv2), `1` (IKEv1), or `2` (IKEv2). Defaults to `2`.",
 				Validators:          []validator.String{stringvalidator.OneOf("0", "1", "2")},
 			},
 			"proposals": schema.StringAttribute{
