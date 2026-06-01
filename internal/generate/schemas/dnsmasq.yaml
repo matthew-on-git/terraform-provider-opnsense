@@ -1,0 +1,39 @@
+# Dnsmasq DNS/DHCP general settings (singleton). Core module.
+package: dnsmasq
+resources:
+  - name: settings
+    go_type: Settings
+    type_name: dnsmasq_settings
+    title: the Dnsmasq DNS/DHCP general settings
+    kind: singleton
+    id: dnsmasq
+    reconfigure: /api/dnsmasq/service/reconfigure
+    monad: dnsmasq
+    endpoints:
+      get: /api/dnsmasq/settings/get
+      set: /api/dnsmasq/settings/set
+    fields:
+      - {name: Enable, tf: enable, json: enable, type: bool, default: "false", desc: "Enable the Dnsmasq service."}
+      - {name: RegisterDHCP, tf: register_dhcp, json: regdhcp, type: bool, default: "false", desc: "Register DHCP leases in DNS."}
+      - {name: RegisterDHCPStatic, tf: register_dhcp_static, json: regdhcpstatic, type: bool, default: "false", desc: "Register static DHCP mappings in DNS."}
+      - {name: DHCPFirst, tf: dhcp_first, json: dhcpfirst, type: bool, default: "false", desc: "Prefer DHCP names over other sources."}
+      - {name: StrictOrder, tf: strict_order, json: strict_order, type: bool, default: "false", desc: "Query upstream servers in strict order."}
+      - {name: DomainNeeded, tf: domain_needed, json: domain_needed, type: bool, default: "false", desc: "Never forward queries without a domain."}
+      - {name: NoPrivateReverse, tf: no_private_reverse, json: no_private_reverse, type: bool, default: "false", desc: "Do not forward reverse lookups for private ranges."}
+      - {name: NoResolv, tf: no_resolv, json: no_resolv, type: bool, default: "false", desc: "Ignore /etc/resolv.conf for upstream servers."}
+      - {name: LogQueries, tf: log_queries, json: log_queries, type: bool, default: "false", desc: "Log all DNS queries."}
+      - {name: NoHosts, tf: no_hosts, json: no_hosts, type: bool, default: "false", desc: "Do not read /etc/hosts."}
+      - {name: StrictBind, tf: strict_bind, json: strictbind, type: bool, default: "false", desc: "Bind only to configured interfaces."}
+      - {name: DNSSEC, tf: dnssec, json: dnssec, type: bool, default: "false", desc: "Enable DNSSEC validation."}
+      - {name: RegisterDHCPDomain, tf: register_dhcp_domain, json: regdhcpdomain, type: string, default: "", desc: "Domain appended to registered DHCP names."}
+      - {name: Interface, tf: interface, json: interface, type: selectmaplist, desc: "Interfaces Dnsmasq listens on (empty = all)."}
+      - {name: Port, tf: port, json: port, type: string, default: "", desc: "Service listen port (empty = default)."}
+      - {name: DNSPort, tf: dns_port, json: dns_port, type: string, default: "53", desc: "DNS listen port."}
+      - {name: DNSForwardMax, tf: dns_forward_max, json: dns_forward_max, type: string, default: "", desc: "Maximum concurrent forwarded queries."}
+      - {name: CacheSize, tf: cache_size, json: cache_size, type: string, default: "", desc: "DNS cache size (entries)."}
+      - {name: LocalTTL, tf: local_ttl, json: local_ttl, type: string, default: "", desc: "TTL for locally-served records."}
+      - {name: AddMAC, tf: add_mac, json: add_mac, type: selectmap, default: "", desc: "Add requesting MAC to forwarded queries (standard, base64, text)."}
+      - {name: AddSubnet, tf: add_subnet, json: add_subnet, type: bool, default: "false", desc: "Add the client subnet to forwarded queries."}
+      - {name: StripSubnet, tf: strip_subnet, json: strip_subnet, type: bool, default: "false", desc: "Strip the client subnet from replies."}
+      - {name: DHCP, tf: dhcp, json: dhcp, type: selectmaplist, desc: "DHCP behaviour flags."}
+      - {name: NoIdent, tf: no_ident, json: no_ident, type: bool, default: "true", desc: "Disable the chaos TXT ident responses."}

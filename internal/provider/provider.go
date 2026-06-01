@@ -24,6 +24,7 @@ import (
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/cron"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/ddclient"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/dhcp"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/dnsmasq"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/firewall"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/haproxy"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/iface"
@@ -253,6 +254,7 @@ func (p *OpnsenseProvider) Resources(_ context.Context) []func() resource.Resour
 	resources = append(resources, openvpn.Resources()...)
 	resources = append(resources, ddclient.Resources()...)
 	resources = append(resources, dhcp.Resources()...)
+	resources = append(resources, dnsmasq.Resources()...)
 	resources = append(resources, trafficshaper.Resources()...)
 	resources = append(resources, syslog.Resources()...)
 	resources = append(resources, cron.Resources()...)

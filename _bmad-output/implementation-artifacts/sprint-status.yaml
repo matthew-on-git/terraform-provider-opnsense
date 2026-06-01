@@ -220,7 +220,7 @@ development_status:
   22-2-unbound-forward-resource: backlog
   22-3-unbound-host-alias-resource: backlog
   22-4-unbound-blocklist-resource: backlog
-  22-5-dnsmasq-resources: backlog
+  22-5-dnsmasq-resources: done   # opnsense_dnsmasq_settings singleton (generated, live-validated); list sub-items (hosts/ranges/options) are follow-ups
 
   # Epic 23: Traffic Shaping
   epic-23: done
