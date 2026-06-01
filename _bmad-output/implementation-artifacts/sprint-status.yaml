@@ -211,7 +211,7 @@ development_status:
   21-2-kea-dhcpv6-reservation-resource: backlog
   21-3-kea-ha-peer-resource: backlog
   21-4-kea-dhcpv4-option-resource: backlog
-  21-5-kea-ctrl-agent-settings-resource: backlog
+  21-5-kea-ctrl-agent-settings-resource: done   # opnsense_kea_ctrl_agent singleton (codegen via dotted monad ctrlagent.general, live-validated)
   21-6-kea-ddns-settings-resource: backlog
 
   # Epic 22: DNS Completion (Unbound extensions; optional dnsmasq)

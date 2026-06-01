@@ -1,0 +1,18 @@
+# Kea DHCP control agent settings (nested singleton: ctrlagent.general). Core module.
+package: kea
+resources:
+  - name: ctrl_agent
+    go_type: CtrlAgent
+    type_name: kea_ctrl_agent
+    title: the Kea DHCP control agent settings
+    kind: singleton
+    id: kea-ctrl-agent
+    reconfigure: /api/kea/service/reconfigure
+    monad: ctrlagent.general
+    endpoints:
+      get: /api/kea/ctrl_agent/get
+      set: /api/kea/ctrl_agent/set
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "false", desc: "Enable the Kea control agent (required for HA and the dashboard)."}
+      - {name: HTTPHost, tf: http_host, json: http_host, type: string, default: "127.0.0.1", desc: "Address the control agent listens on."}
+      - {name: HTTPPort, tf: http_port, json: http_port, type: string, default: "8000", desc: "Port the control agent listens on."}
