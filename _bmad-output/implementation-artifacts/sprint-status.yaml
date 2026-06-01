@@ -172,7 +172,7 @@ development_status:
 
   # Epic 17: Interface Types
   epic-17: in-progress
-  17-1-interface-bridge-resource: backlog
+  17-1-interface-bridge-resource: done   # opnsense_interface_bridge (generated, live-validated)
   17-2-interface-lagg-resource: backlog
   17-3-interface-gre-resource: done   # opnsense_interface_gre (generated, live-validated)
   17-4-interface-gif-resource: done   # opnsense_interface_gif (generated, live-validated)

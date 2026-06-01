@@ -104,3 +104,23 @@ resources:
       - {name: Link1, tf: link1, json: link1, type: bool, default: "false", desc: "Enable ECN-friendly behaviour (link1)."}
       - {name: Link2, tf: link2, json: link2, type: bool, default: "false", desc: "Route the tunnel via the configured gateway (link2)."}
       - {name: Description, tf: description, json: descr, type: string, default: "", test_value: '"tf-acc-gif"', desc: "Description."}
+
+  - name: bridge
+    go_type: Bridge
+    type_name: interface_bridge
+    title: a bridge interface
+    kind: item
+    reconfigure: /api/interfaces/bridge_settings/reconfigure
+    monad: bridge
+    endpoints:
+      add: /api/interfaces/bridge_settings/add_item
+      get: /api/interfaces/bridge_settings/get_item
+      set: /api/interfaces/bridge_settings/set_item
+      del: /api/interfaces/bridge_settings/del_item
+      search: /api/interfaces/bridge_settings/search_item
+    fields:
+      - {name: Device, tf: device, json: bridgeif, type: string, desc: "Assigned bridge device name (auto-assigned by OPNsense)."}
+      - {name: Members, tf: members, json: members, type: selectmaplist, test_value: '["opt1"]', desc: "Member interfaces of the bridge."}
+      - {name: Protocol, tf: protocol, json: proto, type: selectmap, desc: "Spanning-tree protocol: rstp or stp."}
+      - {name: EnableSTP, tf: enable_stp, json: enablestp, type: bool, default: "false", desc: "Enable spanning tree on the bridge."}
+      - {name: Description, tf: description, json: descr, type: string, default: "", test_value: '"tf-acc-bridge"', desc: "Description."}
