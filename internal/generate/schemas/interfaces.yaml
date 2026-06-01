@@ -17,3 +17,24 @@ resources:
     fields:
       - {name: DeviceID, tf: device_id, json: deviceId, type: int, desc: "Loopback device number (auto-assigned by OPNsense)."}
       - {name: Description, tf: description, json: description, type: string, required: true, test_value: '"tf-acc-loopback"', desc: "Description."}
+
+  - name: vxlan
+    go_type: Vxlan
+    type_name: interface_vxlan
+    title: a VXLAN interface
+    kind: item
+    reconfigure: /api/interfaces/vxlan_settings/reconfigure
+    monad: vxlan
+    endpoints:
+      add: /api/interfaces/vxlan_settings/add_item
+      get: /api/interfaces/vxlan_settings/get_item
+      set: /api/interfaces/vxlan_settings/set_item
+      del: /api/interfaces/vxlan_settings/del_item
+      search: /api/interfaces/vxlan_settings/search_item
+    fields:
+      - {name: DeviceID, tf: device_id, json: deviceId, type: int, desc: "VXLAN device number (auto-assigned by OPNsense)."}
+      - {name: VNI, tf: vni, json: vxlanid, type: int, required: true, test_value: "100", desc: "VXLAN network identifier (0-16777215)."}
+      - {name: Local, tf: local, json: vxlanlocal, type: string, required: true, test_value: '"192.168.56.10"', desc: "Local source IP address."}
+      - {name: Remote, tf: remote, json: vxlanremote, type: string, test_value: '"192.0.2.50"', desc: "Remote peer IP (unicast mode)."}
+      - {name: Group, tf: group, json: vxlangroup, type: string, desc: "Multicast group IP (multicast mode)."}
+      - {name: Device, tf: device, json: vxlandev, type: selectmap, desc: "Underlying interface."}
