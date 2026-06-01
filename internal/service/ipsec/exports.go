@@ -20,6 +20,7 @@ func Resources() []func() resource.Resource {
 		newManualSPDResource,
 		newLocalResource,
 		newRemoteResource,
+		newKeyPairResource,
 	}
 }
 

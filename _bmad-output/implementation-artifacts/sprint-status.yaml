@@ -197,13 +197,13 @@ development_status:
 
   # --- Wave B (confirmed, second priority) ---
   # Epic 20: VPN Completion (IPsec extensions)
-  epic-20: backlog
+  epic-20: done
   20-1-ipsec-local-resource: done   # opnsense_ipsec_local (hand-written, composition-tested; also fixed connection proposals/remote_addrs/version field-type bugs)
   20-2-ipsec-remote-resource: done   # opnsense_ipsec_remote (hand-written, composition-tested)
   20-3-ipsec-pool-resource: done   # opnsense_ipsec_pool (generated, live-validated)
   20-4-ipsec-vti-resource: done   # opnsense_ipsec_vti (generated, live-validated)
   20-5-ipsec-manual-spd-resource: done   # opnsense_ipsec_manual_spd (generated, live-validated)
-  20-6-ipsec-key-pair-resource: backlog
+  20-6-ipsec-key-pair-resource: done   # opnsense_ipsec_key_pair (hand-written; public/private key write-only, live-validated)
 
   # Epic 21: DHCP Completion (Kea) — singletons depend on Epic 13
   epic-21: backlog
