@@ -16,3 +16,22 @@ resources:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "false", desc: "Enable the Kea control agent (required for HA and the dashboard)."}
       - {name: HTTPHost, tf: http_host, json: http_host, type: string, default: "127.0.0.1", desc: "Address the control agent listens on."}
       - {name: HTTPPort, tf: http_port, json: http_port, type: string, default: "8000", desc: "Port the control agent listens on."}
+
+  - name: dhcpv6_settings
+    go_type: DHCPv6Settings
+    type_name: kea_dhcpv6_settings
+    title: the Kea DHCPv6 general settings
+    kind: singleton
+    id: kea-dhcpv6
+    reconfigure: /api/kea/service/reconfigure
+    monad: dhcpv6.general
+    endpoints:
+      get: /api/kea/dhcpv6/get
+      set: /api/kea/dhcpv6/set
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "false", desc: "Enable the Kea DHCPv6 server."}
+      - {name: ManualConfig, tf: manual_config, json: manual_config, type: bool, default: "false", desc: "Manage the Kea config file manually (disable GUI management)."}
+      - {name: Interfaces, tf: interfaces, json: interfaces, type: selectmaplist, desc: "Interfaces the DHCPv6 server listens on."}
+      - {name: ValidLifetime, tf: valid_lifetime, json: valid_lifetime, type: int, default: "4000", desc: "Default lease valid lifetime in seconds."}
+      - {name: FirewallRules, tf: firewall_rules, json: fwrules, type: bool, default: "true", desc: "Automatically add firewall rules for the service."}
+      - {name: DHCPSocketType, tf: dhcp_socket_type, json: dhcp_socket_type, type: selectmap, default: "raw", desc: "DHCP socket type: raw or udp."}

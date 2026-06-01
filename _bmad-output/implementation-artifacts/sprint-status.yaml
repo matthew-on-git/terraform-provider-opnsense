@@ -173,7 +173,7 @@ development_status:
   # Epic 17: Interface Types
   epic-17: in-progress
   17-1-interface-bridge-resource: done   # opnsense_interface_bridge (generated, live-validated)
-  17-2-interface-lagg-resource: backlog
+  17-2-interface-lagg-resource: blocked   # ENV: test VM has no free/unassigned NIC to form a LAGG (members select is empty); needs the hardware box to build+live-validate
   17-3-interface-gre-resource: done   # opnsense_interface_gre (generated, live-validated)
   17-4-interface-gif-resource: done   # opnsense_interface_gif (generated, live-validated)
   17-5-interface-vxlan-resource: done   # opnsense_interface_vxlan (generated, live-validated)
