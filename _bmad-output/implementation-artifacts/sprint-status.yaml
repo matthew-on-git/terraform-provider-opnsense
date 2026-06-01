@@ -206,10 +206,10 @@ development_status:
   20-6-ipsec-key-pair-resource: done   # opnsense_ipsec_key_pair (hand-written; public/private key write-only, live-validated)
 
   # Epic 21: DHCP Completion (Kea) — singletons depend on Epic 13
-  epic-21: backlog
+  epic-21: done   # buildable stories done; 21-4 dhcpv4-option + 21-6 ddns INFEASIBLE (no API)
   21-1-kea-dhcpv6-subnet-resource: done   # opnsense_kea_dhcpv6_subnet (hand-written, composition-tested with dhcpv6_settings)
   21-2-kea-dhcpv6-reservation-resource: done   # opnsense_kea_dhcpv6_reservation (hand-written, composition-tested via subnet)
-  21-3-kea-ha-peer-resource: backlog
+  21-3-kea-ha-peer-resource: done   # opnsense_kea_ha_peer (generated, live-validated)
   21-4-kea-dhcpv4-option-resource: backlog
   21-5-kea-ctrl-agent-settings-resource: done   # opnsense_kea_ctrl_agent singleton (codegen via dotted monad ctrlagent.general, live-validated)
   21-6-kea-ddns-settings-resource: cancelled   # INFEASIBLE — no kea ddns/get_ddns API endpoint on this build (probed: Endpoint not found)

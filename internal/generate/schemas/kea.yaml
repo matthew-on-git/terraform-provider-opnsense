@@ -35,3 +35,21 @@ resources:
       - {name: ValidLifetime, tf: valid_lifetime, json: valid_lifetime, type: int, default: "4000", desc: "Default lease valid lifetime in seconds."}
       - {name: FirewallRules, tf: firewall_rules, json: fwrules, type: bool, default: "true", desc: "Automatically add firewall rules for the service."}
       - {name: DHCPSocketType, tf: dhcp_socket_type, json: dhcp_socket_type, type: selectmap, default: "raw", desc: "DHCP socket type: raw or udp."}
+
+  - name: ha_peer
+    go_type: HAPeer
+    type_name: kea_ha_peer
+    title: a Kea High Availability peer
+    kind: item
+    reconfigure: /api/kea/service/reconfigure
+    monad: peer
+    endpoints:
+      add: /api/kea/dhcpv4/addPeer
+      get: /api/kea/dhcpv4/getPeer
+      set: /api/kea/dhcpv4/setPeer
+      del: /api/kea/dhcpv4/delPeer
+      search: /api/kea/dhcpv4/searchPeer
+    fields:
+      - {name: Name, tf: name, json: name, type: string, required: true, test_value: '"tfaccpeer"', desc: "Unique name of the HA peer (must match the server name)."}
+      - {name: Role, tf: role, json: role, type: selectmap, default: "primary", desc: "HA role: primary or standby."}
+      - {name: URL, tf: url, json: url, type: string, required: true, test_value: '"http://192.0.2.5:8000/"', desc: "Control-agent URL of the peer."}
