@@ -163,7 +163,7 @@ development_status:
   # Epic 15: PKI & Trust
   epic-15: in-progress
   15-1-trust-ca-resource: done   # opnsense_trust_ca (internal CA) — acceptance-validated against live VM
-  15-2-trust-certificate-resource: backlog
+  15-2-trust-certificate-resource: done   # opnsense_trust_cert (hand-written import; cert+key write-only, live-validated)
 
   # Epic 16: Users & Access
   epic-16: in-progress
