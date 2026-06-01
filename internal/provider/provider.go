@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/acme"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/auth"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/cron"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/ddclient"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/dhcp"
@@ -256,6 +257,7 @@ func (p *OpnsenseProvider) Resources(_ context.Context) []func() resource.Resour
 	resources = append(resources, cron.Resources()...)
 	resources = append(resources, monit.Resources()...)
 	resources = append(resources, trust.Resources()...)
+	resources = append(resources, auth.Resources()...)
 	return resources
 }
 

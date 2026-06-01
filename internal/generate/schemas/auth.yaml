@@ -1,0 +1,22 @@
+# Local users and groups. Core module.
+package: auth
+resources:
+  - name: group
+    go_type: Group
+    type_name: auth_group
+    title: a local group
+    kind: item
+    reconfigure: ""
+    monad: group
+    endpoints:
+      add: /api/auth/group/add
+      get: /api/auth/group/get
+      set: /api/auth/group/set
+      del: /api/auth/group/del
+      search: /api/auth/group/search
+    fields:
+      - {name: Name, tf: name, json: name, type: string, required: true, test_value: '"tfaccgroup"', desc: "Group name (unique)."}
+      - {name: Description, tf: description, json: description, type: string, desc: "Description."}
+      - {name: Privileges, tf: privileges, json: priv, type: selectmaplist, desc: "Assigned privilege identifiers."}
+      - {name: Members, tf: members, json: member, type: selectmaplist, desc: "Member user UUIDs."}
+      - {name: SourceNetworks, tf: source_networks, json: source_networks, type: selectmaplist, desc: "Restrict logins to these networks (CIDR)."}

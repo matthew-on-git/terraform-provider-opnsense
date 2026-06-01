@@ -166,9 +166,9 @@ development_status:
   15-2-trust-certificate-resource: backlog
 
   # Epic 16: Users & Access
-  epic-16: backlog
+  epic-16: in-progress
   16-1-auth-user-resource: backlog
-  16-2-auth-group-resource: backlog
+  16-2-auth-group-resource: done   # opnsense_auth_group (generated, live-validated)
 
   # Epic 17: Interface Types
   epic-17: backlog
