@@ -26,11 +26,11 @@ func (d *ruleDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 
 func (d *ruleDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a traffic shaper rule on OPNsense by UUID.",
+		MarkdownDescription: "Reads a traffic shaper rule on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a traffic shaper rule to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":          dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this rule is enabled."},
 			"sequence":         dsschema.Int64Attribute{Computed: true, MarkdownDescription: "Rule evaluation order."},

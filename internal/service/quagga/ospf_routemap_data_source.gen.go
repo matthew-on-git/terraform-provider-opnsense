@@ -26,11 +26,11 @@ func (d *ospfRoutemapDataSource) Metadata(_ context.Context, req datasource.Meta
 
 func (d *ospfRoutemapDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing an OSPF route map on OPNsense by UUID.",
+		MarkdownDescription: "Reads an OSPF route map on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the an OSPF route map to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":      dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this route map is enabled."},
 			"name":         dsschema.StringAttribute{Computed: true, MarkdownDescription: "Route map name."},

@@ -26,11 +26,11 @@ func (d *loopbackDataSource) Metadata(_ context.Context, req datasource.Metadata
 
 func (d *loopbackDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a loopback interface on OPNsense by UUID.",
+		MarkdownDescription: "Reads a loopback interface on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a loopback interface to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"device_id":   dsschema.Int64Attribute{Computed: true, MarkdownDescription: "Loopback device number (auto-assigned by OPNsense)."},
 			"description": dsschema.StringAttribute{Computed: true, MarkdownDescription: "Description."},

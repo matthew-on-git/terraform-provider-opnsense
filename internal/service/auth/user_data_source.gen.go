@@ -27,11 +27,11 @@ func (d *userDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 
 func (d *userDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a local user on OPNsense by UUID.",
+		MarkdownDescription: "Reads a local user on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a local user to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"uid":               dsschema.Int64Attribute{Computed: true, MarkdownDescription: "Numeric user ID (auto-assigned by OPNsense)."},
 			"name":              dsschema.StringAttribute{Computed: true, MarkdownDescription: "Login name (unique)."},

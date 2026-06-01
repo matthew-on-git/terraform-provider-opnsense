@@ -27,11 +27,11 @@ func (d *groupDataSource) Metadata(_ context.Context, req datasource.MetadataReq
 
 func (d *groupDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a local group on OPNsense by UUID.",
+		MarkdownDescription: "Reads a local group on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a local group to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"name":            dsschema.StringAttribute{Computed: true, MarkdownDescription: "Group name (unique)."},
 			"description":     dsschema.StringAttribute{Computed: true, MarkdownDescription: "Description."},

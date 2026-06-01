@@ -26,11 +26,11 @@ func (d *ospfNeighborDataSource) Metadata(_ context.Context, req datasource.Meta
 
 func (d *ospfNeighborDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing an OSPF neighbor on OPNsense by UUID.",
+		MarkdownDescription: "Reads an OSPF neighbor on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the an OSPF neighbor to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":       dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this neighbor is enabled."},
 			"description":   dsschema.StringAttribute{Computed: true, MarkdownDescription: "Description."},

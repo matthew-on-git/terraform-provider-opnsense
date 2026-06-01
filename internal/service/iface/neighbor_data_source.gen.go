@@ -26,11 +26,11 @@ func (d *neighborDataSource) Metadata(_ context.Context, req datasource.Metadata
 
 func (d *neighborDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a static ARP/NDP neighbor on OPNsense by UUID.",
+		MarkdownDescription: "Reads a static ARP/NDP neighbor on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a static ARP/NDP neighbor to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"mac":         dsschema.StringAttribute{Computed: true, MarkdownDescription: "MAC (ethernet) address."},
 			"ip_address":  dsschema.StringAttribute{Computed: true, MarkdownDescription: "IP address for the static entry."},

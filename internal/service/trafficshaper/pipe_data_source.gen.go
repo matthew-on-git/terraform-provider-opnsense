@@ -26,11 +26,11 @@ func (d *pipeDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 
 func (d *pipeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a traffic shaper pipe on OPNsense by UUID.",
+		MarkdownDescription: "Reads a traffic shaper pipe on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a traffic shaper pipe to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":          dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this pipe is enabled."},
 			"number":           dsschema.Int64Attribute{Computed: true, MarkdownDescription: "Pipe number (auto-assigned by OPNsense)."},

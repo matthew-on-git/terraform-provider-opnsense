@@ -124,11 +124,11 @@ func (d *{{$n}}DataSource) Metadata(_ context.Context, req datasource.MetadataRe
 
 func (d *{{$n}}DataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: {{printf "%q" (printf "Look up an existing %s on OPNsense by UUID." .R.Title)}},
+		MarkdownDescription: {{printf "%q" (printf "Reads %s on OPNsense by its UUID." .R.Title)}},
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the {{.R.Title}} to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 {{range .R.Fields}}			{{dataSourceAttr .}}
 {{end}}		},

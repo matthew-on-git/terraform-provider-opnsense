@@ -27,11 +27,11 @@ func (d *bridgeDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 
 func (d *bridgeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a bridge interface on OPNsense by UUID.",
+		MarkdownDescription: "Reads a bridge interface on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a bridge interface to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"device":      dsschema.StringAttribute{Computed: true, MarkdownDescription: "Assigned bridge device name (auto-assigned by OPNsense)."},
 			"members":     dsschema.SetAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: "Member interfaces of the bridge."},

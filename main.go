@@ -5,7 +5,6 @@
 package main
 
 //go:generate go run ./internal/generate
-//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@v0.20.0 generate --provider-name opnsense --rendered-provider-name OPNsense
 
 import (
 	"context"

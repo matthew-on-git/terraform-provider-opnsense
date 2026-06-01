@@ -26,11 +26,11 @@ func (d *vxlanDataSource) Metadata(_ context.Context, req datasource.MetadataReq
 
 func (d *vxlanDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a VXLAN interface on OPNsense by UUID.",
+		MarkdownDescription: "Reads a VXLAN interface on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a VXLAN interface to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"device_id": dsschema.Int64Attribute{Computed: true, MarkdownDescription: "VXLAN device number (auto-assigned by OPNsense)."},
 			"vni":       dsschema.Int64Attribute{Computed: true, MarkdownDescription: "VXLAN network identifier (0-16777215)."},

@@ -26,11 +26,11 @@ func (d *testDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 
 func (d *testDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a monit test on OPNsense by UUID.",
+		MarkdownDescription: "Reads a monit test on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a monit test to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"name":      dsschema.StringAttribute{Computed: true, MarkdownDescription: "Test name."},
 			"type":      dsschema.StringAttribute{Computed: true, MarkdownDescription: "Test type (e.g. SystemResource, ProcessMemory)."},

@@ -27,11 +27,11 @@ func (d *natOneToOneDataSource) Metadata(_ context.Context, req datasource.Metad
 
 func (d *natOneToOneDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a one-to-one (1:1) NAT rule on OPNsense by UUID.",
+		MarkdownDescription: "Reads a one-to-one (1:1) NAT rule on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a one-to-one (1:1) NAT rule to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":         dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this rule is enabled."},
 			"log":             dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Log packets matched by this rule."},

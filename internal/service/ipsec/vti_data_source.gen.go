@@ -26,11 +26,11 @@ func (d *vtiDataSource) Metadata(_ context.Context, req datasource.MetadataReque
 
 func (d *vtiDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing an IPsec virtual tunnel interface (VTI) on OPNsense by UUID.",
+		MarkdownDescription: "Reads an IPsec virtual tunnel interface (VTI) on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the an IPsec virtual tunnel interface (VTI) to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":        dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this VTI is enabled."},
 			"req_id":         dsschema.Int64Attribute{Computed: true, MarkdownDescription: "Unique request ID for this tunnel."},

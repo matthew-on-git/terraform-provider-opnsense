@@ -26,11 +26,11 @@ func (d *manualSpdDataSource) Metadata(_ context.Context, req datasource.Metadat
 
 func (d *manualSpdDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing an IPsec manual security policy (SPD) on OPNsense by UUID.",
+		MarkdownDescription: "Reads an IPsec manual security policy (SPD) on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the an IPsec manual security policy (SPD) to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":          dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this SPD entry is enabled."},
 			"protocol":         dsschema.StringAttribute{Computed: true, MarkdownDescription: "Security protocol: esp or ah (defaults to esp)."},

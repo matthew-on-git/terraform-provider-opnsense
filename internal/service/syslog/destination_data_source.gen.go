@@ -27,11 +27,11 @@ func (d *destinationDataSource) Metadata(_ context.Context, req datasource.Metad
 
 func (d *destinationDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a syslog destination on OPNsense by UUID.",
+		MarkdownDescription: "Reads a syslog destination on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a syslog destination to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":     dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this destination is enabled."},
 			"transport":   dsschema.StringAttribute{Computed: true, MarkdownDescription: "Transport: udp4, tcp4, udp6, tcp6, tls4, tls6."},

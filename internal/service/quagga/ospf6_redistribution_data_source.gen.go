@@ -28,11 +28,11 @@ func (d *ospf6RedistributionDataSource) Metadata(_ context.Context, req datasour
 
 func (d *ospf6RedistributionDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing an OSPFv3 redistribution on OPNsense by UUID.",
+		MarkdownDescription: "Reads an OSPFv3 redistribution on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the an OSPFv3 redistribution to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":      dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this redistribution is enabled."},
 			"description":  dsschema.StringAttribute{Computed: true, MarkdownDescription: "Description."},

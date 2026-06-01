@@ -26,11 +26,11 @@ func (d *ospfPrefixlistDataSource) Metadata(_ context.Context, req datasource.Me
 
 func (d *ospfPrefixlistDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing an OSPF prefix list on OPNsense by UUID.",
+		MarkdownDescription: "Reads an OSPF prefix list on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the an OSPF prefix list to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":    dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this entry is enabled."},
 			"name":       dsschema.StringAttribute{Computed: true, MarkdownDescription: "Prefix list name."},

@@ -27,11 +27,11 @@ func (d *alertDataSource) Metadata(_ context.Context, req datasource.MetadataReq
 
 func (d *alertDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a monit alert on OPNsense by UUID.",
+		MarkdownDescription: "Reads a monit alert on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a monit alert to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":     dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this alert is enabled."},
 			"recipient":   dsschema.StringAttribute{Computed: true, MarkdownDescription: "Email recipient."},

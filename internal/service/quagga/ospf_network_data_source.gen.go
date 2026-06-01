@@ -26,11 +26,11 @@ func (d *ospfNetworkDataSource) Metadata(_ context.Context, req datasource.Metad
 
 func (d *ospfNetworkDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing an OSPF network on OPNsense by UUID.",
+		MarkdownDescription: "Reads an OSPF network on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the an OSPF network to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":    dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this network is enabled."},
 			"ip_address": dsschema.StringAttribute{Computed: true, MarkdownDescription: "Network address."},

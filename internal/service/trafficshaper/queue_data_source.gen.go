@@ -26,11 +26,11 @@ func (d *queueDataSource) Metadata(_ context.Context, req datasource.MetadataReq
 
 func (d *queueDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a traffic shaper queue on OPNsense by UUID.",
+		MarkdownDescription: "Reads a traffic shaper queue on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a traffic shaper queue to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":     dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this queue is enabled."},
 			"number":      dsschema.Int64Attribute{Computed: true, MarkdownDescription: "Queue number (auto-assigned by OPNsense)."},

@@ -26,11 +26,11 @@ func (d *haPeerDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 
 func (d *haPeerDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a Kea High Availability peer on OPNsense by UUID.",
+		MarkdownDescription: "Reads a Kea High Availability peer on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a Kea High Availability peer to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"name": dsschema.StringAttribute{Computed: true, MarkdownDescription: "Unique name of the HA peer (must match the server name)."},
 			"role": dsschema.StringAttribute{Computed: true, MarkdownDescription: "HA role: primary or standby."},

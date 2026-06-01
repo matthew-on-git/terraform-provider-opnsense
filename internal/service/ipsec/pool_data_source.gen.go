@@ -27,11 +27,11 @@ func (d *poolDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 
 func (d *poolDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing an IPsec virtual IP address pool on OPNsense by UUID.",
+		MarkdownDescription: "Reads an IPsec virtual IP address pool on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the an IPsec virtual IP address pool to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":   dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this pool is enabled."},
 			"name":      dsschema.StringAttribute{Computed: true, MarkdownDescription: "Unique pool name."},

@@ -26,11 +26,11 @@ func (d *gifDataSource) Metadata(_ context.Context, req datasource.MetadataReque
 
 func (d *gifDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a GIF tunnel interface on OPNsense by UUID.",
+		MarkdownDescription: "Reads a GIF tunnel interface on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a GIF tunnel interface to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"device":                dsschema.StringAttribute{Computed: true, MarkdownDescription: "Assigned GIF device name (auto-assigned by OPNsense)."},
 			"parent_interface":      dsschema.StringAttribute{Computed: true, MarkdownDescription: "Parent interface the tunnel runs over."},

@@ -26,11 +26,11 @@ func (d *jobDataSource) Metadata(_ context.Context, req datasource.MetadataReque
 
 func (d *jobDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Look up an existing a cron job on OPNsense by UUID.",
+		MarkdownDescription: "Reads a cron job on OPNsense by its UUID.",
 		Attributes: map[string]dsschema.Attribute{
 			"id": dsschema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "UUID of the a cron job to look up.",
+				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":     dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this job is enabled."},
 			"minutes":     dsschema.StringAttribute{Computed: true, MarkdownDescription: "Minutes field (cron syntax)."},
