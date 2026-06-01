@@ -15,6 +15,7 @@ func Resources() []func() resource.Resource {
 		newCtrlAgentResource,
 		newDHCPv6SettingsResource,
 		newDHCPv6SubnetResource,
+		newDHCPv6ReservationResource,
 	}
 }
 

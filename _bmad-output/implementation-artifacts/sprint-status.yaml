@@ -208,7 +208,7 @@ development_status:
   # Epic 21: DHCP Completion (Kea) — singletons depend on Epic 13
   epic-21: backlog
   21-1-kea-dhcpv6-subnet-resource: done   # opnsense_kea_dhcpv6_subnet (hand-written, composition-tested with dhcpv6_settings)
-  21-2-kea-dhcpv6-reservation-resource: backlog
+  21-2-kea-dhcpv6-reservation-resource: done   # opnsense_kea_dhcpv6_reservation (hand-written, composition-tested via subnet)
   21-3-kea-ha-peer-resource: backlog
   21-4-kea-dhcpv4-option-resource: backlog
   21-5-kea-ctrl-agent-settings-resource: done   # opnsense_kea_ctrl_agent singleton (codegen via dotted monad ctrlagent.general, live-validated)
