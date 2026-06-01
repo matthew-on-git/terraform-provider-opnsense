@@ -71,3 +71,4 @@
 7437e006050b6554c5908be91d177ff4052565f5:_bmad/_config/files-manifest.csv:generic-api-key:424
 7437e006050b6554c5908be91d177ff4052565f5:_bmad/tea/testarch/knowledge/api-testing-patterns.md:generic-api-key:681
 e429aee6a1e2a094847957cb792031ed58e5a270:examples/resources/opnsense_ddclient_account/resource.tf:hashicorp-tf-password:5
+7c6d7b00b8cd6910a6ca1b4813619f7c080e8f9d:examples/compositions/wireguard-vpn/main.tf:generic-api-key:5
