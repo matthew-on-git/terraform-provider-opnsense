@@ -135,7 +135,7 @@ development_status:
   epic-11: in-progress
   11-1-dhcpv4-pool-resource: done
   11-2-dhcpv4-static-mapping-resource: done
-  11-3-dhcpv4-option-resource: backlog     # BUILDABLE — Kea has add_option/del_option/get_option (re-confirmed Wave B)
+  11-3-dhcpv4-option-resource: cancelled   # INFEASIBLE — Kea dhcpv4 *_option endpoints return 'Endpoint not found' on live 25.x (probed 2026-05-31)
   epic-11-retrospective: optional
 
   # Epic 12: Data Sources, Documentation & Registry Release
@@ -210,12 +210,12 @@ development_status:
   21-1-kea-dhcpv6-subnet-resource: done   # opnsense_kea_dhcpv6_subnet (hand-written, composition-tested with dhcpv6_settings)
   21-2-kea-dhcpv6-reservation-resource: done   # opnsense_kea_dhcpv6_reservation (hand-written, composition-tested via subnet)
   21-3-kea-ha-peer-resource: done   # opnsense_kea_ha_peer (generated, live-validated)
-  21-4-kea-dhcpv4-option-resource: backlog
+  21-4-kea-dhcpv4-option-resource: cancelled   # INFEASIBLE — same as 11-3 (no Kea dhcpv4 option API)
   21-5-kea-ctrl-agent-settings-resource: done   # opnsense_kea_ctrl_agent singleton (codegen via dotted monad ctrlagent.general, live-validated)
   21-6-kea-ddns-settings-resource: cancelled   # INFEASIBLE — no kea ddns/get_ddns API endpoint on this build (probed: Endpoint not found)
 
   # Epic 22: DNS Completion (Unbound extensions; optional dnsmasq)
-  epic-22: backlog
+  epic-22: done
   22-1-unbound-general-settings-resource: done   # opnsense_unbound_general singleton (codegen via dotted monad unbound.general, live-validated)
   22-2-unbound-forward-resource: done   # already shipped as opnsense_unbound_domain_override (add_forward controller)
   22-3-unbound-host-alias-resource: done   # opnsense_unbound_host_alias (hand-written, composition-tested; also fixed host_override monad bug)
