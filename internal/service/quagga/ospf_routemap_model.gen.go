@@ -35,8 +35,8 @@ type ospfRoutemapAPIRequest struct {
 	Enabled    string `json:"enabled"`
 	Name       string `json:"name"`
 	Action     string `json:"action"`
-	RouteMapID string `json:"id"`
-	Set        string `json:"set"`
+	RouteMapID string `json:"id,omitempty"`
+	Set        string `json:"set,omitempty"`
 }
 
 func (m *OSPFRouteMapResourceModel) toAPI(_ context.Context) *ospfRoutemapAPIRequest {

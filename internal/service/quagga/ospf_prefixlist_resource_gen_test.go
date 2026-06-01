@@ -31,7 +31,7 @@ func TestAccOSPFPrefixList_basic(t *testing.T) {
 const testAccOSPFPrefixListConfig = `
 resource "opnsense_quagga_ospf_prefixlist" "test" {
   name = "test"
-  seq_number = 1
+  seq_number = 10
   action = "permit"
   network = "192.0.2.0/24"
 }

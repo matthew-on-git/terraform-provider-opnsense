@@ -38,8 +38,8 @@ type queueAPIRequest struct {
 	Number      string `json:"number"`
 	Pipe        string `json:"pipe"`
 	Weight      string `json:"weight"`
-	Mask        string `json:"mask"`
-	Description string `json:"description"`
+	Mask        string `json:"mask,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 func (m *QueueResourceModel) toAPI(_ context.Context) *queueAPIRequest {

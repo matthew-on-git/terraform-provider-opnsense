@@ -40,9 +40,9 @@ type pipeAPIRequest struct {
 	Number          string `json:"number"`
 	Bandwidth       string `json:"bandwidth"`
 	BandwidthMetric string `json:"bandwidthMetric"`
-	Mask            string `json:"mask"`
-	Scheduler       string `json:"scheduler"`
-	Description     string `json:"description"`
+	Mask            string `json:"mask,omitempty"`
+	Scheduler       string `json:"scheduler,omitempty"`
+	Description     string `json:"description,omitempty"`
 }
 
 func (m *PipeResourceModel) toAPI(_ context.Context) *pipeAPIRequest {

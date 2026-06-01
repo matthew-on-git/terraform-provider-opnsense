@@ -270,6 +270,19 @@ var funcs = template.FuncMap{
 	"isSingleton": func(r *Resource) bool { return r.Kind == "singleton" },
 	"hasSet":      hasSet,
 	"testFields":  testFieldsHCL,
+	"reqTag":      reqTag,
+}
+
+// reqTag builds the request struct json tag. Optional, non-bool fields get
+// ",omitempty" so unset values are omitted from the payload — OPNsense rejects
+// empty integers/options ("Invalid integer value", "select an option") and
+// applies its own defaults when a field is absent. Bool fields always send
+// ("0"/"1") so a disabled flag is not silently dropped.
+func reqTag(f Field) string {
+	if f.Type != "bool" && !f.Required {
+		return fmt.Sprintf("`json:%q`", f.JSON+",omitempty")
+	}
+	return fmt.Sprintf("`json:%q`", f.JSON)
 }
 
 func hasSet(r *Resource) bool {

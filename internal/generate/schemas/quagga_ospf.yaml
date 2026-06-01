@@ -82,7 +82,7 @@ resources:
     fields:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this entry is enabled."}
       - {name: Name, tf: name, json: name, type: string, required: true, desc: "Prefix list name."}
-      - {name: SeqNumber, tf: seq_number, json: seqnumber, type: int, required: true, test_value: "1", desc: "Sequence number."}
+      - {name: SeqNumber, tf: seq_number, json: seqnumber, type: int, required: true, test_value: "10", desc: "Sequence number."}
       - {name: Action, tf: action, json: action, type: selectmap, required: true, options: [permit, deny], test_value: '"permit"', desc: "Action: permit or deny."}
       - {name: Network, tf: network, json: network, type: string, required: true, test_value: '"192.0.2.0/24"', desc: "Network/CIDR to match."}
 

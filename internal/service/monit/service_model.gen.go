@@ -52,18 +52,18 @@ type serviceAPIResponse struct {
 type serviceAPIRequest struct {
 	Enabled      string `json:"enabled"`
 	Name         string `json:"name"`
-	Description  string `json:"description"`
+	Description  string `json:"description,omitempty"`
 	Type         string `json:"type"`
-	PIDFile      string `json:"pidfile"`
-	Match        string `json:"match"`
-	Path         string `json:"path"`
-	Timeout      string `json:"timeout"`
-	StartTimeout string `json:"starttimeout"`
-	Address      string `json:"address"`
-	Interface    string `json:"interface"`
-	Start        string `json:"start"`
-	Stop         string `json:"stop"`
-	Tests        string `json:"tests"`
+	PIDFile      string `json:"pidfile,omitempty"`
+	Match        string `json:"match,omitempty"`
+	Path         string `json:"path,omitempty"`
+	Timeout      string `json:"timeout,omitempty"`
+	StartTimeout string `json:"starttimeout,omitempty"`
+	Address      string `json:"address,omitempty"`
+	Interface    string `json:"interface,omitempty"`
+	Start        string `json:"start,omitempty"`
+	Stop         string `json:"stop,omitempty"`
+	Tests        string `json:"tests,omitempty"`
 }
 
 func (m *ServiceResourceModel) toAPI(ctx context.Context) *serviceAPIRequest {

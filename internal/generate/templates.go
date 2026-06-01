@@ -69,7 +69,7 @@ type {{camel .R.Name}}APIResponse struct {
 {{end}}}
 
 type {{camel .R.Name}}APIRequest struct {
-{{range .R.Fields}}	{{.Name}} string ` + "`json:\"{{.JSON}}\"`" + `
+{{range .R.Fields}}	{{.Name}} string {{reqTag .}}
 {{end}}}
 
 func (m *{{.R.GoType}}ResourceModel) toAPI({{if hasSet .R}}ctx{{else}}_{{end}} context.Context) *{{camel .R.Name}}APIRequest {

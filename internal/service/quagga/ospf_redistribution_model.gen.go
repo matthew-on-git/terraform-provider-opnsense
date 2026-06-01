@@ -30,9 +30,9 @@ type ospfRedistributionAPIResponse struct {
 
 type ospfRedistributionAPIRequest struct {
 	Enabled      string `json:"enabled"`
-	Description  string `json:"description"`
+	Description  string `json:"description,omitempty"`
 	Redistribute string `json:"redistribute"`
-	RouteMap     string `json:"linkedRoutemap"`
+	RouteMap     string `json:"linkedRoutemap,omitempty"`
 }
 
 func (m *OSPFRedistributionResourceModel) toAPI(_ context.Context) *ospfRedistributionAPIRequest {

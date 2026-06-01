@@ -41,13 +41,13 @@ type ospfInterfaceAPIResponse struct {
 
 type ospfInterfaceAPIRequest struct {
 	Enabled       string `json:"enabled"`
-	Interface     string `json:"interfacename"`
-	Area          string `json:"area"`
-	Cost          string `json:"cost"`
-	HelloInterval string `json:"hellointerval"`
-	DeadInterval  string `json:"deadinterval"`
-	Priority      string `json:"priority"`
-	NetworkType   string `json:"networktype"`
+	Interface     string `json:"interfacename,omitempty"`
+	Area          string `json:"area,omitempty"`
+	Cost          string `json:"cost,omitempty"`
+	HelloInterval string `json:"hellointerval,omitempty"`
+	DeadInterval  string `json:"deadinterval,omitempty"`
+	Priority      string `json:"priority,omitempty"`
+	NetworkType   string `json:"networktype,omitempty"`
 	BFD           string `json:"bfd"`
 }
 
