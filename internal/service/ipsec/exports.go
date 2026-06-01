@@ -19,6 +19,7 @@ func Resources() []func() resource.Resource {
 		newVTIResource,
 		newManualSPDResource,
 		newLocalResource,
+		newRemoteResource,
 	}
 }
 
