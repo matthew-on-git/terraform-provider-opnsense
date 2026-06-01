@@ -79,3 +79,28 @@ resources:
       - {name: TunnelRemoteAddress, tf: tunnel_remote_address, json: tunnel-remote-addr, type: string, required: true, test_value: '"10.5.5.2"', desc: "Remote inside (tunnel) address."}
       - {name: TunnelRemoteNet, tf: tunnel_remote_net, json: tunnel-remote-net, type: int, default: "32", desc: "Tunnel remote network prefix length."}
       - {name: Description, tf: description, json: descr, type: string, default: "", test_value: '"tf-acc-gre"', desc: "Description."}
+
+  - name: gif
+    go_type: GIF
+    type_name: interface_gif
+    title: a GIF tunnel interface
+    kind: item
+    reconfigure: /api/interfaces/gif_settings/reconfigure
+    monad: gif
+    endpoints:
+      add: /api/interfaces/gif_settings/add_item
+      get: /api/interfaces/gif_settings/get_item
+      set: /api/interfaces/gif_settings/set_item
+      del: /api/interfaces/gif_settings/del_item
+      search: /api/interfaces/gif_settings/search_item
+    fields:
+      - {name: Device, tf: device, json: gifif, type: string, desc: "Assigned GIF device name (auto-assigned by OPNsense)."}
+      - {name: ParentInterface, tf: parent_interface, json: if, type: string, required: true, test_value: '"lan"', desc: "Parent interface the tunnel runs over."}
+      - {name: LocalAddress, tf: local_address, json: local-addr, type: string, required: true, test_value: '"192.168.56.10"', desc: "Local tunnel endpoint address (must exist on the parent interface)."}
+      - {name: RemoteAddress, tf: remote_address, json: remote-addr, type: string, required: true, test_value: '"192.0.2.98"', desc: "Remote tunnel endpoint address."}
+      - {name: TunnelLocalAddress, tf: tunnel_local_address, json: tunnel-local-addr, type: string, required: true, test_value: '"10.6.6.1"', desc: "Local inside (tunnel) address."}
+      - {name: TunnelRemoteAddress, tf: tunnel_remote_address, json: tunnel-remote-addr, type: string, required: true, test_value: '"10.6.6.2"', desc: "Remote inside (tunnel) address."}
+      - {name: TunnelRemoteNet, tf: tunnel_remote_net, json: tunnel-remote-net, type: int, default: "32", desc: "Tunnel remote network prefix length."}
+      - {name: Link1, tf: link1, json: link1, type: bool, default: "false", desc: "Enable ECN-friendly behaviour (link1)."}
+      - {name: Link2, tf: link2, json: link2, type: bool, default: "false", desc: "Route the tunnel via the configured gateway (link2)."}
+      - {name: Description, tf: description, json: descr, type: string, default: "", test_value: '"tf-acc-gif"', desc: "Description."}

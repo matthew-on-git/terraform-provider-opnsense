@@ -16,6 +16,7 @@ func Resources() []func() resource.Resource {
 		newVxlanResource,
 		newNeighborResource,
 		newGREResource,
+		newGIFResource,
 	}
 }
 
