@@ -1,0 +1,22 @@
+# IPsec (swanctl) resources generated into internal/service/ipsec.
+# (connection/child/psk remain hand-written.)
+package: ipsec
+resources:
+  - name: pool
+    go_type: Pool
+    type_name: ipsec_pool
+    title: an IPsec virtual IP address pool
+    kind: item
+    reconfigure: /api/ipsec/service/reconfigure
+    monad: pool
+    endpoints:
+      add: /api/ipsec/pools/add
+      get: /api/ipsec/pools/get
+      set: /api/ipsec/pools/set
+      del: /api/ipsec/pools/del
+      search: /api/ipsec/pools/search
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this pool is enabled."}
+      - {name: Name, tf: name, json: name, type: string, required: true, test_value: '"tfaccpool"', desc: "Unique pool name."}
+      - {name: Addresses, tf: addresses, json: addrs, type: string, required: true, test_value: '"10.20.30.0/24"', desc: "Address subnet handed out by this pool (CIDR)."}
+      - {name: DNS, tf: dns, json: dns, type: selectmaplist, desc: "DNS servers offered to clients from this pool."}

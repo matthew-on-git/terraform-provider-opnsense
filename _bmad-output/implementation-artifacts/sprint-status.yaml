@@ -200,7 +200,7 @@ development_status:
   epic-20: backlog
   20-1-ipsec-local-resource: backlog
   20-2-ipsec-remote-resource: backlog
-  20-3-ipsec-pool-resource: backlog
+  20-3-ipsec-pool-resource: done   # opnsense_ipsec_pool (generated, live-validated)
   20-4-ipsec-vti-resource: backlog
   20-5-ipsec-manual-spd-resource: backlog
   20-6-ipsec-key-pair-resource: backlog
