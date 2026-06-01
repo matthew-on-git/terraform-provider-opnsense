@@ -28,7 +28,7 @@ var hostOverrideReqOpts = opnsense.ReqOpts{
 	DeleteEndpoint:      "/api/unbound/settings/del_host_override",
 	SearchEndpoint:      "/api/unbound/settings/search_host_override",
 	ReconfigureEndpoint: "/api/unbound/service/reconfigure",
-	Monad:               "host_override",
+	Monad:               "host",
 }
 
 // hostOverrideResource implements the opnsense_unbound_host_override resource.

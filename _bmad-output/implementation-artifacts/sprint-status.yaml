@@ -218,7 +218,7 @@ development_status:
   epic-22: backlog
   22-1-unbound-general-settings-resource: done   # opnsense_unbound_general singleton (codegen via dotted monad unbound.general, live-validated)
   22-2-unbound-forward-resource: done   # already shipped as opnsense_unbound_domain_override (add_forward controller)
-  22-3-unbound-host-alias-resource: backlog
+  22-3-unbound-host-alias-resource: done   # opnsense_unbound_host_alias (hand-written, composition-tested; also fixed host_override monad bug)
   22-4-unbound-blocklist-resource: done   # opnsense_unbound_dnsbl singleton (codegen via dotted monad unbound.dnsbl, live-validated)
   22-5-dnsmasq-resources: done   # opnsense_dnsmasq_settings singleton (generated, live-validated); list sub-items (hosts/ranges/options) are follow-ups
 

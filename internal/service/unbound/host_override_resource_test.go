@@ -17,7 +17,7 @@ func TestAccUnboundHostOverride_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_unbound_host_override", opnsense.ReqOpts{GetEndpoint: "/api/unbound/settings/get_host_override", Monad: "host_override"}),
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_unbound_host_override", opnsense.ReqOpts{GetEndpoint: "/api/unbound/settings/get_host_override", Monad: "host"}),
 		Steps: []resource.TestStep{
 			// Step 1: Create and verify.
 			{
