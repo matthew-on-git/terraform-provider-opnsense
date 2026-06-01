@@ -269,7 +269,28 @@ func (p *OpnsenseProvider) Resources(_ context.Context) []func() resource.Resour
 
 // DataSources returns the list of data source types supported by this provider.
 func (p *OpnsenseProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return firewall.DataSources()
+	var dataSources []func() datasource.DataSource
+	dataSources = append(dataSources, acme.DataSources()...)
+	dataSources = append(dataSources, firewall.DataSources()...)
+	dataSources = append(dataSources, haproxy.DataSources()...)
+	dataSources = append(dataSources, quagga.DataSources()...)
+	dataSources = append(dataSources, system.DataSources()...)
+	dataSources = append(dataSources, unbound.DataSources()...)
+	dataSources = append(dataSources, wireguard.DataSources()...)
+	dataSources = append(dataSources, ipsec.DataSources()...)
+	dataSources = append(dataSources, kea.DataSources()...)
+	dataSources = append(dataSources, openvpn.DataSources()...)
+	dataSources = append(dataSources, ddclient.DataSources()...)
+	dataSources = append(dataSources, dhcp.DataSources()...)
+	dataSources = append(dataSources, dnsmasq.DataSources()...)
+	dataSources = append(dataSources, trafficshaper.DataSources()...)
+	dataSources = append(dataSources, syslog.DataSources()...)
+	dataSources = append(dataSources, cron.DataSources()...)
+	dataSources = append(dataSources, monit.DataSources()...)
+	dataSources = append(dataSources, trust.DataSources()...)
+	dataSources = append(dataSources, auth.DataSources()...)
+	dataSources = append(dataSources, iface.DataSources()...)
+	return dataSources
 }
 
 // New returns a new provider factory function.

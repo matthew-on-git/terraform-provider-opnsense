@@ -44,5 +44,17 @@ func Resources() []func() resource.Resource {
 
 // DataSources returns the list of Quagga/FRR data source types.
 func DataSources() []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		newOSPF6InterfaceDataSource,
+		newOSPF6NetworkDataSource,
+		newOSPF6PrefixListDataSource,
+		newOSPF6RedistributionDataSource,
+		newOSPF6RouteMapDataSource,
+		newOSPFInterfaceDataSource,
+		newOSPFNeighborDataSource,
+		newOSPFNetworkDataSource,
+		newOSPFPrefixListDataSource,
+		newOSPFRedistributionDataSource,
+		newOSPFRouteMapDataSource,
+	}
 }

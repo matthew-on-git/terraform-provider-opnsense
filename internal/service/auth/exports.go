@@ -19,5 +19,8 @@ func Resources() []func() resource.Resource {
 
 // DataSources returns the list of auth data source types.
 func DataSources() []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		newGroupDataSource,
+		newUserDataSource,
+	}
 }

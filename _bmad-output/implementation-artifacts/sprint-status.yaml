@@ -140,7 +140,7 @@ development_status:
 
   # Epic 12: Data Sources, Documentation & Registry Release
   epic-12: backlog
-  12-1-remaining-data-sources: backlog
+  12-1-remaining-data-sources: done   # codegen emits a data source per item resource (32) + hand-written opnsense_system_info; provider DataSources() aggregates all packages; live-validated
   12-2-provider-index-documentation: backlog
   12-3-composition-examples: backlog
   12-4-ci-cd-pipeline-and-registry-release: backlog

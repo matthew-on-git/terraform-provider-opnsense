@@ -115,6 +115,15 @@ func generateResource(pkg string, r *Resource) error {
 		{"resource", resourceTmpl, resourceImports(r)},
 		{"resource_test", testTmpl, testImports(r)},
 	}
+	// Item resources also get a read-only data source (lookup by UUID). Singletons
+	// are looked up without an id, so they don't get a generated data source.
+	if r.Kind == "item" {
+		files = append(files, struct {
+			kind    string
+			tmpl    *template.Template
+			imports string
+		}{"data_source", dataSourceTmpl, dataSourceImports(r)})
+	}
 	for _, f := range files {
 		var buf strings.Builder
 		err := f.tmpl.Execute(&buf, map[string]any{"Pkg": pkg, "R": r, "Imports": f.imports})
@@ -281,18 +290,19 @@ func testFieldsHCL(r *Resource) string {
 // --- template helpers ---
 
 var funcs = template.FuncMap{
-	"camel":        camelName,
-	"goType":       goType,
-	"respType":     respType,
-	"toAPI":        toAPILine,
-	"fromAPI":      fromAPILine,
-	"schemaAttr":   schemaAttr,
-	"importIgnore": importIgnore,
-	"isItem":       func(r *Resource) bool { return r.Kind == "item" },
-	"isSingleton":  func(r *Resource) bool { return r.Kind == "singleton" },
-	"hasSet":       hasSet,
-	"testFields":   testFieldsHCL,
-	"reqTag":       reqTag,
+	"camel":          camelName,
+	"goType":         goType,
+	"respType":       respType,
+	"toAPI":          toAPILine,
+	"fromAPI":        fromAPILine,
+	"schemaAttr":     schemaAttr,
+	"dataSourceAttr": dataSourceAttr,
+	"importIgnore":   importIgnore,
+	"isItem":         func(r *Resource) bool { return r.Kind == "item" },
+	"isSingleton":    func(r *Resource) bool { return r.Kind == "singleton" },
+	"hasSet":         hasSet,
+	"testFields":     testFieldsHCL,
+	"reqTag":         reqTag,
 }
 
 // reqTag builds the request struct json tag. Optional, non-bool fields get
@@ -420,6 +430,38 @@ func schemaAttr(f Field) string {
 	return b.String()
 }
 
+// dataSourceAttr renders one Computed data-source schema attribute (all fields
+// are read-only outputs in a data source; the id is the Required lookup key and
+// is emitted separately by the template).
+func dataSourceAttr(f Field) string {
+	switch f.Type {
+	case "bool":
+		return fmt.Sprintf("%q: dsschema.BoolAttribute{Computed: true, MarkdownDescription: %q},", f.TF, f.Desc)
+	case "int":
+		return fmt.Sprintf("%q: dsschema.Int64Attribute{Computed: true, MarkdownDescription: %q},", f.TF, f.Desc)
+	case "selectmaplist", "csvset":
+		return fmt.Sprintf("%q: dsschema.SetAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: %q},", f.TF, f.Desc)
+	default:
+		return fmt.Sprintf("%q: dsschema.StringAttribute{Computed: true, MarkdownDescription: %q},", f.TF, f.Desc)
+	}
+}
+
+// dataSourceImports computes the import block for a generated data source file.
+func dataSourceImports(r *Resource) string {
+	fw := []string{
+		`"github.com/hashicorp/terraform-plugin-framework/datasource"`,
+		`dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"`,
+	}
+	if hasSet(r) {
+		fw = append(fw, pkgTypes)
+	}
+	return renderImports(
+		[]string{`"context"`, `"fmt"`},
+		fw,
+		[]string{pkgOpnsense},
+	)
+}
+
 // importIgnore renders the ImportStateVerifyIgnore clause for a resource's
 // write-only fields, or an empty string when there are none.
 func importIgnore(r *Resource) string {
@@ -440,11 +482,13 @@ func init() {
 	schemaTmpl = template.Must(template.New("schema").Funcs(funcs).Parse(schemaText))
 	resourceTmpl = template.Must(template.New("resource").Funcs(funcs).Parse(resourceText))
 	testTmpl = template.Must(template.New("test").Funcs(funcs).Parse(testText))
+	dataSourceTmpl = template.Must(template.New("datasource").Funcs(funcs).Parse(dataSourceText))
 }
 
 var (
-	modelTmpl    *template.Template
-	schemaTmpl   *template.Template
-	resourceTmpl *template.Template
-	testTmpl     *template.Template
+	modelTmpl      *template.Template
+	schemaTmpl     *template.Template
+	resourceTmpl   *template.Template
+	testTmpl       *template.Template
+	dataSourceTmpl *template.Template
 )

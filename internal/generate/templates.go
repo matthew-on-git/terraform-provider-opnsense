@@ -104,6 +104,66 @@ func (r *{{camel .R.Name}}Resource) Schema(_ context.Context, _ resource.SchemaR
 }
 `
 
+// dataSourceText emits a read-only data source for an item resource. It reuses
+// the resource's model, ReqOpts, APIResponse type, and fromAPI conversion; only
+// the schema differs (id is the Required lookup key, everything else Computed).
+const dataSourceText = header + `
+import (
+{{.Imports}}
+)
+
+{{$n := camel .R.Name}}var _ datasource.DataSource = &{{$n}}DataSource{}
+
+type {{$n}}DataSource struct{ client *opnsense.Client }
+
+func new{{.R.GoType}}DataSource() datasource.DataSource { return &{{$n}}DataSource{} }
+
+func (d *{{$n}}DataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_{{.R.TypeName}}"
+}
+
+func (d *{{$n}}DataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = dsschema.Schema{
+		MarkdownDescription: {{printf "%q" (printf "Look up an existing %s on OPNsense by UUID." .R.Title)}},
+		Attributes: map[string]dsschema.Attribute{
+			"id": dsschema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "UUID of the {{.R.Title}} to look up.",
+			},
+{{range .R.Fields}}			{{dataSourceAttr .}}
+{{end}}		},
+	}
+}
+
+func (d *{{$n}}DataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+	client, ok := req.ProviderData.(*opnsense.Client)
+	if !ok {
+		resp.Diagnostics.AddError("Unexpected Provider Data", "Expected *opnsense.Client.")
+		return
+	}
+	d.client = client
+}
+
+func (d *{{$n}}DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var config {{.R.GoType}}ResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	id := config.ID.ValueString()
+	result, err := opnsense.Get[{{$n}}APIResponse](ctx, d.client, {{$n}}ReqOpts, id)
+	if err != nil {
+		resp.Diagnostics.AddError("Error reading {{.R.Title}}", fmt.Sprintf("Could not read {{.R.Title}} %s: %s", id, err))
+		return
+	}
+	config.fromAPI(ctx, result, id)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
+}
+`
+
 const resourceText = header + `
 import (
 {{.Imports}}
