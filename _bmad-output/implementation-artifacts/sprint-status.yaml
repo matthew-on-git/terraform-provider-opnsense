@@ -212,14 +212,14 @@ development_status:
   21-3-kea-ha-peer-resource: backlog
   21-4-kea-dhcpv4-option-resource: backlog
   21-5-kea-ctrl-agent-settings-resource: done   # opnsense_kea_ctrl_agent singleton (codegen via dotted monad ctrlagent.general, live-validated)
-  21-6-kea-ddns-settings-resource: backlog
+  21-6-kea-ddns-settings-resource: cancelled   # INFEASIBLE — no kea ddns/get_ddns API endpoint on this build (probed: Endpoint not found)
 
   # Epic 22: DNS Completion (Unbound extensions; optional dnsmasq)
   epic-22: backlog
   22-1-unbound-general-settings-resource: done   # opnsense_unbound_general singleton (codegen via dotted monad unbound.general, live-validated)
-  22-2-unbound-forward-resource: backlog
+  22-2-unbound-forward-resource: done   # already shipped as opnsense_unbound_domain_override (add_forward controller)
   22-3-unbound-host-alias-resource: backlog
-  22-4-unbound-blocklist-resource: backlog
+  22-4-unbound-blocklist-resource: done   # opnsense_unbound_dnsbl singleton (codegen via dotted monad unbound.dnsbl, live-validated)
   22-5-dnsmasq-resources: done   # opnsense_dnsmasq_settings singleton (generated, live-validated); list sub-items (hosts/ranges/options) are follow-ups
 
   # Epic 23: Traffic Shaping

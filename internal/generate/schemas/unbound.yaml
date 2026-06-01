@@ -32,3 +32,25 @@ resources:
       - {name: LocalZoneType, tf: local_zone_type, json: local_zone_type, type: selectmap, default: "transparent", desc: "Local zone type (transparent, always_nxdomain, always_refuse, always_transparent, deny)."}
       - {name: OutgoingInterface, tf: outgoing_interface, json: outgoing_interface, type: selectmaplist, desc: "Interfaces used for outgoing queries (empty = all)."}
       - {name: EnableWPAD, tf: enable_wpad, json: enable_wpad, type: bool, default: "false", desc: "Serve WPAD records for proxy auto-discovery."}
+
+  - name: dnsbl
+    go_type: DNSBL
+    type_name: unbound_dnsbl
+    title: the Unbound DNS blocklist (DNSBL) settings
+    kind: singleton
+    id: unbound-dnsbl
+    reconfigure: /api/unbound/service/reconfigure
+    monad: unbound.dnsbl
+    endpoints:
+      get: /api/unbound/settings/get
+      set: /api/unbound/settings/set
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "false", desc: "Enable DNS-based blocklisting."}
+      - {name: SafeSearch, tf: safe_search, json: safesearch, type: bool, default: "false", desc: "Force safe search on supported search engines."}
+      - {name: Type, tf: type, json: type, type: selectmaplist, desc: "Built-in blocklist feeds to enable."}
+      - {name: Lists, tf: lists, json: lists, type: selectmaplist, desc: "Custom blocklist URL entries to apply."}
+      - {name: Whitelists, tf: whitelists, json: whitelists, type: selectmaplist, desc: "Whitelist (allow) domain pattern entries."}
+      - {name: Blocklists, tf: blocklists, json: blocklists, type: selectmaplist, desc: "Blocklist (deny) domain pattern entries."}
+      - {name: Wildcards, tf: wildcards, json: wildcards, type: selectmaplist, desc: "Wildcard domain block entries."}
+      - {name: Address, tf: address, json: address, type: string, default: "", desc: "Destination address for blocked responses (empty = 0.0.0.0)."}
+      - {name: NXDomain, tf: nxdomain, json: nxdomain, type: bool, default: "false", desc: "Return NXDOMAIN for blocked entries instead of an address."}
