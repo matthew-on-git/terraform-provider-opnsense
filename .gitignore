@@ -92,3 +92,7 @@ credentials.json
 .cursor/
 .windsurf/
 test/.vagrant/
+
+# Local acceptance-test tooling / VM state
+test/bin/
+test/.vagrant/

@@ -16,6 +16,7 @@ import (
 // InstanceResourceModel is the Terraform state model for opnsense_openvpn_instance.
 type InstanceResourceModel struct {
 	ID                types.String `tfsdk:"id"`
+	VPNID             types.String `tfsdk:"vpnid"`
 	Enabled           types.Bool   `tfsdk:"enabled"`
 	Role              types.String `tfsdk:"role"`
 	Description       types.String `tfsdk:"description"`
@@ -23,10 +24,12 @@ type InstanceResourceModel struct {
 	Protocol          types.String `tfsdk:"protocol"`
 	Port              types.String `tfsdk:"port"`
 	Local             types.String `tfsdk:"local"`
+	Remote            types.String `tfsdk:"remote"`
 	Server            types.String `tfsdk:"server"`
 	Topology          types.String `tfsdk:"topology"`
 	CA                types.String `tfsdk:"ca"`
 	Cert              types.String `tfsdk:"cert"`
+	VerifyClientCert  types.String `tfsdk:"verify_client_cert"`
 	TLSKey            types.String `tfsdk:"tls_key"`
 	DataCiphers       types.Set    `tfsdk:"data_ciphers"`
 	Auth              types.String `tfsdk:"auth"`
@@ -40,6 +43,8 @@ type InstanceResourceModel struct {
 }
 
 type instanceAPIResponse struct {
+	VPNID             string                   `json:"vpnid"`
+	VerifyClientCert  opnsense.SelectedMap     `json:"verify_client_cert"`
 	Enabled           string                   `json:"enabled"`
 	Role              opnsense.SelectedMap     `json:"role"`
 	Description       string                   `json:"description"`
@@ -47,6 +52,7 @@ type instanceAPIResponse struct {
 	Protocol          opnsense.SelectedMap     `json:"proto"`
 	Port              string                   `json:"port"`
 	Local             string                   `json:"local"`
+	Remote            opnsense.SelectedMap     `json:"remote"`
 	Server            string                   `json:"server"`
 	Topology          opnsense.SelectedMap     `json:"topology"`
 	CA                opnsense.SelectedMap     `json:"ca"`
@@ -54,8 +60,8 @@ type instanceAPIResponse struct {
 	TLSKey            opnsense.SelectedMap     `json:"tls_key"`
 	DataCiphers       opnsense.SelectedMapList `json:"data-ciphers"`
 	Auth              opnsense.SelectedMap     `json:"auth"`
-	DNSServers        string                   `json:"dns_servers"`
-	PushRoute         string                   `json:"push_route"`
+	DNSServers        opnsense.SelectedMapList `json:"dns_servers"`
+	PushRoute         opnsense.SelectedMapList `json:"push_route"`
 	RedirectGateway   opnsense.SelectedMapList `json:"redirect_gateway"`
 	MaxClients        string                   `json:"maxclients"`
 	KeepaliveInterval string                   `json:"keepalive_interval"`
@@ -64,6 +70,8 @@ type instanceAPIResponse struct {
 }
 
 type instanceAPIRequest struct {
+	VPNID             string `json:"vpnid"`
+	VerifyClientCert  string `json:"verify_client_cert"`
 	Enabled           string `json:"enabled"`
 	Role              string `json:"role"`
 	Description       string `json:"description"`
@@ -71,6 +79,7 @@ type instanceAPIRequest struct {
 	Protocol          string `json:"proto"`
 	Port              string `json:"port"`
 	Local             string `json:"local"`
+	Remote            string `json:"remote"`
 	Server            string `json:"server"`
 	Topology          string `json:"topology"`
 	CA                string `json:"ca"`
@@ -84,7 +93,7 @@ type instanceAPIRequest struct {
 	MaxClients        string `json:"maxclients"`
 	KeepaliveInterval string `json:"keepalive_interval"`
 	KeepaliveTimeout  string `json:"keepalive_timeout"`
-	Verb              string `json:"verb"`
+	Verb              string `json:"verb,omitempty"`
 }
 
 // setToCSV joins a Terraform string set into a comma-separated string for the API.
@@ -113,11 +122,14 @@ func (m *InstanceResourceModel) toAPI(ctx context.Context) *instanceAPIRequest {
 	return &instanceAPIRequest{
 		Enabled:           opnsense.BoolToString(m.Enabled.ValueBool()),
 		Role:              m.Role.ValueString(),
+		VPNID:             m.VPNID.ValueString(),
+		VerifyClientCert:  m.VerifyClientCert.ValueString(),
 		Description:       m.Description.ValueString(),
 		DevType:           m.DevType.ValueString(),
 		Protocol:          m.Protocol.ValueString(),
 		Port:              m.Port.ValueString(),
 		Local:             m.Local.ValueString(),
+		Remote:            m.Remote.ValueString(),
 		Server:            m.Server.ValueString(),
 		Topology:          m.Topology.ValueString(),
 		CA:                m.CA.ValueString(),
@@ -146,6 +158,8 @@ func int64ToStringOrEmpty(n int64) string {
 
 func (m *InstanceResourceModel) fromAPI(_ context.Context, a *instanceAPIResponse, uuid string) {
 	m.ID = types.StringValue(uuid)
+	m.VPNID = types.StringValue(a.VPNID)
+	m.VerifyClientCert = types.StringValue(string(a.VerifyClientCert))
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Role = types.StringValue(string(a.Role))
 	m.Description = types.StringValue(a.Description)
@@ -153,6 +167,7 @@ func (m *InstanceResourceModel) fromAPI(_ context.Context, a *instanceAPIRespons
 	m.Protocol = types.StringValue(string(a.Protocol))
 	m.Port = types.StringValue(a.Port)
 	m.Local = types.StringValue(a.Local)
+	m.Remote = types.StringValue(string(a.Remote))
 	m.Server = types.StringValue(a.Server)
 	m.Topology = types.StringValue(string(a.Topology))
 	m.CA = types.StringValue(string(a.CA))
@@ -163,8 +178,8 @@ func (m *InstanceResourceModel) fromAPI(_ context.Context, a *instanceAPIRespons
 
 	m.DataCiphers = sliceToSet(a.DataCiphers)
 	m.RedirectGateway = sliceToSet(a.RedirectGateway)
-	m.DNSServers = sliceToSet(opnsense.CSVToSlice(a.DNSServers))
-	m.PushRoute = sliceToSet(opnsense.CSVToSlice(a.PushRoute))
+	m.DNSServers = sliceToSet(a.DNSServers)
+	m.PushRoute = sliceToSet(a.PushRoute)
 
 	m.MaxClients = types.Int64Value(stringToInt64OrZero(a.MaxClients))
 	m.KeepaliveInterval = types.Int64Value(stringToInt64OrZero(a.KeepaliveInterval))

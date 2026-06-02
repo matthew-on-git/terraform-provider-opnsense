@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
@@ -27,7 +26,7 @@ func (r *testResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"type":      schema.StringAttribute{Required: true, MarkdownDescription: "Test type (e.g. SystemResource, ProcessMemory)."},
 			"condition": schema.StringAttribute{Required: true, MarkdownDescription: "Monit condition expression."},
 			"action":    schema.StringAttribute{Required: true, MarkdownDescription: "Action on match (alert, restart, stop, exec, ...)."},
-			"path":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Path/program for exec action."},
+			"path":      schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Path/program for exec action.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }

@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
@@ -25,12 +25,12 @@ func (r *pipeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"enabled":          schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether this pipe is enabled."},
-			"number":           schema.Int64Attribute{Required: true, MarkdownDescription: "Pipe number (unique)."},
+			"number":           schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "Pipe number (auto-assigned by OPNsense).", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"bandwidth":        schema.Int64Attribute{Required: true, MarkdownDescription: "Bandwidth value."},
-			"bandwidth_metric": schema.StringAttribute{Required: true, MarkdownDescription: "Bandwidth unit (e.g. Mbit/s)."},
-			"mask":             schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("none"), MarkdownDescription: "Dynamic pipe mask: none, src-ip, dst-ip."},
-			"scheduler":        schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Scheduler type (e.g. fq_codel)."},
-			"description":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Description."},
+			"bandwidth_metric": schema.StringAttribute{Required: true, MarkdownDescription: "Bandwidth unit: bit, Kbit, Mbit, Gbit."},
+			"mask":             schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Dynamic pipe mask: none, src-ip, dst-ip.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"scheduler":        schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Scheduler type (e.g. fq_codel).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"description":      schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Description (required by OPNsense).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }

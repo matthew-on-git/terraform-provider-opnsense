@@ -10,9 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
@@ -27,9 +26,9 @@ func (r *ospfNetworkResource) Schema(_ context.Context, _ resource.SchemaRequest
 			},
 			"enabled":    schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether this network is enabled."},
 			"ip_address": schema.StringAttribute{Required: true, MarkdownDescription: "Network address."},
-			"netmask":    schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(0), MarkdownDescription: "Netmask bits (0 = unset)."},
+			"netmask":    schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "Netmask bits.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"area":       schema.StringAttribute{Required: true, MarkdownDescription: "OSPF area (e.g. 0.0.0.0)."},
-			"area_range": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Optional area range summarization."},
+			"area_range": schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Optional area range summarization.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }

@@ -1,0 +1,56 @@
+# Unbound DNS general settings (nested singleton: unbound.general).
+# Item resources (host_override, domain_override, acl) remain hand-written.
+package: unbound
+resources:
+  - name: general
+    go_type: General
+    type_name: unbound_general
+    title: the Unbound DNS general settings
+    kind: singleton
+    id: unbound-general
+    reconfigure: /api/unbound/service/reconfigure
+    monad: unbound.general
+    endpoints:
+      get: /api/unbound/settings/get
+      set: /api/unbound/settings/set
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Enable the Unbound DNS resolver."}
+      - {name: Port, tf: port, json: port, type: string, default: "53", desc: "Port the resolver listens on."}
+      - {name: Stats, tf: stats, json: stats, type: bool, default: "false", desc: "Collect query statistics."}
+      - {name: ActiveInterface, tf: active_interface, json: active_interface, type: selectmaplist, desc: "Interfaces the resolver listens on (empty = all)."}
+      - {name: DNSSEC, tf: dnssec, json: dnssec, type: bool, default: "true", desc: "Enable DNSSEC validation."}
+      - {name: DNS64, tf: dns64, json: dns64, type: bool, default: "false", desc: "Enable DNS64 synthesis."}
+      - {name: DNS64Prefix, tf: dns64_prefix, json: dns64prefix, type: string, default: "", desc: "DNS64 prefix (empty = well-known 64:ff9b::/96)."}
+      - {name: NoAAAARecords, tf: no_aaaa_records, json: noarecords, type: bool, default: "false", desc: "Strip AAAA records from responses."}
+      - {name: RegisterDHCP, tf: register_dhcp, json: regdhcp, type: bool, default: "false", desc: "Register DHCP leases in the resolver."}
+      - {name: RegisterDHCPDomain, tf: register_dhcp_domain, json: regdhcpdomain, type: string, default: "", desc: "Domain appended to registered DHCP names."}
+      - {name: RegisterDHCPStatic, tf: register_dhcp_static, json: regdhcpstatic, type: bool, default: "false", desc: "Register static DHCP mappings in the resolver."}
+      - {name: NoRegisterLinkLocal6, tf: no_register_link_local6, json: noreglladdr6, type: bool, default: "false", desc: "Do not register IPv6 link-local addresses."}
+      - {name: NoRegisterRecords, tf: no_register_records, json: noregrecords, type: bool, default: "false", desc: "Do not register system A/AAAA records."}
+      - {name: TXTSupport, tf: txt_support, json: txtsupport, type: bool, default: "false", desc: "Serve TXT records for registered hosts."}
+      - {name: CacheFlush, tf: cache_flush, json: cacheflush, type: bool, default: "false", desc: "Flush the DNS cache on reconfigure."}
+      - {name: LocalZoneType, tf: local_zone_type, json: local_zone_type, type: selectmap, default: "transparent", desc: "Local zone type (transparent, always_nxdomain, always_refuse, always_transparent, deny)."}
+      - {name: OutgoingInterface, tf: outgoing_interface, json: outgoing_interface, type: selectmaplist, desc: "Interfaces used for outgoing queries (empty = all)."}
+      - {name: EnableWPAD, tf: enable_wpad, json: enable_wpad, type: bool, default: "false", desc: "Serve WPAD records for proxy auto-discovery."}
+
+  - name: dnsbl
+    go_type: DNSBL
+    type_name: unbound_dnsbl
+    title: the Unbound DNS blocklist (DNSBL) settings
+    kind: singleton
+    id: unbound-dnsbl
+    reconfigure: /api/unbound/service/reconfigure
+    monad: unbound.dnsbl
+    endpoints:
+      get: /api/unbound/settings/get
+      set: /api/unbound/settings/set
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "false", desc: "Enable DNS-based blocklisting."}
+      - {name: SafeSearch, tf: safe_search, json: safesearch, type: bool, default: "false", desc: "Force safe search on supported search engines."}
+      - {name: Type, tf: type, json: type, type: selectmaplist, desc: "Built-in blocklist feeds to enable."}
+      - {name: Lists, tf: lists, json: lists, type: selectmaplist, desc: "Custom blocklist URL entries to apply."}
+      - {name: Whitelists, tf: whitelists, json: whitelists, type: selectmaplist, desc: "Whitelist (allow) domain pattern entries."}
+      - {name: Blocklists, tf: blocklists, json: blocklists, type: selectmaplist, desc: "Blocklist (deny) domain pattern entries."}
+      - {name: Wildcards, tf: wildcards, json: wildcards, type: selectmaplist, desc: "Wildcard domain block entries."}
+      - {name: Address, tf: address, json: address, type: string, default: "", desc: "Destination address for blocked responses (empty = 0.0.0.0)."}
+      - {name: NXDomain, tf: nxdomain, json: nxdomain, type: bool, default: "false", desc: "Return NXDOMAIN for blocked entries instead of an address."}

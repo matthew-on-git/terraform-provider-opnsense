@@ -46,11 +46,11 @@ type ospf6InterfaceAPIRequest struct {
 	Interface     string `json:"interfacename"`
 	Area          string `json:"area"`
 	Passive       string `json:"passive"`
-	Cost          string `json:"cost"`
-	HelloInterval string `json:"hellointerval"`
-	DeadInterval  string `json:"deadinterval"`
-	Priority      string `json:"priority"`
-	NetworkType   string `json:"networktype"`
+	Cost          string `json:"cost,omitempty"`
+	HelloInterval string `json:"hellointerval,omitempty"`
+	DeadInterval  string `json:"deadinterval,omitempty"`
+	Priority      string `json:"priority,omitempty"`
+	NetworkType   string `json:"networktype,omitempty"`
 	BFD           string `json:"bfd"`
 }
 

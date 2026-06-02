@@ -26,15 +26,15 @@ type OSPFGeneralResourceModel struct {
 }
 
 type ospfGeneralAPIResponse struct {
-	Enabled             string `json:"enabled"`
-	RouterID            string `json:"routerid"`
-	CostReference       string `json:"costreference"`
-	LogAdjacencyChanges string `json:"logadjacencychanges"`
-	Originate           string `json:"originate"`
-	OriginateAlways     string `json:"originatealways"`
-	OriginateMetric     string `json:"originatemetric"`
-	PassiveInterfaces   string `json:"passiveinterfaces"`
-	CARPDemote          string `json:"carp_demote"`
+	Enabled             string                   `json:"enabled"`
+	RouterID            string                   `json:"routerid"`
+	CostReference       string                   `json:"costreference"`
+	LogAdjacencyChanges string                   `json:"logadjacencychanges"`
+	Originate           string                   `json:"originate"`
+	OriginateAlways     string                   `json:"originatealways"`
+	OriginateMetric     string                   `json:"originatemetric"`
+	PassiveInterfaces   opnsense.SelectedMapList `json:"passiveinterfaces"`
+	CARPDemote          string                   `json:"carp_demote"`
 }
 
 type ospfGeneralAPIRequest struct {
@@ -72,6 +72,6 @@ func (m *OSPFGeneralResourceModel) fromAPI(_ context.Context, a *ospfGeneralAPIR
 	m.Originate = types.BoolValue(opnsense.StringToBool(a.Originate))
 	m.OriginateAlways = types.BoolValue(opnsense.StringToBool(a.OriginateAlways))
 	m.OriginateMetric = types.Int64Value(intOrZero(a.OriginateMetric))
-	m.PassiveInterfaces = sliceToSet(opnsense.CSVToSlice(a.PassiveInterfaces))
+	m.PassiveInterfaces = sliceToSet(a.PassiveInterfaces)
 	m.CARPDemote = types.BoolValue(opnsense.StringToBool(a.CARPDemote))
 }

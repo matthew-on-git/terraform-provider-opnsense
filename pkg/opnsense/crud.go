@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 // Add creates a new resource via the OPNsense API. The resource struct is
@@ -245,24 +246,37 @@ func UpdateSingleton[K any](ctx context.Context, c *Client, opts ReqOpts, resour
 	return Reconfigure(ctx, c, opts)
 }
 
-// marshalWrapped marshals a resource struct wrapped in the monad key.
-// Example: monad="server", resource={Name:"web1"} → {"server":{"name":"web1"}}
+// marshalWrapped marshals a resource struct wrapped in the monad key. The monad
+// may be a dotted path to nest deeper than one level, which is required for
+// settings singletons whose model nests fields under a sub-section.
+// Examples: monad="server", resource={Name:"web1"} → {"server":{"name":"web1"}};
+// monad="unbound.general" → {"unbound":{"general":{...}}}.
 func marshalWrapped[K any](monad string, resource *K) ([]byte, error) {
-	wrapped := map[string]interface{}{monad: resource}
+	var wrapped interface{} = resource
+	parts := strings.Split(monad, ".")
+	for i := len(parts) - 1; i >= 0; i-- {
+		wrapped = map[string]interface{}{parts[i]: wrapped}
+	}
 	return json.Marshal(wrapped)
 }
 
 // unmarshalWrapped extracts a resource struct from a monad-wrapped JSON response.
-// Returns NotFoundError if the monad key is missing or the inner value is empty.
+// The monad may be a dotted path (e.g. "unbound.general") to descend through
+// nested sections. Returns NotFoundError if any path segment is missing or the
+// inner value is empty.
 func unmarshalWrapped[K any](monad string, body []byte) (*K, error) {
-	var envelope map[string]json.RawMessage
-	if err := json.Unmarshal(body, &envelope); err != nil {
-		return nil, fmt.Errorf("failed to parse response: %w", err)
-	}
+	inner := json.RawMessage(body)
+	for _, part := range strings.Split(monad, ".") {
+		var envelope map[string]json.RawMessage
+		if err := json.Unmarshal(inner, &envelope); err != nil {
+			return nil, fmt.Errorf("failed to parse response: %w", err)
+		}
 
-	inner, ok := envelope[monad]
-	if !ok || len(inner) == 0 || string(inner) == "null" || string(inner) == "{}" {
-		return nil, &NotFoundError{Message: "resource not found"}
+		next, ok := envelope[part]
+		if !ok || len(next) == 0 || string(next) == "null" || string(next) == "{}" {
+			return nil, &NotFoundError{Message: "resource not found"}
+		}
+		inner = next
 	}
 
 	var result K

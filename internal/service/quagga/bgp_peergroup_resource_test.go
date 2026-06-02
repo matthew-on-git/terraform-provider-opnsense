@@ -36,7 +36,7 @@ func testAccQuaggaBGPPeerGroupConfig(name string) string {
 resource "opnsense_quagga_bgp_peergroup" "test" {
   name           = %[1]q
   remote_as_mode = "external"
-  family         = ["IPv4"]
+  family         = ["ipv4"]
 }
 `, name)
 }

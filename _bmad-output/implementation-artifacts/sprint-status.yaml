@@ -135,16 +135,16 @@ development_status:
   epic-11: in-progress
   11-1-dhcpv4-pool-resource: done
   11-2-dhcpv4-static-mapping-resource: done
-  11-3-dhcpv4-option-resource: backlog     # BUILDABLE — Kea has add_option/del_option/get_option (re-confirmed Wave B)
+  11-3-dhcpv4-option-resource: cancelled   # INFEASIBLE — Kea dhcpv4 *_option endpoints return 'Endpoint not found' on live 25.x (probed 2026-05-31)
   epic-11-retrospective: optional
 
   # Epic 12: Data Sources, Documentation & Registry Release
   epic-12: backlog
-  12-1-remaining-data-sources: backlog
-  12-2-provider-index-documentation: backlog
-  12-3-composition-examples: backlog
-  12-4-ci-cd-pipeline-and-registry-release: backlog
-  12-5-changelog-and-v0-1-0-release: backlog
+  12-1-remaining-data-sources: done   # codegen emits a data source per item resource (32) + hand-written opnsense_system_info; provider DataSources() aggregates all packages; live-validated
+  12-2-provider-index-documentation: done   # templates/index.md.tmpl + examples/provider/provider.tf; tfplugindocs generates docs/index.md + 90 resource + 34 data-source pages; //go:generate directive added
+  12-3-composition-examples: done   # 6 compositions in examples/compositions/ (customer-onboarding, haproxy-full-stack, bgp-peering, firewall-baseline, wireguard-vpn, dns-management); fmt-clean + terraform-validate against the real provider schema
+  12-4-ci-cd-pipeline-and-registry-release: done   # release.yml (GoReleaser+GPG on v* tags), acceptance.yml (workflow_dispatch, live box), test/scripts/validate-structure.sh wired into CI generate-check; docs gen already wired via tools/tools.go
+  12-5-changelog-and-v0-1-0-release: in-progress   # CHANGELOG.md v0.1.0 (TF format, 90 resources + 34 data sources) DONE; live publish (GPG secrets + v0.1.0 tag push + Registry account link) PENDING user
   epic-12-retrospective: optional
 
   # === EXPANDED SCOPE (feature-complete-roadmap.md, 2026-05-29) ===
@@ -161,29 +161,29 @@ development_status:
   14-3-openvpn-static-key-resource: done   # make check passes lint/format/test/scan/docs; security target tracked upstream (dev-toolchain#50)
 
   # Epic 15: PKI & Trust
-  epic-15: backlog
-  15-1-trust-ca-resource: backlog
-  15-2-trust-certificate-resource: backlog
+  epic-15: in-progress
+  15-1-trust-ca-resource: done   # opnsense_trust_ca (internal CA) — acceptance-validated against live VM
+  15-2-trust-certificate-resource: done   # opnsense_trust_cert (hand-written import; cert+key write-only, live-validated)
 
   # Epic 16: Users & Access
-  epic-16: backlog
-  16-1-auth-user-resource: backlog
-  16-2-auth-group-resource: backlog
+  epic-16: in-progress
+  16-1-auth-user-resource: done   # opnsense_auth_user (codegen; sensitive+write_only password via new generator flags, live-validated)
+  16-2-auth-group-resource: done   # opnsense_auth_group (generated, live-validated)
 
   # Epic 17: Interface Types
-  epic-17: backlog
-  17-1-interface-bridge-resource: backlog
-  17-2-interface-lagg-resource: backlog
-  17-3-interface-gre-resource: backlog
-  17-4-interface-gif-resource: backlog
-  17-5-interface-vxlan-resource: backlog
-  17-6-interface-loopback-resource: backlog
-  17-7-interface-neighbor-resource: backlog
+  epic-17: in-progress
+  17-1-interface-bridge-resource: done   # opnsense_interface_bridge (generated, live-validated)
+  17-2-interface-lagg-resource: blocked   # ENV: test VM has no free/unassigned NIC to form a LAGG (members select is empty); needs the hardware box to build+live-validate
+  17-3-interface-gre-resource: done   # opnsense_interface_gre (generated, live-validated)
+  17-4-interface-gif-resource: done   # opnsense_interface_gif (generated, live-validated)
+  17-5-interface-vxlan-resource: done   # opnsense_interface_vxlan (generated, live-validated)
+  17-6-interface-loopback-resource: done   # opnsense_interface_loopback (generated, live-validated)
+  17-7-interface-neighbor-resource: done   # opnsense_interface_neighbor (generated, live-validated)
 
   # Epic 18: Firewall Completion
-  epic-18: backlog
-  18-1-firewall-source-nat-resource: backlog
-  18-2-firewall-one-to-one-nat-resource: backlog
+  epic-18: done
+  18-1-firewall-source-nat-resource: done   # already shipped as opnsense_firewall_nat_outbound (source_nat controller)
+  18-2-firewall-one-to-one-nat-resource: done   # opnsense_firewall_nat_one_to_one (generated, live-validated)
 
   # Epic 19: Dynamic Routing Completion (FRR) — depends on Epic 13
   epic-19: done
@@ -197,30 +197,30 @@ development_status:
 
   # --- Wave B (confirmed, second priority) ---
   # Epic 20: VPN Completion (IPsec extensions)
-  epic-20: backlog
-  20-1-ipsec-local-resource: backlog
-  20-2-ipsec-remote-resource: backlog
-  20-3-ipsec-pool-resource: backlog
-  20-4-ipsec-vti-resource: backlog
-  20-5-ipsec-manual-spd-resource: backlog
-  20-6-ipsec-key-pair-resource: backlog
+  epic-20: done
+  20-1-ipsec-local-resource: done   # opnsense_ipsec_local (hand-written, composition-tested; also fixed connection proposals/remote_addrs/version field-type bugs)
+  20-2-ipsec-remote-resource: done   # opnsense_ipsec_remote (hand-written, composition-tested)
+  20-3-ipsec-pool-resource: done   # opnsense_ipsec_pool (generated, live-validated)
+  20-4-ipsec-vti-resource: done   # opnsense_ipsec_vti (generated, live-validated)
+  20-5-ipsec-manual-spd-resource: done   # opnsense_ipsec_manual_spd (generated, live-validated)
+  20-6-ipsec-key-pair-resource: done   # opnsense_ipsec_key_pair (hand-written; public/private key write-only, live-validated)
 
   # Epic 21: DHCP Completion (Kea) — singletons depend on Epic 13
-  epic-21: backlog
-  21-1-kea-dhcpv6-subnet-resource: backlog
-  21-2-kea-dhcpv6-reservation-resource: backlog
-  21-3-kea-ha-peer-resource: backlog
-  21-4-kea-dhcpv4-option-resource: backlog
-  21-5-kea-ctrl-agent-settings-resource: backlog
-  21-6-kea-ddns-settings-resource: backlog
+  epic-21: done   # buildable stories done; 21-4 dhcpv4-option + 21-6 ddns INFEASIBLE (no API)
+  21-1-kea-dhcpv6-subnet-resource: done   # opnsense_kea_dhcpv6_subnet (hand-written, composition-tested with dhcpv6_settings)
+  21-2-kea-dhcpv6-reservation-resource: done   # opnsense_kea_dhcpv6_reservation (hand-written, composition-tested via subnet)
+  21-3-kea-ha-peer-resource: done   # opnsense_kea_ha_peer (generated, live-validated)
+  21-4-kea-dhcpv4-option-resource: cancelled   # INFEASIBLE — same as 11-3 (no Kea dhcpv4 option API)
+  21-5-kea-ctrl-agent-settings-resource: done   # opnsense_kea_ctrl_agent singleton (codegen via dotted monad ctrlagent.general, live-validated)
+  21-6-kea-ddns-settings-resource: cancelled   # INFEASIBLE — no kea ddns/get_ddns API endpoint on this build (probed: Endpoint not found)
 
   # Epic 22: DNS Completion (Unbound extensions; optional dnsmasq)
-  epic-22: backlog
-  22-1-unbound-general-settings-resource: backlog
-  22-2-unbound-forward-resource: backlog
-  22-3-unbound-host-alias-resource: backlog
-  22-4-unbound-blocklist-resource: backlog
-  22-5-dnsmasq-resources: backlog
+  epic-22: done
+  22-1-unbound-general-settings-resource: done   # opnsense_unbound_general singleton (codegen via dotted monad unbound.general, live-validated)
+  22-2-unbound-forward-resource: done   # already shipped as opnsense_unbound_domain_override (add_forward controller)
+  22-3-unbound-host-alias-resource: done   # opnsense_unbound_host_alias (hand-written, composition-tested; also fixed host_override monad bug)
+  22-4-unbound-blocklist-resource: done   # opnsense_unbound_dnsbl singleton (codegen via dotted monad unbound.dnsbl, live-validated)
+  22-5-dnsmasq-resources: done   # opnsense_dnsmasq_settings singleton (generated, live-validated); list sub-items (hosts/ranges/options) are follow-ups
 
   # Epic 23: Traffic Shaping
   epic-23: done

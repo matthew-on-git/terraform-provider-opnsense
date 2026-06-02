@@ -10,9 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -28,17 +27,17 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			},
 			"enabled":       schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether this service check is enabled."},
 			"name":          schema.StringAttribute{Required: true, MarkdownDescription: "Service name."},
-			"description":   schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Description."},
+			"description":   schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Description.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"type":          schema.StringAttribute{Required: true, MarkdownDescription: "Service type (process, file, host, system, network, ...)."},
-			"pidfile":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "PID file path (process type)."},
-			"match":         schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Process match string."},
-			"path":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Path (file/filesystem types)."},
-			"timeout":       schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(300), MarkdownDescription: "Restart timeout in seconds."},
-			"start_timeout": schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(30), MarkdownDescription: "Start timeout in seconds."},
-			"address":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Address (host/network types)."},
-			"interface":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Interface (network type)."},
-			"start":         schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Start program command."},
-			"stop":          schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Stop program command."},
+			"pidfile":       schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "PID file path (process type).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"match":         schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Process match string.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"path":          schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Path (file/filesystem types).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"timeout":       schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "Restart timeout in seconds.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"start_timeout": schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "Start timeout in seconds.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
+			"address":       schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Address (host/network types).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"interface":     schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Interface (network type).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"start":         schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Start program command.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"stop":          schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Stop program command.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"tests":         schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, MarkdownDescription: "UUIDs of monit tests applied to this service."},
 		},
 	}

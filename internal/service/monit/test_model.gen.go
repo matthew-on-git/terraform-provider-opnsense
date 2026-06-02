@@ -35,7 +35,7 @@ type testAPIRequest struct {
 	Type      string `json:"type"`
 	Condition string `json:"condition"`
 	Action    string `json:"action"`
-	Path      string `json:"path"`
+	Path      string `json:"path,omitempty"`
 }
 
 func (m *TestResourceModel) toAPI(_ context.Context) *testAPIRequest {

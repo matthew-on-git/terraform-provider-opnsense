@@ -24,7 +24,7 @@ type RIPResourceModel struct {
 type ripAPIResponse struct {
 	Enabled       string                   `json:"enabled"`
 	Version       string                   `json:"version"`
-	Networks      string                   `json:"networks"`
+	Networks      opnsense.SelectedMapList `json:"networks"`
 	Redistribute  opnsense.SelectedMapList `json:"redistribute"`
 	DefaultMetric string                   `json:"defaultmetric"`
 }
@@ -51,7 +51,7 @@ func (m *RIPResourceModel) fromAPI(_ context.Context, a *ripAPIResponse, id stri
 	m.ID = types.StringValue(id)
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Version = types.Int64Value(intOrZero(a.Version))
-	m.Networks = sliceToSet(opnsense.CSVToSlice(a.Networks))
+	m.Networks = sliceToSet(a.Networks)
 	m.Redistribute = sliceToSet(a.Redistribute)
 	m.DefaultMetric = types.Int64Value(intOrZero(a.DefaultMetric))
 }

@@ -13,9 +13,9 @@ resource "opnsense_haproxy_server" "web2" {
 
 # Create a backend pool linking to the servers
 resource "opnsense_haproxy_backend" "web_pool" {
-  name           = "web-pool"
-  mode           = "http"
-  algorithm      = "roundrobin"
+  name      = "web-pool"
+  mode      = "http"
+  algorithm = "roundrobin"
   linked_servers = [
     opnsense_haproxy_server.web1.id,
     opnsense_haproxy_server.web2.id,

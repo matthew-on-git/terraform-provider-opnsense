@@ -43,12 +43,12 @@ type destinationAPIRequest struct {
 	Enabled     string `json:"enabled"`
 	Transport   string `json:"transport"`
 	Hostname    string `json:"hostname"`
-	Port        string `json:"port"`
-	Level       string `json:"level"`
-	Facility    string `json:"facility"`
-	Certificate string `json:"certificate"`
+	Port        string `json:"port,omitempty"`
+	Level       string `json:"level,omitempty"`
+	Facility    string `json:"facility,omitempty"`
+	Certificate string `json:"certificate,omitempty"`
 	RFC5424     string `json:"rfc5424"`
-	Description string `json:"description"`
+	Description string `json:"description,omitempty"`
 }
 
 func (m *DestinationResourceModel) toAPI(ctx context.Context) *destinationAPIRequest {

@@ -33,10 +33,10 @@ type ospfNeighborAPIResponse struct {
 
 type ospfNeighborAPIRequest struct {
 	Enabled      string `json:"enabled"`
-	Description  string `json:"description"`
+	Description  string `json:"description,omitempty"`
 	Address      string `json:"address"`
-	PollInterval string `json:"pollinterval"`
-	Priority     string `json:"priority"`
+	PollInterval string `json:"pollinterval,omitempty"`
+	Priority     string `json:"priority,omitempty"`
 }
 
 func (m *OSPFNeighborResourceModel) toAPI(_ context.Context) *ospfNeighborAPIRequest {

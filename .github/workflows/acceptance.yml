@@ -1,0 +1,31 @@
+# Acceptance tests against a live OPNsense appliance.
+#
+# These exercise real CRUD against the OPNsense API (TF_ACC=1), so they require
+# a reachable appliance. They run on manual dispatch (and could be wired to a
+# self-hosted runner backing a QEMU OPNsense VM). Configure these secrets:
+#   OPNSENSE_URI, OPNSENSE_API_KEY, OPNSENSE_API_SECRET
+# Optionally OPNSENSE_ALLOW_INSECURE=true for a self-signed appliance.
+name: Acceptance
+
+on:
+  workflow_dispatch:
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run acceptance tests
+        run: go test -p 1 -count=1 -timeout 30m ./internal/service/...
+        env:
+          TF_ACC: "1"
+          OPNSENSE_URI: ${{ secrets.OPNSENSE_URI }}
+          OPNSENSE_API_KEY: ${{ secrets.OPNSENSE_API_KEY }}
+          OPNSENSE_API_SECRET: ${{ secrets.OPNSENSE_API_SECRET }}
+          OPNSENSE_ALLOW_INSECURE: ${{ secrets.OPNSENSE_ALLOW_INSECURE }}

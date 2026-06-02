@@ -32,3 +32,6 @@ jobs:
           go generate ./... && git diff --exit-code
         env:
           GOFLAGS: -buildvcs=false
+
+      - name: Validate service package structure
+        run: bash test/scripts/validate-structure.sh

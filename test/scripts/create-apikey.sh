@@ -1,46 +1,41 @@
 #!/bin/sh
-# create-apikey.sh — Generate OPNsense API key/secret for acceptance testing.
+# create-apikey.sh — Generate an OPNsense API key/secret for acceptance testing.
 #
-# This script runs as a Vagrant provisioner inside the OPNsense VM.
-# It creates an API key for the root user by manipulating config.xml
-# and outputs the credentials as shell export commands.
+# Runs as a Vagrant provisioner inside the OPNsense VM. OPNsense stores API
+# credentials under <system><user><apikeys><item> in config.xml, with the
+# secret hashed via PHP password_hash() (verified with password_verify() — see
+# OPNsense/Auth/API.php). We therefore:
+#   1. generate a random key + secret,
+#   2. bcrypt-hash the secret,
+#   3. write the apikeys item via OPNsense's own config framework (idempotent —
+#      replaces any existing keys for root), and
+#   4. reload the GUI/API so the new key is active.
 
 set -e
 
-CONFIG="/conf/config.xml"
-API_KEY_DIR="/var/db/api_keys"
+KEY=$(openssl rand -hex 20)
+SECRET=$(openssl rand -hex 32)
+HASH=$(php -r 'echo password_hash($argv[1], PASSWORD_DEFAULT);' "$SECRET")
 
-# Generate a random API key and secret.
-API_KEY=$(openssl rand -hex 20)
-API_SECRET=$(openssl rand -hex 40)
+# Inject the apikey into config.xml using the OPNsense config framework so the
+# structure and revision metadata are correct. Idempotent: clears prior keys.
+# Key and hash are passed via argv (NOT interpolated) — the bcrypt hash contains
+# '$' sequences that PHP would otherwise treat as variables.
+php -r '
+require_once("config.inc");
+require_once("util.inc");
+global $config;
+foreach ($config["system"]["user"] as &$u) {
+    if ($u["name"] == "root") {
+        unset($u["apikeys"]);
+        $u["apikeys"] = array("item" => array(array("key" => $argv[1], "secret" => $argv[2])));
+    }
+}
+write_config("acceptance test api key");
+' "$KEY" "$HASH"
 
-# Hash the secret for storage in config (OPNsense uses SHA-512).
-API_SECRET_HASH=$(echo -n "$API_SECRET" | openssl dgst -sha512 | awk '{print $NF}')
-
-# Create the API key directory if it doesn't exist.
-mkdir -p "$API_KEY_DIR"
-
-# Write the key file in OPNsense's expected format.
-# The filename is the key, the content is the hashed secret.
-echo "$API_SECRET_HASH" > "${API_KEY_DIR}/${API_KEY}"
-
-# Add the API key reference to the root user in config.xml.
-# OPNsense stores API keys under <system><user><apikeys><item>.
-# Use sed to inject the key into the root user's config block.
-if grep -q "<apikeys>" "$CONFIG"; then
-  # apikeys section exists — add our key.
-  sed -i '' "/<apikeys>/a\\
-<item><key>${API_KEY}</key></item>" "$CONFIG" 2>/dev/null || \
-  sed -i "/<apikeys>/a <item><key>${API_KEY}</key></item>" "$CONFIG"
-else
-  # No apikeys section — create it inside the root user block.
-  sed -i '' "/<\/user>/i\\
-<apikeys><item><key>${API_KEY}</key></item></apikeys>" "$CONFIG" 2>/dev/null || \
-  sed -i "/<\/user>/i <apikeys><item><key>${API_KEY}</key></item></apikeys>" "$CONFIG"
-fi
-
-# Reload the config to pick up the new key.
-configctl auth restart >/dev/null 2>&1 || true
+# Reload so the new key is picked up by the API.
+configctl webgui restart >/dev/null 2>&1 || true
 
 echo ""
 echo "============================================"
@@ -50,8 +45,8 @@ echo ""
 echo "  Copy and paste these commands:"
 echo ""
 echo "  export OPNSENSE_URI=https://localhost:10443"
-echo "  export OPNSENSE_API_KEY=${API_KEY}"
-echo "  export OPNSENSE_API_SECRET=${API_SECRET}"
+echo "  export OPNSENSE_API_KEY=${KEY}"
+echo "  export OPNSENSE_API_SECRET=${SECRET}"
 echo "  export OPNSENSE_ALLOW_INSECURE=true"
 echo ""
 echo "  Then run acceptance tests:"

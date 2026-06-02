@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
@@ -27,9 +26,9 @@ func (r *ospfRedistributionResource) Schema(_ context.Context, _ resource.Schema
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"enabled":      schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether this redistribution is enabled."},
-			"description":  schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Description."},
+			"description":  schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Description.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"redistribute": schema.StringAttribute{Required: true, MarkdownDescription: "Source to redistribute into OSPF.", Validators: []validator.String{stringvalidator.OneOf("connected", "kernel", "static", "bgp", "rip")}},
-			"route_map":    schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "UUID of a route map to apply."},
+			"route_map":    schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "UUID of a route map to apply.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }

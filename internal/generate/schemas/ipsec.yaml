@@ -1,0 +1,68 @@
+# IPsec (swanctl) resources generated into internal/service/ipsec.
+# (connection/child/psk remain hand-written.)
+package: ipsec
+resources:
+  - name: pool
+    go_type: Pool
+    type_name: ipsec_pool
+    title: an IPsec virtual IP address pool
+    kind: item
+    reconfigure: /api/ipsec/service/reconfigure
+    monad: pool
+    endpoints:
+      add: /api/ipsec/pools/add
+      get: /api/ipsec/pools/get
+      set: /api/ipsec/pools/set
+      del: /api/ipsec/pools/del
+      search: /api/ipsec/pools/search
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this pool is enabled."}
+      - {name: Name, tf: name, json: name, type: string, required: true, test_value: '"tfaccpool"', desc: "Unique pool name."}
+      - {name: Addresses, tf: addresses, json: addrs, type: string, required: true, test_value: '"10.20.30.0/24"', desc: "Address subnet handed out by this pool (CIDR)."}
+      - {name: DNS, tf: dns, json: dns, type: selectmaplist, desc: "DNS servers offered to clients from this pool."}
+
+  - name: vti
+    go_type: VTI
+    type_name: ipsec_vti
+    title: an IPsec virtual tunnel interface (VTI)
+    kind: item
+    reconfigure: /api/ipsec/service/reconfigure
+    monad: vti
+    endpoints:
+      add: /api/ipsec/vti/add
+      get: /api/ipsec/vti/get
+      set: /api/ipsec/vti/set
+      del: /api/ipsec/vti/del
+      search: /api/ipsec/vti/search
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this VTI is enabled."}
+      - {name: ReqID, tf: req_id, json: reqid, type: int, required: true, test_value: "100", desc: "Unique request ID for this tunnel."}
+      - {name: Local, tf: local, json: local, type: string, required: true, test_value: '"192.168.56.10"', desc: "Local gateway IP address."}
+      - {name: Remote, tf: remote, json: remote, type: string, required: true, test_value: '"192.0.2.50"', desc: "Remote gateway IP address."}
+      - {name: TunnelLocal, tf: tunnel_local, json: tunnel_local, type: string, required: true, test_value: '"10.0.0.1"', desc: "Local tunnel (inside) IP address."}
+      - {name: TunnelRemote, tf: tunnel_remote, json: tunnel_remote, type: string, required: true, test_value: '"10.0.0.2"', desc: "Remote tunnel (inside) IP address."}
+      - {name: TunnelLocal2, tf: tunnel_local2, json: tunnel_local2, type: string, desc: "Optional second local tunnel IP address."}
+      - {name: TunnelRemote2, tf: tunnel_remote2, json: tunnel_remote2, type: string, desc: "Optional second remote tunnel IP address."}
+      - {name: Description, tf: description, json: description, type: string, default: "", test_value: '"tf-acc-vti"', desc: "Description."}
+
+  - name: manual_spd
+    go_type: ManualSPD
+    type_name: ipsec_manual_spd
+    title: an IPsec manual security policy (SPD)
+    kind: item
+    reconfigure: /api/ipsec/service/reconfigure
+    monad: spd
+    endpoints:
+      add: /api/ipsec/manual_spd/add
+      get: /api/ipsec/manual_spd/get
+      set: /api/ipsec/manual_spd/set
+      del: /api/ipsec/manual_spd/del
+      search: /api/ipsec/manual_spd/search
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this SPD entry is enabled."}
+      - {name: Protocol, tf: protocol, json: protocol, type: selectmap, desc: "Security protocol: esp or ah (defaults to esp)."}
+      - {name: ReqID, tf: req_id, json: reqid, type: int, required: true, test_value: "100", desc: "Request ID linking this policy to a tunnel."}
+      - {name: ConnectionChild, tf: connection_child, json: connection_child, type: selectmap, desc: "UUID of an associated connection child (optional)."}
+      - {name: Source, tf: source, json: source, type: string, required: true, test_value: '"10.1.0.0/24"', desc: "Source network (CIDR)."}
+      - {name: Destination, tf: destination, json: destination, type: string, required: true, test_value: '"10.2.0.0/24"', desc: "Destination network (CIDR)."}
+      - {name: Description, tf: description, json: description, type: string, default: "", test_value: '"tf-acc-spd"', desc: "Description."}

@@ -15,6 +15,9 @@ func Resources() []func() resource.Resource {
 		newHostOverrideResource,
 		newDomainOverrideResource,
 		newACLResource,
+		newGeneralResource,
+		newDNSBLResource,
+		newHostAliasResource,
 	}
 }
 

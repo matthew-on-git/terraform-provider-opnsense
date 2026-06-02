@@ -52,15 +52,15 @@ type ruleAPIRequest struct {
 	Sequence        string `json:"sequence"`
 	Interface       string `json:"interface"`
 	Protocol        string `json:"proto"`
-	Source          string `json:"source"`
+	Source          string `json:"source,omitempty"`
 	SourceNot       string `json:"source_not"`
-	SourcePort      string `json:"src_port"`
-	Destination     string `json:"destination"`
+	SourcePort      string `json:"src_port,omitempty"`
+	Destination     string `json:"destination,omitempty"`
 	DestinationNot  string `json:"destination_not"`
-	DestinationPort string `json:"dst_port"`
-	Direction       string `json:"direction"`
+	DestinationPort string `json:"dst_port,omitempty"`
+	Direction       string `json:"direction,omitempty"`
 	Target          string `json:"target"`
-	Description     string `json:"description"`
+	Description     string `json:"description,omitempty"`
 }
 
 func (m *RuleResourceModel) toAPI(_ context.Context) *ruleAPIRequest {

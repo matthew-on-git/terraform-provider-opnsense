@@ -10,11 +10,11 @@ resource "opnsense_firewall_filter_rule" "allow_https" {
 
 # Block all traffic from a specific network
 resource "opnsense_firewall_filter_rule" "block_untrusted" {
-  action     = "block"
-  direction  = "in"
-  source_net = "10.99.0.0/24"
-  source_not = false
-  log        = true
+  action      = "block"
+  direction   = "in"
+  source_net  = "10.99.0.0/24"
+  source_not  = false
+  log         = true
   description = "Block untrusted network"
 }
 

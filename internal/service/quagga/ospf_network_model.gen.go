@@ -34,9 +34,9 @@ type ospfNetworkAPIResponse struct {
 type ospfNetworkAPIRequest struct {
 	Enabled   string `json:"enabled"`
 	IPAddress string `json:"ipaddr"`
-	Netmask   string `json:"netmask"`
+	Netmask   string `json:"netmask,omitempty"`
 	Area      string `json:"area"`
-	AreaRange string `json:"arearange"`
+	AreaRange string `json:"arearange,omitempty"`
 }
 
 func (m *OSPFNetworkResourceModel) toAPI(_ context.Context) *ospfNetworkAPIRequest {

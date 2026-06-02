@@ -39,10 +39,10 @@ type alertAPIRequest struct {
 	Enabled     string `json:"enabled"`
 	Recipient   string `json:"recipient"`
 	NotOn       string `json:"noton"`
-	Events      string `json:"events"`
-	Format      string `json:"format"`
-	Reminder    string `json:"reminder"`
-	Description string `json:"description"`
+	Events      string `json:"events,omitempty"`
+	Format      string `json:"format,omitempty"`
+	Reminder    string `json:"reminder,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 func (m *AlertResourceModel) toAPI(ctx context.Context) *alertAPIRequest {

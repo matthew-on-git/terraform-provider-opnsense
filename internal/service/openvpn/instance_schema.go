@@ -26,6 +26,11 @@ func (r *instanceResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Computed: true, MarkdownDescription: "UUID of the OpenVPN instance.",
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
+			"vpnid": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Numeric VPN instance id, auto-assigned by OPNsense.",
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			},
 			"enabled": schema.BoolAttribute{
 				Optional: true, Computed: true, Default: booldefault.StaticBool(true),
 				MarkdownDescription: "Whether the instance is enabled. Defaults to `true`.",
@@ -56,6 +61,10 @@ func (r *instanceResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Optional: true, Computed: true, Default: stringdefault.StaticString(""),
 				MarkdownDescription: "Local interface address to bind.",
 			},
+			"remote": schema.StringAttribute{
+				Optional: true, Computed: true, Default: stringdefault.StaticString(""),
+				MarkdownDescription: "Remote server address (client role).",
+			},
 			"server": schema.StringAttribute{
 				Optional: true, Computed: true, Default: stringdefault.StaticString(""),
 				MarkdownDescription: "IPv4 tunnel network (CIDR) for server role.",
@@ -72,6 +81,11 @@ func (r *instanceResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"cert": schema.StringAttribute{
 				Optional: true, Computed: true, Default: stringdefault.StaticString(""),
 				MarkdownDescription: "Server/client certificate reference (UUID/refid).",
+			},
+			"verify_client_cert": schema.StringAttribute{
+				Optional: true, Computed: true, Default: stringdefault.StaticString("require"),
+				MarkdownDescription: "Client certificate verification: `require` or `none`. Defaults to `require`.",
+				Validators:          []validator.String{stringvalidator.OneOf("require", "none")},
 			},
 			"tls_key": schema.StringAttribute{
 				Optional: true, Computed: true, Default: stringdefault.StaticString(""),
@@ -110,8 +124,9 @@ func (r *instanceResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				MarkdownDescription: "Keepalive timeout in seconds (0 = unset).",
 			},
 			"verb": schema.StringAttribute{
-				Optional: true, Computed: true, Default: stringdefault.StaticString("3"),
-				MarkdownDescription: "Log verbosity level (0-11). Defaults to `3`.",
+				Optional: true, Computed: true,
+				MarkdownDescription: "Log verbosity level (0-11). Defaults to the OPNsense value when unset.",
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 		},
 	}

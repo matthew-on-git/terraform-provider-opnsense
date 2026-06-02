@@ -31,6 +31,16 @@ type Field struct {
 	Default  string   `yaml:"default"`
 	Desc     string   `yaml:"desc"`
 	Options  []string `yaml:"options"`
+	// TestValue is a raw HCL literal used in the generated acceptance test for
+	// this field (e.g. `"permit"`, `["ipv4"]`, `65010`). Required for required
+	// selectmap/set fields, which have no sensible auto value.
+	TestValue string `yaml:"test_value"`
+	// Sensitive marks the schema attribute Sensitive (value redacted in plan output).
+	Sensitive bool `yaml:"sensitive"`
+	// WriteOnly marks a secret the API never echoes back: it is sent on
+	// create/update but skipped in fromAPI (state keeps the configured value) and
+	// added to ImportStateVerifyIgnore in the generated test.
+	WriteOnly bool `yaml:"write_only"`
 }
 
 // Resource describes a single generated resource.
@@ -103,6 +113,16 @@ func generateResource(pkg string, r *Resource) error {
 		{"model", modelTmpl, modelImports(r)},
 		{"schema", schemaTmpl, schemaImports(r)},
 		{"resource", resourceTmpl, resourceImports(r)},
+		{"resource_test", testTmpl, testImports(r)},
+	}
+	// Item resources also get a read-only data source (lookup by UUID). Singletons
+	// are looked up without an id, so they don't get a generated data source.
+	if r.Kind == "item" {
+		files = append(files, struct {
+			kind    string
+			tmpl    *template.Template
+			imports string
+		}{"data_source", dataSourceTmpl, dataSourceImports(r)})
 	}
 	for _, f := range files {
 		var buf strings.Builder
@@ -114,7 +134,13 @@ func generateResource(pkg string, r *Resource) error {
 		if err != nil {
 			return fmt.Errorf("%s: format: %w\n---\n%s", f.kind, err, buf.String())
 		}
-		out := filepath.Join(dir, fmt.Sprintf("%s_%s.gen.go", r.Name, f.kind))
+		// Test files must end in _test.go for Go to treat them as tests; the
+		// _gen_ infix + DO NOT EDIT header mark them generated.
+		name := fmt.Sprintf("%s_%s.gen.go", r.Name, f.kind)
+		if f.kind == "resource_test" {
+			name = fmt.Sprintf("%s_resource_gen_test.go", r.Name)
+		}
+		out := filepath.Join(dir, name)
 		if err := os.WriteFile(out, formatted, 0o600); err != nil {
 			return err
 		}
@@ -144,7 +170,10 @@ func renderImports(stdlib, framework, local []string) string {
 }
 
 func modelImports(r *Resource) string {
-	local := []string{pkgOpnsense}
+	var local []string
+	if usesOpnsense(r) {
+		local = append(local, pkgOpnsense)
+	}
 	if hasSet(r) || hasInt(r) {
 		local = append(local, pkgTfconv)
 	}
@@ -158,6 +187,21 @@ func modelImports(r *Resource) string {
 func hasInt(r *Resource) bool {
 	for _, f := range r.Fields {
 		if f.Type == "int" {
+			return true
+		}
+	}
+	return false
+}
+
+// usesOpnsense reports whether the model code references the opnsense package
+// (bool conversions, or Int64ToString for a required int). Other types use
+// tfconv or builtins, so importing opnsense unconditionally would be unused.
+func usesOpnsense(r *Resource) bool {
+	for _, f := range r.Fields {
+		switch {
+		case f.Type == "bool", f.Type == "selectmap", f.Type == "selectmaplist", f.Type == "csvset":
+			return true
+		case f.Type == "int" && f.Required:
 			return true
 		}
 	}
@@ -178,14 +222,11 @@ func schemaImports(r *Resource) string {
 			add[`"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"`] = true
 		case "int":
 			if !f.Required {
-				add[`"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"`] = true
+				add[`"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"`] = true
 			}
 		case "selectmaplist", "csvset":
 			add[pkgTypes] = true
 		case "string", "selectmap":
-			if !f.Required {
-				add[`"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"`] = true
-			}
 			if len(f.Options) > 0 {
 				add[`"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"`] = true
 				add[`"github.com/hashicorp/terraform-plugin-framework/schema/validator"`] = true
@@ -210,18 +251,70 @@ func resourceImports(r *Resource) string {
 	return renderImports(std, fw, []string{pkgOpnsense})
 }
 
+func testImports(r *Resource) string {
+	local := []string{`"github.com/matthew-on-git/terraform-provider-opnsense/internal/acctest"`}
+	if r.Kind == "item" {
+		local = append(local, pkgOpnsense)
+	}
+	return renderImports(
+		[]string{`"testing"`},
+		[]string{`"github.com/hashicorp/terraform-plugin-testing/helper/resource"`},
+		local,
+	)
+}
+
+// testFieldsHCL emits HCL assignments for the fields a generated acceptance test
+// must set: every required field plus any field with an explicit test_value.
+func testFieldsHCL(r *Resource) string {
+	var b strings.Builder
+	for _, f := range r.Fields {
+		if !f.Required && f.TestValue == "" {
+			continue
+		}
+		v := f.TestValue
+		if v == "" {
+			switch f.Type {
+			case "bool":
+				v = "true"
+			case "int":
+				v = "1"
+			default:
+				v = `"test"`
+			}
+		}
+		fmt.Fprintf(&b, "  %s = %s\n", f.TF, v)
+	}
+	return b.String()
+}
+
 // --- template helpers ---
 
 var funcs = template.FuncMap{
-	"camel":       camelName,
-	"goType":      goType,
-	"respType":    respType,
-	"toAPI":       toAPILine,
-	"fromAPI":     fromAPILine,
-	"schemaAttr":  schemaAttr,
-	"isItem":      func(r *Resource) bool { return r.Kind == "item" },
-	"isSingleton": func(r *Resource) bool { return r.Kind == "singleton" },
-	"hasSet":      hasSet,
+	"camel":          camelName,
+	"goType":         goType,
+	"respType":       respType,
+	"toAPI":          toAPILine,
+	"fromAPI":        fromAPILine,
+	"schemaAttr":     schemaAttr,
+	"dataSourceAttr": dataSourceAttr,
+	"importIgnore":   importIgnore,
+	"isItem":         func(r *Resource) bool { return r.Kind == "item" },
+	"isSingleton":    func(r *Resource) bool { return r.Kind == "singleton" },
+	"hasSet":         hasSet,
+	"testFields":     testFieldsHCL,
+	"reqTag":         reqTag,
+}
+
+// reqTag builds the request struct json tag. Optional, non-bool fields get
+// ",omitempty" so unset values are omitted from the payload — OPNsense rejects
+// empty integers/options ("Invalid integer value", "select an option") and
+// applies its own defaults when a field is absent. Bool fields always send
+// ("0"/"1") so a disabled flag is not silently dropped.
+func reqTag(f Field) string {
+	if f.Type != "bool" && !f.Required {
+		return fmt.Sprintf("`json:%q`", f.JSON+",omitempty")
+	}
+	return fmt.Sprintf("`json:%q`", f.JSON)
 }
 
 func hasSet(r *Resource) bool {
@@ -274,6 +367,12 @@ func toAPILine(f Field) string {
 }
 
 func fromAPILine(f Field) string {
+	if f.WriteOnly {
+		// Write-only secret: the API never returns it, so keep the value already
+		// in the model (the configured plan value on create/update, prior state on
+		// read) instead of clobbering it with the empty API response.
+		return fmt.Sprintf("// %s is write-only; preserved from configuration (API never returns it).", f.Name)
+	}
 	switch f.Type {
 	case "bool":
 		return fmt.Sprintf("m.%s = types.BoolValue(opnsense.StringToBool(a.%s))", f.Name, f.Name)
@@ -303,11 +402,10 @@ func schemaAttr(f Field) string {
 		if f.Required {
 			fmt.Fprintf(&b, "%q: schema.Int64Attribute{Required: true, MarkdownDescription: %q},", f.TF, f.Desc)
 		} else {
-			d := f.Default
-			if d == "" {
-				d = "0"
-			}
-			fmt.Fprintf(&b, "%q: schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(%s), MarkdownDescription: %q},", f.TF, d, f.Desc)
+			// Optional + Computed with no static default: OPNsense assigns/normalizes
+			// these (and ,omitempty drops them when unset), so UseStateForUnknown
+			// avoids "inconsistent result after apply".
+			fmt.Fprintf(&b, "%q: schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: %q, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},", f.TF, f.Desc)
 		}
 	case "selectmaplist", "csvset":
 		fmt.Fprintf(&b, "%q: schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, MarkdownDescription: %q},", f.TF, f.Desc)
@@ -315,7 +413,7 @@ func schemaAttr(f Field) string {
 		if f.Required {
 			fmt.Fprintf(&b, "%q: schema.StringAttribute{Required: true, MarkdownDescription: %q", f.TF, f.Desc)
 		} else {
-			fmt.Fprintf(&b, "%q: schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(%q), MarkdownDescription: %q", f.TF, f.Default, f.Desc)
+			fmt.Fprintf(&b, "%q: schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: %q, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}", f.TF, f.Desc)
 		}
 		if len(f.Options) > 0 {
 			quoted := make([]string, len(f.Options))
@@ -324,19 +422,73 @@ func schemaAttr(f Field) string {
 			}
 			fmt.Fprintf(&b, ", Validators: []validator.String{stringvalidator.OneOf(%s)}", strings.Join(quoted, ", "))
 		}
+		if f.Sensitive {
+			b.WriteString(", Sensitive: true")
+		}
 		b.WriteString("},")
 	}
 	return b.String()
+}
+
+// dataSourceAttr renders one Computed data-source schema attribute (all fields
+// are read-only outputs in a data source; the id is the Required lookup key and
+// is emitted separately by the template).
+func dataSourceAttr(f Field) string {
+	switch f.Type {
+	case "bool":
+		return fmt.Sprintf("%q: dsschema.BoolAttribute{Computed: true, MarkdownDescription: %q},", f.TF, f.Desc)
+	case "int":
+		return fmt.Sprintf("%q: dsschema.Int64Attribute{Computed: true, MarkdownDescription: %q},", f.TF, f.Desc)
+	case "selectmaplist", "csvset":
+		return fmt.Sprintf("%q: dsschema.SetAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: %q},", f.TF, f.Desc)
+	default:
+		return fmt.Sprintf("%q: dsschema.StringAttribute{Computed: true, MarkdownDescription: %q},", f.TF, f.Desc)
+	}
+}
+
+// dataSourceImports computes the import block for a generated data source file.
+func dataSourceImports(r *Resource) string {
+	fw := []string{
+		`"github.com/hashicorp/terraform-plugin-framework/datasource"`,
+		`dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"`,
+	}
+	if hasSet(r) {
+		fw = append(fw, pkgTypes)
+	}
+	return renderImports(
+		[]string{`"context"`, `"fmt"`},
+		fw,
+		[]string{pkgOpnsense},
+	)
+}
+
+// importIgnore renders the ImportStateVerifyIgnore clause for a resource's
+// write-only fields, or an empty string when there are none.
+func importIgnore(r *Resource) string {
+	var names []string
+	for _, f := range r.Fields {
+		if f.WriteOnly {
+			names = append(names, fmt.Sprintf("%q", f.TF))
+		}
+	}
+	if len(names) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("ImportStateVerifyIgnore: []string{%s}, ", strings.Join(names, ", "))
 }
 
 func init() {
 	modelTmpl = template.Must(template.New("model").Funcs(funcs).Parse(modelText))
 	schemaTmpl = template.Must(template.New("schema").Funcs(funcs).Parse(schemaText))
 	resourceTmpl = template.Must(template.New("resource").Funcs(funcs).Parse(resourceText))
+	testTmpl = template.Must(template.New("test").Funcs(funcs).Parse(testText))
+	dataSourceTmpl = template.Must(template.New("datasource").Funcs(funcs).Parse(dataSourceText))
 }
 
 var (
-	modelTmpl    *template.Template
-	schemaTmpl   *template.Template
-	resourceTmpl *template.Template
+	modelTmpl      *template.Template
+	schemaTmpl     *template.Template
+	resourceTmpl   *template.Template
+	testTmpl       *template.Template
+	dataSourceTmpl *template.Template
 )

@@ -15,10 +15,20 @@ func Resources() []func() resource.Resource {
 		newConnectionResource,
 		newChildResource,
 		newPSKResource,
+		newPoolResource,
+		newVTIResource,
+		newManualSPDResource,
+		newLocalResource,
+		newRemoteResource,
+		newKeyPairResource,
 	}
 }
 
 // DataSources returns the list of ipsec data source types.
 func DataSources() []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		newManualSPDDataSource,
+		newPoolDataSource,
+		newVTIDataSource,
+	}
 }

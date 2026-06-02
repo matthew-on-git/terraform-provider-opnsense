@@ -65,7 +65,7 @@ resources:
       search: /api/monit/settings/search_alert
     fields:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this alert is enabled."}
-      - {name: Recipient, tf: recipient, json: recipient, type: string, required: true, desc: "Email recipient."}
+      - {name: Recipient, tf: recipient, json: recipient, type: string, required: true, test_value: '"test@example.com"', desc: "Email recipient."}
       - {name: NotOn, tf: not_on, json: noton, type: bool, default: "false", desc: "Invert the event filter (alert on all except selected)."}
       - {name: Events, tf: events, json: events, type: selectmaplist, desc: "Events to alert on (empty = all)."}
       - {name: Format, tf: format, json: format, type: string, default: "", desc: "Custom alert message format."}

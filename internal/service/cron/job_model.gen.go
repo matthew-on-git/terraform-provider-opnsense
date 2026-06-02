@@ -42,15 +42,15 @@ type jobAPIResponse struct {
 
 type jobAPIRequest struct {
 	Enabled     string `json:"enabled"`
-	Minutes     string `json:"minutes"`
-	Hours       string `json:"hours"`
-	Days        string `json:"days"`
-	Months      string `json:"months"`
-	Weekdays    string `json:"weekdays"`
-	Who         string `json:"who"`
+	Minutes     string `json:"minutes,omitempty"`
+	Hours       string `json:"hours,omitempty"`
+	Days        string `json:"days,omitempty"`
+	Months      string `json:"months,omitempty"`
+	Weekdays    string `json:"weekdays,omitempty"`
+	Who         string `json:"who,omitempty"`
 	Command     string `json:"command"`
-	Parameters  string `json:"parameters"`
-	Description string `json:"description"`
+	Parameters  string `json:"parameters,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 func (m *JobResourceModel) toAPI(_ context.Context) *jobAPIRequest {

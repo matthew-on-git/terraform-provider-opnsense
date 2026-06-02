@@ -1,0 +1,75 @@
+---
+page_title: "Provider: OPNsense"
+description: |-
+  The OPNsense provider manages firewall, networking, VPN, DNS, DHCP, load
+  balancing, certificate, and routing configuration on an OPNsense appliance
+  through its MVC API.
+---
+
+# OPNsense Provider
+
+The OPNsense provider lets you manage an [OPNsense](https://opnsense.org/)
+appliance declaratively through its REST/MVC API — firewall rules and aliases,
+HAProxy load balancing, ACME certificates, IPsec/WireGuard/OpenVPN tunnels,
+Unbound/dnsmasq DNS, Kea DHCP, FRR dynamic routing, interfaces, users, and more.
+
+## Example Usage
+
+{{tffile "examples/provider/provider.tf"}}
+
+## Authentication
+
+The provider authenticates with an OPNsense **API key + secret** (created under
+*System → Access → Users → API keys*). Each request uses HTTP Basic auth over
+TLS.
+
+Credentials and connection settings can be supplied two ways, with **HCL taking
+priority over environment variables**:
+
+| Setting        | HCL argument  | Environment variable      |
+|----------------|---------------|---------------------------|
+| Base URL       | `uri`         | `OPNSENSE_URI`            |
+| API key        | `api_key`     | `OPNSENSE_API_KEY`        |
+| API secret     | `api_secret`  | `OPNSENSE_API_SECRET`     |
+| Skip TLS verify| `insecure`    | `OPNSENSE_ALLOW_INSECURE` |
+
+`api_key` and `api_secret` are marked sensitive. On configuration the provider
+validates credentials against `/api/core/firmware/status` and reports a clear
+diagnostic if authentication fails.
+
+```hcl
+# Environment-variable configuration (no secrets in HCL):
+provider "opnsense" {}
+```
+
+## Minimum OPNsense version
+
+The provider targets **OPNsense 26.1.x** and is verified against the current
+release series; **24.1+** is the practical minimum (the MVC API endpoints this
+provider relies on must be present). Resources for optional features require the
+corresponding plugin to be installed (for example `os-haproxy`, `os-acme-client`,
+`os-frr`, `os-wireguard`).
+
+## Required API user permissions
+
+The API user must hold the privileges for the modules you manage. Grant the
+matching *effective privileges* to the user (or a group) under
+*System → Access*:
+
+| Module / resources                              | Privilege area                |
+|-------------------------------------------------|-------------------------------|
+| `opnsense_firewall_*`                           | Firewall: Aliases / Rules / NAT |
+| `opnsense_haproxy_*`                            | Services: HAProxy             |
+| `opnsense_acme_*`                               | Services: ACME Client         |
+| `opnsense_unbound_*` / `opnsense_dnsmasq_*`     | Services: Unbound / Dnsmasq DNS |
+| `opnsense_kea_*` / `opnsense_dhcpv4_*`          | Services: Kea / DHCP          |
+| `opnsense_quagga_*`                             | Services: FRR                 |
+| `opnsense_ipsec_*` / `opnsense_wireguard_*` / `opnsense_openvpn_*` | VPN: IPsec / WireGuard / OpenVPN |
+| `opnsense_interface_*` / `opnsense_system_*`    | Interfaces / System           |
+| `opnsense_trust_*`                              | System: Trust (certificates)  |
+| `opnsense_auth_*`                               | System: Access (users/groups) |
+
+For automation, an administrator-equivalent API user is simplest; for least
+privilege, grant only the areas above that your configuration touches.
+
+{{ .SchemaMarkdown | trimspace }}

@@ -1,0 +1,55 @@
+# Kea DHCP control agent settings (nested singleton: ctrlagent.general). Core module.
+package: kea
+resources:
+  - name: ctrl_agent
+    go_type: CtrlAgent
+    type_name: kea_ctrl_agent
+    title: the Kea DHCP control agent settings
+    kind: singleton
+    id: kea-ctrl-agent
+    reconfigure: /api/kea/service/reconfigure
+    monad: ctrlagent.general
+    endpoints:
+      get: /api/kea/ctrl_agent/get
+      set: /api/kea/ctrl_agent/set
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "false", desc: "Enable the Kea control agent (required for HA and the dashboard)."}
+      - {name: HTTPHost, tf: http_host, json: http_host, type: string, default: "127.0.0.1", desc: "Address the control agent listens on."}
+      - {name: HTTPPort, tf: http_port, json: http_port, type: string, default: "8000", desc: "Port the control agent listens on."}
+
+  - name: dhcpv6_settings
+    go_type: DHCPv6Settings
+    type_name: kea_dhcpv6_settings
+    title: the Kea DHCPv6 general settings
+    kind: singleton
+    id: kea-dhcpv6
+    reconfigure: /api/kea/service/reconfigure
+    monad: dhcpv6.general
+    endpoints:
+      get: /api/kea/dhcpv6/get
+      set: /api/kea/dhcpv6/set
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "false", desc: "Enable the Kea DHCPv6 server."}
+      - {name: ManualConfig, tf: manual_config, json: manual_config, type: bool, default: "false", desc: "Manage the Kea config file manually (disable GUI management)."}
+      - {name: Interfaces, tf: interfaces, json: interfaces, type: selectmaplist, desc: "Interfaces the DHCPv6 server listens on."}
+      - {name: ValidLifetime, tf: valid_lifetime, json: valid_lifetime, type: int, default: "4000", desc: "Default lease valid lifetime in seconds."}
+      - {name: FirewallRules, tf: firewall_rules, json: fwrules, type: bool, default: "true", desc: "Automatically add firewall rules for the service."}
+      - {name: DHCPSocketType, tf: dhcp_socket_type, json: dhcp_socket_type, type: selectmap, default: "raw", desc: "DHCP socket type: raw or udp."}
+
+  - name: ha_peer
+    go_type: HAPeer
+    type_name: kea_ha_peer
+    title: a Kea High Availability peer
+    kind: item
+    reconfigure: /api/kea/service/reconfigure
+    monad: peer
+    endpoints:
+      add: /api/kea/dhcpv4/addPeer
+      get: /api/kea/dhcpv4/getPeer
+      set: /api/kea/dhcpv4/setPeer
+      del: /api/kea/dhcpv4/delPeer
+      search: /api/kea/dhcpv4/searchPeer
+    fields:
+      - {name: Name, tf: name, json: name, type: string, required: true, test_value: '"tfaccpeer"', desc: "Unique name of the HA peer (must match the server name)."}
+      - {name: Role, tf: role, json: role, type: selectmap, default: "primary", desc: "HA role: primary or standby."}
+      - {name: URL, tf: url, json: url, type: string, required: true, test_value: '"http://192.0.2.5:8000/"', desc: "Control-agent URL of the peer."}

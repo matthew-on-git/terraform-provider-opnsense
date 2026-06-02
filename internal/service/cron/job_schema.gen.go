@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
@@ -25,15 +24,15 @@ func (r *jobResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"enabled":     schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether this job is enabled."},
-			"minutes":     schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("0"), MarkdownDescription: "Minutes field (cron syntax)."},
-			"hours":       schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("0"), MarkdownDescription: "Hours field (cron syntax)."},
-			"days":        schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("*"), MarkdownDescription: "Day-of-month field (cron syntax)."},
-			"months":      schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("*"), MarkdownDescription: "Month field (cron syntax)."},
-			"weekdays":    schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("*"), MarkdownDescription: "Day-of-week field (cron syntax)."},
-			"who":         schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("root"), MarkdownDescription: "User the job runs as."},
+			"minutes":     schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Minutes field (cron syntax).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"hours":       schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Hours field (cron syntax).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"days":        schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Day-of-month field (cron syntax).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"months":      schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Month field (cron syntax).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"weekdays":    schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Day-of-week field (cron syntax).", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"who":         schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "User the job runs as.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"command":     schema.StringAttribute{Required: true, MarkdownDescription: "Configd action to run."},
-			"parameters":  schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Parameters passed to the command."},
-			"description": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Description."},
+			"parameters":  schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Parameters passed to the command.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"description": schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Description.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }

@@ -20,18 +20,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/acme"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/auth"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/cron"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/ddclient"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/dhcp"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/dnsmasq"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/firewall"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/haproxy"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/iface"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/ipsec"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/kea"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/monit"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/openvpn"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/quagga"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/syslog"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/system"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/trafficshaper"
+	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/trust"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/unbound"
 	"github.com/matthew-on-git/terraform-provider-opnsense/internal/service/wireguard"
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
@@ -247,19 +252,45 @@ func (p *OpnsenseProvider) Resources(_ context.Context) []func() resource.Resour
 	resources = append(resources, unbound.Resources()...)
 	resources = append(resources, wireguard.Resources()...)
 	resources = append(resources, ipsec.Resources()...)
+	resources = append(resources, kea.Resources()...)
 	resources = append(resources, openvpn.Resources()...)
 	resources = append(resources, ddclient.Resources()...)
 	resources = append(resources, dhcp.Resources()...)
+	resources = append(resources, dnsmasq.Resources()...)
 	resources = append(resources, trafficshaper.Resources()...)
 	resources = append(resources, syslog.Resources()...)
 	resources = append(resources, cron.Resources()...)
 	resources = append(resources, monit.Resources()...)
+	resources = append(resources, trust.Resources()...)
+	resources = append(resources, auth.Resources()...)
+	resources = append(resources, iface.Resources()...)
 	return resources
 }
 
 // DataSources returns the list of data source types supported by this provider.
 func (p *OpnsenseProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return firewall.DataSources()
+	var dataSources []func() datasource.DataSource
+	dataSources = append(dataSources, acme.DataSources()...)
+	dataSources = append(dataSources, firewall.DataSources()...)
+	dataSources = append(dataSources, haproxy.DataSources()...)
+	dataSources = append(dataSources, quagga.DataSources()...)
+	dataSources = append(dataSources, system.DataSources()...)
+	dataSources = append(dataSources, unbound.DataSources()...)
+	dataSources = append(dataSources, wireguard.DataSources()...)
+	dataSources = append(dataSources, ipsec.DataSources()...)
+	dataSources = append(dataSources, kea.DataSources()...)
+	dataSources = append(dataSources, openvpn.DataSources()...)
+	dataSources = append(dataSources, ddclient.DataSources()...)
+	dataSources = append(dataSources, dhcp.DataSources()...)
+	dataSources = append(dataSources, dnsmasq.DataSources()...)
+	dataSources = append(dataSources, trafficshaper.DataSources()...)
+	dataSources = append(dataSources, syslog.DataSources()...)
+	dataSources = append(dataSources, cron.DataSources()...)
+	dataSources = append(dataSources, monit.DataSources()...)
+	dataSources = append(dataSources, trust.DataSources()...)
+	dataSources = append(dataSources, auth.DataSources()...)
+	dataSources = append(dataSources, iface.DataSources()...)
+	return dataSources
 }
 
 // New returns a new provider factory function.

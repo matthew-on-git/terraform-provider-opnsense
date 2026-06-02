@@ -20,5 +20,9 @@ func Resources() []func() resource.Resource {
 
 // DataSources returns the list of Monit data source types.
 func DataSources() []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		newAlertDataSource,
+		newServiceDataSource,
+		newTestDataSource,
+	}
 }

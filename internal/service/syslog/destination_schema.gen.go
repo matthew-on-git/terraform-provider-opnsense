@@ -10,9 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,12 +28,12 @@ func (r *destinationResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"enabled":     schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether this destination is enabled."},
 			"transport":   schema.StringAttribute{Required: true, MarkdownDescription: "Transport: udp4, tcp4, udp6, tcp6, tls4, tls6."},
 			"hostname":    schema.StringAttribute{Required: true, MarkdownDescription: "Destination hostname or IP."},
-			"port":        schema.Int64Attribute{Optional: true, Computed: true, Default: int64default.StaticInt64(514), MarkdownDescription: "Destination port."},
+			"port":        schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "Destination port.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"level":       schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, MarkdownDescription: "Log levels to forward (e.g. info, warn, error)."},
 			"facility":    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, MarkdownDescription: "Syslog facilities to forward (empty = all)."},
-			"certificate": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Certificate reference for TLS transports."},
+			"certificate": schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Certificate reference for TLS transports.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"rfc5424":     schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Use RFC 5424 message format."},
-			"description": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Description."},
+			"description": schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Description.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 		},
 	}
 }

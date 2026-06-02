@@ -20,31 +20,40 @@ func TestAccOpenVPNInstance_basic(t *testing.T) {
 		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_openvpn_instance", opnsense.ReqOpts{GetEndpoint: "/api/openvpn/instances/get", Monad: "instance"}),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOpenVPNInstanceConfig("10.10.8.0/24"),
+				Config: testAccOpenVPNInstanceConfig("vpn1.example.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("opnsense_openvpn_instance.test", "id"),
-					resource.TestCheckResourceAttr("opnsense_openvpn_instance.test", "role", "server"),
-					resource.TestCheckResourceAttr("opnsense_openvpn_instance.test", "server", "10.10.8.0/24"),
+					resource.TestCheckResourceAttrSet("opnsense_openvpn_instance.test", "vpnid"),
+					resource.TestCheckResourceAttr("opnsense_openvpn_instance.test", "role", "client"),
+					resource.TestCheckResourceAttr("opnsense_openvpn_instance.test", "remote", "vpn1.example.com"),
 				),
 			},
 			{ResourceName: "opnsense_openvpn_instance.test", ImportState: true, ImportStateVerify: true},
 			{
-				Config: testAccOpenVPNInstanceConfig("10.10.9.0/24"),
-				Check:  resource.TestCheckResourceAttr("opnsense_openvpn_instance.test", "server", "10.10.9.0/24"),
+				Config: testAccOpenVPNInstanceConfig("vpn2.example.com"),
+				Check:  resource.TestCheckResourceAttr("opnsense_openvpn_instance.test", "remote", "vpn2.example.com"),
 			},
 		},
 	})
 }
 
-func testAccOpenVPNInstanceConfig(network string) string {
+func testAccOpenVPNInstanceConfig(remote string) string {
 	return fmt.Sprintf(`
-resource "opnsense_openvpn_instance" "test" {
-  role         = "server"
-  description  = "tf-acc-test"
-  protocol     = "udp"
-  dev_type     = "tun"
-  server       = %[1]q
-  data_ciphers = ["AES-256-GCM"]
+resource "opnsense_trust_ca" "test" {
+  description = "tf-acc-ovpn-ca"
+  common_name = "tf-acc-ovpn-ca"
+  country     = "US"
 }
-`, network)
+
+resource "opnsense_openvpn_instance" "test" {
+  role               = "client"
+  description        = "tf-acc-test"
+  protocol           = "udp"
+  dev_type           = "tun"
+  remote             = %[1]q
+  ca                 = opnsense_trust_ca.test.refid
+  verify_client_cert = "none"
+  data_ciphers       = ["AES-256-GCM"]
+}
+`, remote)
 }

@@ -1,0 +1,126 @@
+# Interface types (bridge, lagg, gre, gif, vxlan, loopback, neighbor). Core module.
+package: iface
+resources:
+  - name: loopback
+    go_type: Loopback
+    type_name: interface_loopback
+    title: a loopback interface
+    kind: item
+    reconfigure: /api/interfaces/loopback_settings/reconfigure
+    monad: loopback
+    endpoints:
+      add: /api/interfaces/loopback_settings/add_item
+      get: /api/interfaces/loopback_settings/get_item
+      set: /api/interfaces/loopback_settings/set_item
+      del: /api/interfaces/loopback_settings/del_item
+      search: /api/interfaces/loopback_settings/search_item
+    fields:
+      - {name: DeviceID, tf: device_id, json: deviceId, type: int, desc: "Loopback device number (auto-assigned by OPNsense)."}
+      - {name: Description, tf: description, json: description, type: string, required: true, test_value: '"tf-acc-loopback"', desc: "Description."}
+
+  - name: vxlan
+    go_type: Vxlan
+    type_name: interface_vxlan
+    title: a VXLAN interface
+    kind: item
+    reconfigure: /api/interfaces/vxlan_settings/reconfigure
+    monad: vxlan
+    endpoints:
+      add: /api/interfaces/vxlan_settings/add_item
+      get: /api/interfaces/vxlan_settings/get_item
+      set: /api/interfaces/vxlan_settings/set_item
+      del: /api/interfaces/vxlan_settings/del_item
+      search: /api/interfaces/vxlan_settings/search_item
+    fields:
+      - {name: DeviceID, tf: device_id, json: deviceId, type: int, desc: "VXLAN device number (auto-assigned by OPNsense)."}
+      - {name: VNI, tf: vni, json: vxlanid, type: int, required: true, test_value: "100", desc: "VXLAN network identifier (0-16777215)."}
+      - {name: Local, tf: local, json: vxlanlocal, type: string, required: true, test_value: '"192.168.56.10"', desc: "Local source IP address."}
+      - {name: Remote, tf: remote, json: vxlanremote, type: string, test_value: '"192.0.2.50"', desc: "Remote peer IP (unicast mode)."}
+      - {name: Group, tf: group, json: vxlangroup, type: string, desc: "Multicast group IP (multicast mode)."}
+      - {name: Device, tf: device, json: vxlandev, type: selectmap, desc: "Underlying interface."}
+
+  - name: neighbor
+    go_type: Neighbor
+    type_name: interface_neighbor
+    title: a static ARP/NDP neighbor
+    kind: item
+    reconfigure: /api/interfaces/neighbor_settings/reconfigure
+    monad: neighbor
+    endpoints:
+      add: /api/interfaces/neighbor_settings/add_item
+      get: /api/interfaces/neighbor_settings/get_item
+      set: /api/interfaces/neighbor_settings/set_item
+      del: /api/interfaces/neighbor_settings/del_item
+      search: /api/interfaces/neighbor_settings/search_item
+    fields:
+      - {name: MAC, tf: mac, json: etheraddr, type: string, required: true, test_value: '"00:11:22:33:44:55"', desc: "MAC (ethernet) address."}
+      - {name: IPAddress, tf: ip_address, json: ipaddress, type: string, required: true, test_value: '"192.0.2.5"', desc: "IP address for the static entry."}
+      - {name: Description, tf: description, json: descr, type: string, desc: "Description."}
+
+  - name: gre
+    go_type: GRE
+    type_name: interface_gre
+    title: a GRE tunnel interface
+    kind: item
+    reconfigure: /api/interfaces/gre_settings/reconfigure
+    monad: gre
+    endpoints:
+      add: /api/interfaces/gre_settings/add_item
+      get: /api/interfaces/gre_settings/get_item
+      set: /api/interfaces/gre_settings/set_item
+      del: /api/interfaces/gre_settings/del_item
+      search: /api/interfaces/gre_settings/search_item
+    fields:
+      - {name: Device, tf: device, json: greif, type: string, desc: "Assigned GRE device name (auto-assigned by OPNsense)."}
+      - {name: ParentInterface, tf: parent_interface, json: if, type: string, required: true, test_value: '"lan"', desc: "Parent interface the tunnel runs over."}
+      - {name: LocalAddress, tf: local_address, json: local-addr, type: string, required: true, test_value: '"192.168.56.10"', desc: "Local tunnel endpoint address (must exist on the parent interface)."}
+      - {name: RemoteAddress, tf: remote_address, json: remote-addr, type: string, required: true, test_value: '"192.0.2.99"', desc: "Remote tunnel endpoint address."}
+      - {name: TunnelLocalAddress, tf: tunnel_local_address, json: tunnel-local-addr, type: string, required: true, test_value: '"10.5.5.1"', desc: "Local inside (tunnel) address."}
+      - {name: TunnelRemoteAddress, tf: tunnel_remote_address, json: tunnel-remote-addr, type: string, required: true, test_value: '"10.5.5.2"', desc: "Remote inside (tunnel) address."}
+      - {name: TunnelRemoteNet, tf: tunnel_remote_net, json: tunnel-remote-net, type: int, default: "32", desc: "Tunnel remote network prefix length."}
+      - {name: Description, tf: description, json: descr, type: string, default: "", test_value: '"tf-acc-gre"', desc: "Description."}
+
+  - name: gif
+    go_type: GIF
+    type_name: interface_gif
+    title: a GIF tunnel interface
+    kind: item
+    reconfigure: /api/interfaces/gif_settings/reconfigure
+    monad: gif
+    endpoints:
+      add: /api/interfaces/gif_settings/add_item
+      get: /api/interfaces/gif_settings/get_item
+      set: /api/interfaces/gif_settings/set_item
+      del: /api/interfaces/gif_settings/del_item
+      search: /api/interfaces/gif_settings/search_item
+    fields:
+      - {name: Device, tf: device, json: gifif, type: string, desc: "Assigned GIF device name (auto-assigned by OPNsense)."}
+      - {name: ParentInterface, tf: parent_interface, json: if, type: string, required: true, test_value: '"lan"', desc: "Parent interface the tunnel runs over."}
+      - {name: LocalAddress, tf: local_address, json: local-addr, type: string, required: true, test_value: '"192.168.56.10"', desc: "Local tunnel endpoint address (must exist on the parent interface)."}
+      - {name: RemoteAddress, tf: remote_address, json: remote-addr, type: string, required: true, test_value: '"192.0.2.98"', desc: "Remote tunnel endpoint address."}
+      - {name: TunnelLocalAddress, tf: tunnel_local_address, json: tunnel-local-addr, type: string, required: true, test_value: '"10.6.6.1"', desc: "Local inside (tunnel) address."}
+      - {name: TunnelRemoteAddress, tf: tunnel_remote_address, json: tunnel-remote-addr, type: string, required: true, test_value: '"10.6.6.2"', desc: "Remote inside (tunnel) address."}
+      - {name: TunnelRemoteNet, tf: tunnel_remote_net, json: tunnel-remote-net, type: int, default: "32", desc: "Tunnel remote network prefix length."}
+      - {name: Link1, tf: link1, json: link1, type: bool, default: "false", desc: "Enable ECN-friendly behaviour (link1)."}
+      - {name: Link2, tf: link2, json: link2, type: bool, default: "false", desc: "Route the tunnel via the configured gateway (link2)."}
+      - {name: Description, tf: description, json: descr, type: string, default: "", test_value: '"tf-acc-gif"', desc: "Description."}
+
+  - name: bridge
+    go_type: Bridge
+    type_name: interface_bridge
+    title: a bridge interface
+    kind: item
+    reconfigure: /api/interfaces/bridge_settings/reconfigure
+    monad: bridge
+    endpoints:
+      add: /api/interfaces/bridge_settings/add_item
+      get: /api/interfaces/bridge_settings/get_item
+      set: /api/interfaces/bridge_settings/set_item
+      del: /api/interfaces/bridge_settings/del_item
+      search: /api/interfaces/bridge_settings/search_item
+    fields:
+      - {name: Device, tf: device, json: bridgeif, type: string, desc: "Assigned bridge device name (auto-assigned by OPNsense)."}
+      - {name: Members, tf: members, json: members, type: selectmaplist, test_value: '["opt1"]', desc: "Member interfaces of the bridge."}
+      - {name: Protocol, tf: protocol, json: proto, type: selectmap, desc: "Spanning-tree protocol: rstp or stp."}
+      - {name: EnableSTP, tf: enable_stp, json: enablestp, type: bool, default: "false", desc: "Enable spanning tree on the bridge."}
+      - {name: Description, tf: description, json: descr, type: string, default: "", test_value: '"tf-acc-bridge"', desc: "Description."}

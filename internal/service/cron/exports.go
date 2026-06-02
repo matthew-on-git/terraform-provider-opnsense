@@ -18,5 +18,7 @@ func Resources() []func() resource.Resource {
 
 // DataSources returns the list of cron data source types.
 func DataSources() []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		newJobDataSource,
+	}
 }

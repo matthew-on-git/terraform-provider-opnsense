@@ -26,7 +26,7 @@ var staticKeyReqOpts = opnsense.ReqOpts{
 	DeleteEndpoint:      "/api/openvpn/instances/del_static_key",
 	SearchEndpoint:      "/api/openvpn/instances/search_static_key",
 	ReconfigureEndpoint: "/api/openvpn/service/reconfigure",
-	Monad:               "static_key",
+	Monad:               "statickey",
 }
 
 type staticKeyResource struct{ client *opnsense.Client }
