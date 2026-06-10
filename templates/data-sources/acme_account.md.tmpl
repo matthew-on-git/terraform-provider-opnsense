@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "ACME"
+description: |-
+  Look up an existing ACME account on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing ACME account on OPNsense by UUID without importing it into Terraform management.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_acme_account/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

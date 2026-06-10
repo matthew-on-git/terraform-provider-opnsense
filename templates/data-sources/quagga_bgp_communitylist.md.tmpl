@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Quagga / FRR"
+description: |-
+  Look up an existing BGP community list rule on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing BGP community list rule on OPNsense. Use this data source to read attributes by UUID without importing the object into Terraform management.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_quagga_bgp_communitylist/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

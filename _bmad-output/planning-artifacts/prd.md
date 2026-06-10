@@ -39,7 +39,7 @@ classification:
 
 ## Executive Summary
 
-terraform-provider_opnsense is a comprehensive Terraform provider that delivers full Infrastructure as Code coverage for OPNsense appliances — core APIs and the plugin ecosystem that no existing provider covers. It enables operators to manage firewall rules, HAProxy load balancing, FRR/BGP dynamic routing, ACME certificate lifecycle, Unbound DNS, Dynamic DNS, WireGuard and IPsec VPN tunnels, DHCP, interfaces, and routing through Terraform's native plan/apply workflow with drift detection, state management, and import support.
+terraform-provider_opnsense is a comprehensive Terraform provider that delivers full Infrastructure as Code coverage for OPNsense appliances — core APIs and the plugin ecosystem that no existing provider covers. It enables operators to manage firewall rules, HAProxy load balancing, FRR/BGP dynamic routing, ACME certificate lifecycle, DNS, Dynamic DNS, WireGuard/OpenVPN/IPsec VPN tunnels, DHCP/Kea, interfaces, routing, certificates, users, services, and traffic shaping through Terraform's native plan/apply workflow with drift detection, state management, and import support.
 
 The provider targets DevOps engineers, homelabbers, and MSP operators who have adopted OPNsense as a cost-effective replacement for enterprise edge appliances (F5, Palo Alto, Citrix ADC) but lack mature IaC tooling to manage it. The existing provider landscape is fragmented and incomplete — the most mature option (browningluke/opnsense, pre-v1.0) covers a narrow subset of base APIs with zero plugin support, forcing operators into Ansible or manual UI configuration. OPNsense's API has reached sufficient maturity to support a comprehensive provider, but no one has built one.
 
@@ -48,7 +48,7 @@ The primary success criterion is complete appliance management: when any operato
 ### What Makes This Special
 
 - **See every change before it happens.** Run `terraform plan` and get a complete diff of your OPNsense appliance — firewall rules, BGP peers, HAProxy backends, VPN tunnels, DNS overrides — in one output. No other tool gives you this for OPNsense.
-- **First provider with enough coverage to actually be useful.** Every existing provider fails the completeness test — they cover enough to demo, not enough to deploy. This provider covers 8 plugin/service areas plus core APIs across 40+ endpoints, eliminating the need for a second configuration tool.
+- **First provider with enough coverage to actually be useful.** Every existing provider fails the completeness test — they cover enough to demo, not enough to deploy. This provider now supports 97 resource types across core APIs and plugin/service areas, eliminating the need for a second configuration tool for most OPNsense configurations.
 - **Plugins are the product, not an afterthought.** HAProxy, FRR/BGP, ACME, WireGuard, IPsec, and Dynamic DNS are what make OPNsense viable as an enterprise edge platform. Covering the core API without these is like a cloud provider that manages VPCs but not load balancers.
 - **Handles OPNsense's API correctly, not just broadly.** The OPNsense API has non-standard patterns that break naive integrations: HTTP 200 on validation errors, blank defaults for missing resources, a two-phase reconfigure lifecycle, and write-only password fields. This provider handles all of them through a purpose-built API client with custom error types, mutex-protected reconfigure, and proper state management.
 - **Built on production operational experience.** Resource schemas are informed by a battle-tested Ansible automation project (opnsense-manager) that runs in production CI/CD with plan/apply stages against a live OPNsense appliance — not speculative API mappings.
@@ -60,7 +60,7 @@ This is a high-complexity infrastructure provider built from scratch in Go, targ
 
 - **Project Type:** Developer Tool — Infrastructure Provider (Terraform)
 - **Domain:** Infrastructure / Network Automation
-- **Complexity:** High — 30+ resource types across 12+ API modules, cross-resource dependencies, safety-critical network configuration, OPNsense-specific API patterns (reconfigure lifecycle, HTTP 200 on validation errors, write-only fields)
+- **Complexity:** High — 97 supported resource types across 20 service modules, cross-resource dependencies, safety-critical network configuration, OPNsense-specific API patterns (reconfigure lifecycle, HTTP 200 on validation errors, write-only fields)
 - **Project Context:** Greenfield codebase targeting brownfield infrastructure — `terraform import` is a day-one requirement for migrating existing OPNsense configurations under Terraform management
 - **Technology:** Go, Terraform Plugin Framework v6, OPNsense REST API
 
@@ -91,7 +91,7 @@ This is a high-complexity infrastructure provider built from scratch in Go, targ
 | **Acceptance test coverage** | >80% of resources have acceptance tests running against a real OPNsense instance |
 | **CI/CD pipeline** | Lint, test, build, and release stages passing in CI. Acceptance tests automated |
 | **DevRail compliance** | All code passes `make check` — linting, formatting, security scanning, tests |
-| **Registry published** | Provider available on Terraform Registry with documentation and examples for all resources |
+| **Registry published** | Provider available on Terraform Registry with documentation, examples, and an honest support matrix for Supported / Coming / Upstream-blocked domains |
 | **Import support** | Every resource type implements `ImportState` with UUID passthrough |
 | **OPNsense version support** | Provider tested and working against current OPNsense stable release |
 
@@ -251,6 +251,20 @@ Mutex, error handling, wrapper key marshaling, and reconfigure are all handled t
 
 **Resource Requirements:** Solo developer with AI-assisted development, following DevRail project standards. No team coordination overhead — all architectural decisions are made by the author.
 
+### Current Implementation Baseline (2026-06-02)
+
+The implementation has moved beyond the original MVP sizing. The current repository baseline is:
+
+| Capability | Count | Status |
+|---|---:|---|
+| Resources | 97 | Supported |
+| Data sources | 83 | Supported |
+| Resource docs | 97 | Supported |
+| Data source docs | 83 | Supported |
+| Remaining resource-matching data sources | 15 | Coming |
+
+The release-facing product should position the current post-release baseline around the supported 97-resource surface, while clearly labelling remaining provider-owned work and upstream-blocked OPNsense API gaps.
+
 ### MVP Feature Set (Phase 1)
 
 **Core User Journeys Supported:**
@@ -268,15 +282,16 @@ Resources are built in dependency and usage-priority order. Each tier delivers i
 | **0** | Provider scaffold | Auth, API client, error handling, mutex, code gen pipeline, `opnsense_firewall_alias`, `opnsense_haproxy_server` | 2 resources | Validates full stack for both core and plugin APIs |
 | **1** | Firewall | Categories, rules, NAT (port forward, outbound) | 4 resources | Foundation — everything depends on firewall config |
 | **2** | HAProxy | Backends, frontends, ACLs, health checks | 4 resources | Hot path — customer onboarding workflow (servers already in Tier 0) |
-| **3** | Core infrastructure | Interfaces, VLANs, virtual IPs, static routes, gateways, gateway groups, system settings | 7 resources | Foundation for cross-references — firewall rules reference interfaces, routes reference gateways |
+| **3** | Core infrastructure | Interface types, VLANs, virtual IPs, static routes, gateways; gateway groups/system settings when OPNsense APIs exist | 10+ resources | Foundation for cross-references — firewall rules reference interfaces, routes reference gateways |
 | **4** | FRR/BGP | General settings, BGP config, neighbors, prefix lists, route maps | 5 resources | Current Ansible workload — MetalLB peering |
 | **5** | ACME | Accounts, certificates, challenge config | 3 resources | Depends on HAProxy frontends for HTTP-01 |
 | **6** | Unbound DNS | Host overrides, domain overrides, ACLs | 3 resources | Core DNS management |
 | **7** | VPN | WireGuard servers, WireGuard peers, IPsec phase 1, IPsec phase 2, IPsec PSKs | 5 resources | VPN tunnel management |
-| **8** | DHCPv4 + Dynamic DNS | DHCP pools, static mappings, DHCP options, Dynamic DNS accounts, Dynamic DNS provider config | 5 resources | Completes MVP scope |
-| **—** | Data sources | All resource types as data sources + system info | ~38 data sources | Read-only lookups for all managed resources |
+| **8** | DHCP/Kea + Dynamic DNS | DHCP pools, static mappings, Kea DHCPv6, HA peers, DHCP options, Dynamic DNS accounts | 8+ resources | Completes appliance DHCP/DDNS coverage |
+| **9** | Expanded core config | Trust, auth, OpenVPN, interface types, IPsec extensions, OSPF/OSPFv3/RIP/static routing, traffic shaper, cron, monit, syslog, dnsmasq, Unbound extensions | 50+ resources | Expands from Ansible parity to feature-complete core-config coverage |
+| **—** | Data sources | All resource types as data sources + system info | 90+ data sources | Read-only lookups for all managed resources |
 
-**Total estimated:** ~38 resources + ~38 data sources
+**Current baseline:** 97 resources + 83 data sources. **Feature-complete target:** supported resources plus data-source parity for singleton/sensitive special cases and the remaining buildable core-config gaps.
 
 **Must-Have Capabilities (every tier):**
 - CRUD + ImportState for all resources
@@ -284,9 +299,11 @@ Resources are built in dependency and usage-priority order. Each tier delivers i
 - Documentation with realistic composition examples
 - Drift detection (state from API read-back, not config echo)
 
-### Post-MVP Features
+### Post-MVP / Release Follow-up Features
 
 **Phase 2 (Growth):**
+- Data-source parity for all supported resources
+- Remaining buildable core-config gaps after endpoint verification: LAGG and tunables/sysctl. Source NAT, Unbound forward, Dnsmasq item resources, and OSPF area are already supported; HASync configuration needs `syncitems` model-shape research; Kea DHCPv4 option/DDNS need live endpoint recheck before implementation.
 - Additional OPNsense plugins based on personal need or community demand (CrowdSec, Zabbix, Telegraf, BIND)
 - Reusable Terraform modules for common patterns (HAProxy + ACME cert, BGP + MetalLB)
 - QEMU-based acceptance tests in CI (if not completed during MVP)
@@ -297,6 +314,7 @@ Resources are built in dependency and usage-priority order. Each tier delivers i
 - Community contribution workflow (CONTRIBUTING guide, PR templates, issue templates)
 - Published modules on Terraform Registry
 - Version-aware endpoint mapping for OPNsense major release compatibility
+- Upstream collaboration for blocked domains: interface assignment/IP config/PPPoE, gateway group, and system general settings; tunables/sysctl is Coming with safety/live-validation gate
 - Terraform resource skeleton generator (extend code gen to produce four-file resource boilerplate from YAML schema)
 
 ### Risk Mitigation Strategy
@@ -506,9 +524,56 @@ Resources are built in dependency and usage-priority order. Each tier delivers i
 - FR58: Operator can manage Dynamic DNS accounts with provider, hostname, and credentials
 - FR59: Operator can manage Dynamic DNS provider configuration
 
+### Expanded Core-Config Management
+
+- FR69: Operator can manage OpenVPN instances for server and client mode
+- FR70: Operator can manage OpenVPN client overwrite entries
+- FR71: Operator can manage OpenVPN static keys
+- FR72: Operator can manage certificate authorities in OPNsense Trust
+- FR73: Operator can manage certificates in OPNsense Trust
+- FR74: Operator can manage local users
+- FR75: Operator can manage local groups
+- FR76: Operator can manage traffic shaper pipes
+- FR77: Operator can manage traffic shaper queues
+- FR78: Operator can manage traffic shaper rules
+- FR79: Operator can manage IPsec local identities
+- FR80: Operator can manage IPsec remote identities
+- FR81: Operator can manage IPsec pools
+- FR82: Operator can manage IPsec VTI entries
+- FR83: Operator can manage IPsec manual SPD entries
+- FR84: Operator can manage IPsec key pairs
+- FR85: Operator can manage OSPF general configuration and supported OSPF sub-resources
+- FR86: Operator can manage OSPFv3 general configuration and supported OSPFv3 sub-resources
+- FR87: Operator can manage RIP general configuration
+- FR88: Operator can manage FRR static routing general configuration and routes
+- FR89: Operator can manage BGP AS path lists
+- FR90: Operator can manage BGP community lists
+- FR91: Operator can manage BGP peer groups
+- FR92: Operator can manage BGP redistribution rules
+- FR93: Operator can manage Kea DHCPv6 settings, subnets, and reservations
+- FR94: Operator can manage Kea HA peers
+- FR95: Operator can manage Kea control agent settings
+- FR96: Operator can manage Kea DHCPv4 options when supported by the API
+- FR97: Operator can manage Kea DDNS when supported by the API
+- FR98: Operator can manage Unbound general settings
+- FR99: Operator can manage Unbound host aliases
+- FR100: Operator can manage Unbound DNSBL/blocklist settings
+- FR101: Operator can manage Unbound forwarding resources when supported by the API
+- FR102: Operator can manage Dnsmasq settings
+- FR103: Operator can manage Dnsmasq host/domain/range/option/tag/boot resources
+- FR104: Operator can manage cron jobs
+- FR105: Operator can manage Monit services, tests, and alerts
+- FR106: Operator can manage syslog destinations
+- FR107: Operator can manage interface bridge, GRE, GIF, VXLAN, loopback, and neighbor resources
+- FR108: Operator can manage LAGG resources when supported by the API
+- FR109: Operator can manage firewall one-to-one NAT
+- FR110: Operator can manage firewall source NAT when supported by the API
+- FR111: Operator can query supported resources through corresponding data sources
+- FR112: Operator can identify unsupported upstream-blocked domains through provider documentation and support matrix
+
 ### Data Sources
 
-- FR60: Every resource type has a corresponding read-only data source for reference in other configurations (~38 data sources matching ~38 resources)
+- FR60: Every resource type should have a corresponding read-only data source for reference in other configurations where lookup semantics are safe. Current baseline is 83 data sources; 15 singleton or sensitive special-case resource-matching data sources remain planned work.
 - FR61: Operator can query OPNsense system information (firmware version, installed plugins) as a data source
 
 ### Error Handling & Diagnostics
@@ -522,7 +587,7 @@ Resources are built in dependency and usage-priority order. Each tier delivers i
 
 - FR66: Every resource type ships with auto-generated Registry documentation including argument reference, attribute reference, and import instructions — documentation is delivered as part of each resource, not backfilled
 - FR67: Documentation includes realistic composition examples showing resources in context (e.g., complete HAProxy + ACME stack, BGP peering setup, firewall baseline, customer onboarding workflow)
-- FR68: Provider index page documents configuration, authentication options, minimum OPNsense version, required API user permissions per module, and a complete quickstart example
+- FR68: Provider index page documents configuration, authentication options, minimum OPNsense version, required API user permissions per module, support matrix, and a complete quickstart example
 
 ## Non-Functional Requirements
 

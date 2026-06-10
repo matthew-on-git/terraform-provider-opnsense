@@ -23,5 +23,10 @@ func Resources() []func() resource.Resource {
 
 // DataSources returns the list of Unbound DNS data source types.
 func DataSources() []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		newHostOverrideDataSource,
+		newDomainOverrideDataSource,
+		newACLDataSource,
+		newHostAliasDataSource,
+	}
 }

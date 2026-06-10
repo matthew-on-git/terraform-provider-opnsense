@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Quagga / FRR"
+description: |-
+  Look up an existing FRR static route on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing FRR static route on OPNsense. Use this data source to read attributes by UUID without importing the object into Terraform management.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_quagga_static_route/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

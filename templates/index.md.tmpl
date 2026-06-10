@@ -72,4 +72,54 @@ matching *effective privileges* to the user (or a group) under
 For automation, an administrator-equivalent API user is simplest; for least
 privilege, grant only the areas above that your configuration touches.
 
+## Support Matrix
+
+The provider uses four public support states:
+
+| Status | Meaning |
+|--------|---------|
+| Supported | Implemented in this provider release and documented in the Registry. |
+| Coming | Provider-owned implementation remains after endpoint availability and durable Terraform semantics are sufficiently verified. No delivery date is implied. |
+| Needs research | Published or suspected endpoint evidence exists, but target-version availability or durable Terraform semantics are not confirmed. |
+| Upstream-blocked | OPNsense does not currently expose a stable usable API, or an upstream dependency must land first. |
+
+Current provider baseline:
+
+| Capability | Count |
+|------------|------:|
+| Resources | 97 |
+| Data sources | 83 |
+| Resource docs | 97 |
+| Data source docs | 83 |
+| Remaining data-source gaps | 15 |
+
+| Supported today | Coming / provider-owned follow-up | Needs research | Upstream-blocked / OPNsense dependency |
+|-----------------|------------------------------------|----------------|----------------------------------------|
+| Firewall, HAProxy, ACME, DNS/Dnsmasq, DHCP/Kea, Dynamic DNS, VPN, FRR/Quagga, interfaces, auth, trust, syslog, Monit, cron, and traffic shaping resources. | Data-source parity for 15 singleton or sensitive special-case resources; interface LAGG with live member validation; system tunables/sysctl with safety/live-validation gate. | Kea DHCPv4 option/DDNS live endpoint conflict; HASync configuration `syncitems` model shape; HASync status/actions. | Interface base assignment/IP config/PPPoE, gateway groups, and system general settings until OPNsense exposes stable APIs. |
+
+The full current Supported / Coming / Needs research / Upstream-blocked matrix is maintained in
+the repository at
+[`_bmad-output/planning-artifacts/support-matrix.md`](https://github.com/matthew-on-git/terraform-provider-opnsense/blob/main/_bmad-output/planning-artifacts/support-matrix.md).
+Confirmed upstream blockers and the release-review workflow are documented in
+[`docs/upstream-blocked.md`](https://github.com/matthew-on-git/terraform-provider-opnsense/blob/main/docs/upstream-blocked.md).
+
+## Import and Migration Guidance
+
+Most collection-backed resources use OPNsense UUIDs as Terraform IDs; singleton
+or settings-style resources use stable provider-defined IDs documented on each
+resource. For brownfield migration, import resources in dependency order so
+references can be represented cleanly in HCL:
+
+1. Independent primitives: aliases, categories, users, groups, certificates, DNS records.
+2. Network foundations: interfaces, VLANs, VIPs, gateways, static routes.
+3. Referenced policies: prefix lists, route maps, ACLs, health checks.
+4. Dependent resources: firewall rules/NAT, HAProxy backends/frontends, VPN tunnels, ACME certificates.
+
+After each import, run `terraform plan` and adjust HCL until Terraform reports no
+changes. This confirms the imported state matches the live appliance before more
+dependent resources are added.
+
+For a full brownfield workflow with dependency-ordered examples, see
+[`docs/migration-import.md`](https://github.com/matthew-on-git/terraform-provider-opnsense/blob/main/docs/migration-import.md).
+
 {{ .SchemaMarkdown | trimspace }}

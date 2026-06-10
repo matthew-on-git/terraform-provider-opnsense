@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "DHCPv4"
+description: |-
+  Look up an existing DHCPv4 subnet on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing DHCPv4 subnet on OPNsense by UUID without importing it into Terraform management.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_dhcpv4_subnet/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

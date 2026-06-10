@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "ACME"
+description: |-
+  Look up an existing ACME challenge on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing ACME challenge on OPNsense by UUID without importing it into Terraform management.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_acme_challenge/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

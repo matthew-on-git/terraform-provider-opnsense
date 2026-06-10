@@ -1,6 +1,6 @@
 # Story 5.3: Virtual IP Resource
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -14,10 +14,10 @@ As an operator, I want to manage virtual IPs (CARP, IP Alias) through Terraform.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create model, schema, resource, test in `internal/service/system/`
-- [ ] Task 2: Register in exports.go
-- [ ] Task 3: Create docs and examples
-- [ ] Task 4: Run `make check`
+- [x] Task 1: Create model, schema, resource, test in `internal/service/system/`
+- [x] Task 2: Register in exports.go
+- [x] Task 3: Create docs and examples
+- [x] Task 4: Run `make check`
 
 ## Dev Notes
 
@@ -51,6 +51,30 @@ As an operator, I want to manage virtual IPs (CARP, IP Alias) through Terraform.
 ## Dev Agent Record
 
 ### Agent Model Used
+
+gpt-5.5
+
 ### Debug Log References
+
+- Verified implementation files under `internal/service/system/`
+- Verified provider registration through `system.Resources()`
+- Verified docs and examples under `docs/resources/` and `examples/resources/`
+- Verified `make check` passes
+
 ### Completion Notes List
+
+- Implemented `opnsense_system_vip` with CRUD, read-back after create/update, import, drift removal on not found, and standard reconfigure endpoint.
+- Added acceptance test coverage for create, import, update, and destroy.
+- Added generated resource documentation plus standalone resource and import examples.
+
 ### File List
+
+- `internal/service/system/vip_model.go`
+- `internal/service/system/vip_schema.go`
+- `internal/service/system/vip_resource.go`
+- `internal/service/system/vip_resource_test.go`
+- `internal/service/system/exports.go`
+- `internal/provider/provider.go`
+- `docs/resources/system_vip.md`
+- `examples/resources/opnsense_system_vip/resource.tf`
+- `examples/resources/opnsense_system_vip/import.sh`

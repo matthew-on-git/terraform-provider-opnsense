@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Quagga / FRR"
+description: |-
+  Look up an existing OSPF area in the OPNsense FRR/Quagga plugin.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing OSPF area in the OPNsense FRR/Quagga plugin by UUID without importing it into Terraform management.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_quagga_ospf_area/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

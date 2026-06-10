@@ -1,0 +1,1 @@
+terraform import opnsense_quagga_ospf_area.stub_area 12345678-1234-1234-1234-123456789012

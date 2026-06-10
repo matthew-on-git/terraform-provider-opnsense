@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "OpenVPN"
+description: |-
+  Look up an existing OpenVPN client overwrite on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing OpenVPN client overwrite on OPNsense. Use this data source to read attributes by UUID without importing the object into Terraform management.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_openvpn_client_overwrite/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

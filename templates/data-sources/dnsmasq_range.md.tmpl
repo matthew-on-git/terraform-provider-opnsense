@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Dnsmasq"
+description: |-
+  Look up an existing Dnsmasq DHCP range on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing Dnsmasq DHCP range on OPNsense by UUID without importing it into Terraform management.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_dnsmasq_range/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
