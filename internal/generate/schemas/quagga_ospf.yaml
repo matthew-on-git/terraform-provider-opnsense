@@ -2,6 +2,24 @@
 # Generated into internal/service/quagga by `go run ./internal/generate`.
 package: quagga
 resources:
+  - name: ospf_area
+    go_type: OSPFArea
+    type_name: quagga_ospf_area
+    title: an OSPF area
+    kind: item
+    reconfigure: /api/quagga/service/reconfigure
+    monad: area
+    endpoints:
+      add: /api/quagga/ospfsettings/add_area
+      get: /api/quagga/ospfsettings/get_area
+      set: /api/quagga/ospfsettings/set_area
+      del: /api/quagga/ospfsettings/del_area
+      search: /api/quagga/ospfsettings/search_area
+    fields:
+      - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this OSPF area is enabled."}
+      - {name: AreaID, tf: area_id, json: id, type: string, required: true, test_value: '"0.0.0.1"', desc: "OSPF area ID in dotted IPv4 format."}
+      - {name: Type, tf: type, json: type, type: selectmap, required: true, default: '"stub"', options: [stub, "stub no-summary", nssa, "nssa no-summary"], test_value: '"stub"', desc: "OSPF area type."}
+
   - name: ospf_network
     go_type: OSPFNetwork
     type_name: quagga_ospf_network

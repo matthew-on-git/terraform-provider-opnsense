@@ -27,6 +27,7 @@ func Resources() []func() resource.Resource {
 		newBGPPeerGroupResource,
 		newBGPRedistributionResource,
 		// Generated OSPF item resources (internal/generate).
+		newOSPFAreaResource,
 		newOSPFNetworkResource,
 		newOSPFInterfaceResource,
 		newOSPFNeighborResource,
@@ -45,16 +46,25 @@ func Resources() []func() resource.Resource {
 // DataSources returns the list of Quagga/FRR data source types.
 func DataSources() []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		newBGPASPathDataSource,
+		newBGPCommunityListDataSource,
+		newBGPNeighborDataSource,
+		newBGPPeerGroupDataSource,
+		newBGPRedistributionDataSource,
 		newOSPF6InterfaceDataSource,
 		newOSPF6NetworkDataSource,
 		newOSPF6PrefixListDataSource,
 		newOSPF6RedistributionDataSource,
 		newOSPF6RouteMapDataSource,
+		newOSPFAreaDataSource,
 		newOSPFInterfaceDataSource,
 		newOSPFNeighborDataSource,
 		newOSPFNetworkDataSource,
 		newOSPFPrefixListDataSource,
 		newOSPFRedistributionDataSource,
 		newOSPFRouteMapDataSource,
+		newPrefixListDataSource,
+		newRouteMapDataSource,
+		newStaticRouteDataSource,
 	}
 }

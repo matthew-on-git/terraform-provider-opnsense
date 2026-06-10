@@ -13,10 +13,23 @@ import (
 func Resources() []func() resource.Resource {
 	return []func() resource.Resource{
 		newSettingsResource,
+		newHostResource,
+		newDomainResource,
+		newTagResource,
+		newRangeResource,
+		newOptionResource,
+		newBootResource,
 	}
 }
 
 // DataSources returns the list of Dnsmasq data source types.
 func DataSources() []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		newHostDataSource,
+		newDomainDataSource,
+		newTagDataSource,
+		newRangeDataSource,
+		newOptionDataSource,
+		newBootDataSource,
+	}
 }

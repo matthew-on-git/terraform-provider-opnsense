@@ -1,0 +1,22 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Dnsmasq"
+description: |-
+  Manages a Dnsmasq DHCP boot entry on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Manages a Dnsmasq DHCP boot entry on OPNsense. Boot entries are commonly used for PXE or network boot configuration.
+
+## Example Usage
+
+{{tffile "examples/resources/opnsense_dnsmasq_boot/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the Dnsmasq DHCP boot UUID from OPNsense.
+
+{{codefile "shell" "examples/resources/opnsense_dnsmasq_boot/import.sh"}}

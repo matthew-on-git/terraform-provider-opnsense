@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Firewall"
+description: |-
+  Look up an existing firewall filter rule on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing firewall filter rule on OPNsense. Use this data source to read attributes by UUID without importing the object into Terraform management.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_firewall_filter_rule/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

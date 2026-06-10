@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Trust"
+description: |-
+  Look up an existing trust CA on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing trust CA on OPNsense by UUID without importing it into Terraform management.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_trust_ca/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Unbound"
+description: |-
+  Look up an existing Unbound domain override on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing Unbound domain override on OPNsense by UUID without importing it into Terraform management.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_unbound_domain_override/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

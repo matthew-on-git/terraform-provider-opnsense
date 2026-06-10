@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Kea"
+description: |-
+  Look up an existing Kea DHCPv6 reservation on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing Kea DHCPv6 reservation on OPNsense by UUID without importing it into Terraform management.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_kea_dhcpv6_reservation/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

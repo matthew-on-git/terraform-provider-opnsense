@@ -1,26 +1,26 @@
 installation:
   version: 6.8.0
   installDate: 2026-03-13T17:38:33.408Z
-  lastUpdated: 2026-05-27T02:38:23.263Z
+  lastUpdated: 2026-06-02T04:53:00.744Z
 modules:
   - name: core
     version: 6.8.0
     installDate: 2026-03-13T17:38:33.062Z
-    lastUpdated: 2026-05-27T02:38:23.259Z
+    lastUpdated: 2026-06-02T04:53:00.739Z
     source: built-in
     npmPackage: null
     repoUrl: null
   - name: bmm
     version: 6.8.0
     installDate: 2026-03-13T17:38:29.843Z
-    lastUpdated: 2026-05-27T02:38:23.259Z
+    lastUpdated: 2026-06-02T04:53:00.740Z
     source: built-in
     npmPackage: null
     repoUrl: null
   - name: tea
     version: v1.19.0
     installDate: 2026-03-13T17:38:31.724Z
-    lastUpdated: 2026-05-27T02:38:23.261Z
+    lastUpdated: 2026-06-02T04:53:00.742Z
     source: external
     npmPackage: bmad-method-test-architecture-enterprise
     repoUrl: https://github.com/bmad-code-org/bmad-method-test-architecture-enterprise
@@ -29,7 +29,7 @@ modules:
   - name: infra
     version: null
     installDate: 2026-03-13T17:38:31.748Z
-    lastUpdated: 2026-05-27T02:38:23.263Z
+    lastUpdated: 2026-06-02T04:53:00.744Z
     source: unknown
     npmPackage: null
     repoUrl: null
@@ -37,3 +37,4 @@ ides:
   - claude-code
   - cursor
   - openclaw
+  - opencode

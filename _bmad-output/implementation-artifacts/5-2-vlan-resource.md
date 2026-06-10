@@ -1,6 +1,6 @@
 # Story 5.2: VLAN Resource
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -14,10 +14,10 @@ As an operator, I want to manage VLAN assignments through Terraform, so that I c
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create model, schema, resource, test in `internal/service/system/`
-- [ ] Task 2: Create `exports.go`, register in provider
-- [ ] Task 3: Create docs and examples
-- [ ] Task 4: Run `make check`
+- [x] Task 1: Create model, schema, resource, test in `internal/service/system/`
+- [x] Task 2: Create `exports.go`, register in provider
+- [x] Task 3: Create docs and examples
+- [x] Task 4: Run `make check`
 
 ## Dev Notes
 
@@ -48,6 +48,30 @@ As an operator, I want to manage VLAN assignments through Terraform, so that I c
 ## Dev Agent Record
 
 ### Agent Model Used
+
+gpt-5.5
+
 ### Debug Log References
+
+- Verified implementation files under `internal/service/system/`
+- Verified provider registration through `system.Resources()`
+- Verified docs and examples under `docs/resources/` and `examples/resources/`
+- Verified `make check` passes
+
 ### Completion Notes List
+
+- Implemented `opnsense_system_vlan` with CRUD, read-back after create/update, import, drift removal on not found, and standard reconfigure endpoint.
+- Added acceptance test coverage for create, import, update, and destroy.
+- Added generated resource documentation plus standalone resource and import examples.
+
 ### File List
+
+- `internal/service/system/vlan_model.go`
+- `internal/service/system/vlan_schema.go`
+- `internal/service/system/vlan_resource.go`
+- `internal/service/system/vlan_resource_test.go`
+- `internal/service/system/exports.go`
+- `internal/provider/provider.go`
+- `docs/resources/system_vlan.md`
+- `examples/resources/opnsense_system_vlan/resource.tf`
+- `examples/resources/opnsense_system_vlan/import.sh`

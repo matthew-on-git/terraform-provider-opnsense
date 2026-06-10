@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "WireGuard"
+description: |-
+  Look up an existing WireGuard peer on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing WireGuard peer on OPNsense. Use this data source to read attributes by UUID without importing the object into Terraform management.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_wireguard_peer/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

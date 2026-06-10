@@ -23,5 +23,9 @@ func Resources() []func() resource.Resource {
 func DataSources() []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		newSystemInfoDataSource,
+		newVlanDataSource,
+		newVipDataSource,
+		newRouteDataSource,
+		newGatewayDataSource,
 	}
 }

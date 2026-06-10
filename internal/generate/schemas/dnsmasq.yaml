@@ -37,3 +37,147 @@ resources:
       - {name: StripSubnet, tf: strip_subnet, json: strip_subnet, type: bool, default: "false", desc: "Strip the client subnet from replies."}
       - {name: DHCP, tf: dhcp, json: dhcp, type: selectmaplist, desc: "DHCP behaviour flags."}
       - {name: NoIdent, tf: no_ident, json: no_ident, type: bool, default: "true", desc: "Disable the chaos TXT ident responses."}
+
+  - name: host
+    go_type: Host
+    type_name: dnsmasq_host
+    title: a Dnsmasq host entry
+    kind: item
+    reconfigure: /api/dnsmasq/service/reconfigure
+    monad: host
+    endpoints:
+      add: /api/dnsmasq/settings/add_host
+      get: /api/dnsmasq/settings/get_host
+      set: /api/dnsmasq/settings/set_host
+      del: /api/dnsmasq/settings/del_host
+      search: /api/dnsmasq/settings/search_host
+    fields:
+      - {name: Host, tf: host, json: host, type: string, required: true, test_value: '"host1"', desc: "Hostname for this Dnsmasq host entry."}
+      - {name: Domain, tf: domain, json: domain, type: string, test_value: '"example.com"', desc: "Domain for this host entry."}
+      - {name: Local, tf: local, json: local, type: bool, default: "false", desc: "Serve this host locally without forwarding."}
+      - {name: IP, tf: ip, json: ip, type: string, required: true, test_value: '"192.0.2.10"', desc: "IP address or addresses for this host entry."}
+      - {name: CNames, tf: cnames, json: cnames, type: string, desc: "Canonical name aliases for this host entry."}
+      - {name: ClientID, tf: client_id, json: client_id, type: string, desc: "DHCP client identifier."}
+      - {name: HWAddr, tf: hwaddr, json: hwaddr, type: string, desc: "Hardware or MAC address values."}
+      - {name: LeaseTime, tf: lease_time, json: lease_time, type: int, default: "0", desc: "DHCP lease time for this host entry."}
+      - {name: Ignore, tf: ignore, json: ignore, type: bool, default: "false", desc: "Ignore DHCP requests from this host."}
+      - {name: SetTag, tf: set_tag, json: set_tag, type: selectmap, desc: "DHCP tag to set for this host."}
+      - {name: Description, tf: description, json: descr, type: string, desc: "Description for this host entry."}
+      - {name: Comments, tf: comments, json: comments, type: string, desc: "Additional comments for this host entry."}
+      - {name: Aliases, tf: aliases, json: aliases, type: string, desc: "Legacy aliases for this host entry."}
+
+  - name: domain
+    go_type: Domain
+    type_name: dnsmasq_domain
+    title: a Dnsmasq domain override
+    kind: item
+    reconfigure: /api/dnsmasq/service/reconfigure
+    monad: domainoverride
+    endpoints:
+      add: /api/dnsmasq/settings/add_domain
+      get: /api/dnsmasq/settings/get_domain
+      set: /api/dnsmasq/settings/set_domain
+      del: /api/dnsmasq/settings/del_domain
+      search: /api/dnsmasq/settings/search_domain
+    fields:
+      - {name: Sequence, tf: sequence, json: sequence, type: int, default: "0", desc: "Sequence number for ordering domain overrides."}
+      - {name: Domain, tf: domain, json: domain, type: string, required: true, test_value: '"corp.example.com"', desc: "Domain name to override."}
+      - {name: IPSet, tf: ipset, json: ipset, type: selectmap, desc: "Firewall alias/IP set relation for this domain override."}
+      - {name: SourceIP, tf: source_ip, json: srcip, type: string, desc: "Optional source IP constraint."}
+      - {name: Port, tf: port, json: port, type: int, default: "0", desc: "Optional DNS server port."}
+      - {name: IP, tf: ip, json: ip, type: string, required: true, test_value: '"192.0.2.53"', desc: "IP address or upstream server for this domain override."}
+      - {name: Description, tf: description, json: descr, type: string, desc: "Description for this domain override."}
+
+  - name: tag
+    go_type: Tag
+    type_name: dnsmasq_tag
+    title: a Dnsmasq DHCP tag
+    kind: item
+    reconfigure: /api/dnsmasq/service/reconfigure
+    monad: tag
+    endpoints:
+      add: /api/dnsmasq/settings/add_tag
+      get: /api/dnsmasq/settings/get_tag
+      set: /api/dnsmasq/settings/set_tag
+      del: /api/dnsmasq/settings/del_tag
+      search: /api/dnsmasq/settings/search_tag
+    fields:
+      - {name: Tag, tf: tag, json: tag, type: string, required: true, test_value: '"pxe"', desc: "Unique Dnsmasq DHCP tag name."}
+
+  - name: range
+    go_type: Range
+    type_name: dnsmasq_range
+    title: a Dnsmasq DHCP range
+    kind: item
+    reconfigure: /api/dnsmasq/service/reconfigure
+    monad: range
+    endpoints:
+      add: /api/dnsmasq/settings/add_range
+      get: /api/dnsmasq/settings/get_range
+      set: /api/dnsmasq/settings/set_range
+      del: /api/dnsmasq/settings/del_range
+      search: /api/dnsmasq/settings/search_range
+    fields:
+      - {name: Interface, tf: interface, json: interface, type: selectmap, desc: "Interface this DHCP range applies to; blank means any allowed interface."}
+      - {name: SetTag, tf: set_tag, json: set_tag, type: selectmap, desc: "DHCP tag to set for leases in this range."}
+      - {name: StartAddress, tf: start_address, json: start_addr, type: string, required: true, test_value: '"192.0.2.100"', desc: "Start address for this DHCP range."}
+      - {name: EndAddress, tf: end_address, json: end_addr, type: string, test_value: '"192.0.2.150"', desc: "End address for this DHCP range."}
+      - {name: SubnetMask, tf: subnet_mask, json: subnet_mask, type: string, desc: "IPv4 subnet mask for this DHCP range."}
+      - {name: Constructor, tf: constructor, json: constructor, type: selectmap, desc: "Interface constructor for dynamic range generation."}
+      - {name: Mode, tf: mode, json: mode, type: selectmaplist, desc: "Range mode flags."}
+      - {name: PrefixLength, tf: prefix_length, json: prefix_len, type: int, default: "0", desc: "IPv6 prefix length for this range."}
+      - {name: LeaseTime, tf: lease_time, json: lease_time, type: int, default: "0", desc: "Lease time for this DHCP range."}
+      - {name: DomainType, tf: domain_type, json: domain_type, type: selectmap, options: [interface, range], test_value: '"range"', desc: "How the DHCP domain is derived."}
+      - {name: Domain, tf: domain, json: domain, type: string, desc: "Domain for this DHCP range."}
+      - {name: NoSync, tf: no_sync, json: nosync, type: bool, default: "false", desc: "Exclude this range from HA synchronization."}
+      - {name: RAMode, tf: ra_mode, json: ra_mode, type: selectmaplist, desc: "IPv6 router advertisement modes."}
+      - {name: RAPriority, tf: ra_priority, json: ra_priority, type: selectmap, options: [high, low], desc: "Router advertisement priority."}
+      - {name: RAMTU, tf: ra_mtu, json: ra_mtu, type: int, default: "0", desc: "Router advertisement MTU."}
+      - {name: RAInterval, tf: ra_interval, json: ra_interval, type: int, default: "0", desc: "Router advertisement interval."}
+      - {name: RARouterLifetime, tf: ra_router_lifetime, json: ra_router_lifetime, type: int, default: "0", desc: "Router advertisement router lifetime."}
+      - {name: Description, tf: description, json: description, type: string, desc: "Description for this DHCP range."}
+
+  - name: option
+    go_type: Option
+    type_name: dnsmasq_option
+    title: a Dnsmasq DHCP option
+    kind: item
+    reconfigure: /api/dnsmasq/service/reconfigure
+    monad: option
+    endpoints:
+      add: /api/dnsmasq/settings/add_option
+      get: /api/dnsmasq/settings/get_option
+      set: /api/dnsmasq/settings/set_option
+      del: /api/dnsmasq/settings/del_option
+      search: /api/dnsmasq/settings/search_option
+    fields:
+      - {name: Type, tf: type, json: type, type: selectmap, required: true, options: [set, match], test_value: '"set"', desc: "DHCP option type."}
+      - {name: Option, tf: option, json: option, type: string, desc: "IPv4 DHCP option key."}
+      - {name: Option6, tf: option6, json: option6, type: string, desc: "IPv6 DHCP option key."}
+      - {name: Interface, tf: interface, json: interface, type: selectmap, desc: "Interface this option applies to; blank means any allowed interface."}
+      - {name: Tag, tf: tag, json: tag, type: selectmaplist, desc: "Tags this option matches."}
+      - {name: SetTag, tf: set_tag, json: set_tag, type: selectmap, desc: "Tag to set when this option matches."}
+      - {name: Value, tf: value, json: value, type: string, test_value: '"66,192.0.2.20"', desc: "DHCP option value."}
+      - {name: Force, tf: force, json: force, type: bool, default: "false", desc: "Force this option even if a client did not request it."}
+      - {name: Description, tf: description, json: description, type: string, desc: "Description for this DHCP option."}
+
+  - name: boot
+    go_type: Boot
+    type_name: dnsmasq_boot
+    title: a Dnsmasq DHCP boot entry
+    kind: item
+    reconfigure: /api/dnsmasq/service/reconfigure
+    monad: boot
+    endpoints:
+      add: /api/dnsmasq/settings/add_boot
+      get: /api/dnsmasq/settings/get_boot
+      set: /api/dnsmasq/settings/set_boot
+      del: /api/dnsmasq/settings/del_boot
+      search: /api/dnsmasq/settings/search_boot
+    fields:
+      - {name: Interface, tf: interface, json: interface, type: selectmap, desc: "Interface this boot entry applies to; blank means any allowed interface."}
+      - {name: Tag, tf: tag, json: tag, type: selectmaplist, desc: "Tags this boot entry matches."}
+      - {name: Filename, tf: filename, json: filename, type: string, required: true, test_value: '"pxelinux.0"', desc: "Boot filename served to matching clients."}
+      - {name: ServerName, tf: server_name, json: servername, type: string, desc: "Boot server name."}
+      - {name: Address, tf: address, json: address, type: string, desc: "Boot server address."}
+      - {name: Description, tf: description, json: description, type: string, desc: "Description for this DHCP boot entry."}

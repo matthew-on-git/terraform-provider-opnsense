@@ -20,5 +20,9 @@ func Resources() []func() resource.Resource {
 
 // DataSources returns the list of ACME data source types.
 func DataSources() []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		newAccountDataSource,
+		newChallengeDataSource,
+		newCertificateDataSource,
+	}
 }

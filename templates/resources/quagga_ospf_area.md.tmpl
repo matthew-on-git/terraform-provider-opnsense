@@ -1,0 +1,22 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Quagga / FRR"
+description: |-
+  Manages an OSPF area in the OPNsense FRR/Quagga plugin.
+---
+
+# {{.Name}} ({{.Type}})
+
+Manages an OSPF area in the OPNsense FRR/Quagga plugin. Areas are UUID-backed OSPF sub-resources and are applied with the Quagga service reconfigure endpoint.
+
+## Example Usage
+
+{{tffile "examples/resources/opnsense_quagga_ospf_area/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the OSPF area UUID from OPNsense.
+
+{{codefile "shell" "examples/resources/opnsense_quagga_ospf_area/import.sh"}}

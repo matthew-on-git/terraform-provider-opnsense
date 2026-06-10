@@ -2,7 +2,7 @@
 title: Feature-Complete Roadmap — Expanded Epic Plan
 date: 2026-05-29
 author: BMad Master
-status: draft
+status: updated-2026-06-02
 supersedes: extends epics.md (Epics 1-12) with Epics 13-25
 inputs:
   - core-config-gap-analysis.md
@@ -16,13 +16,15 @@ strategy: Ship incrementally to the registry; drive the 3 blocked domains upstre
 
 ## Where we are
 
-- **31 resources + 1 data source built and tested** (Epics 1-5, 7-11 substantially done).
-- **Gap analysis (2026-05-29)** confirmed ~80+ additional resources are buildable against existing OPNsense APIs.
-- **Only 3 domains are genuinely blocked** (need upstream OPNsense work): interface base assignment, gateway group, system general/tunables.
+- **97 resources + 83 data sources are implemented and documented** in the repository.
+- The implementation is ahead of the original PRD and the first roadmap snapshot. Wave A and most Wave B resource work are already built.
+- The largest remaining provider-owned gap is **data-source parity**: 15 singleton or sensitive special-case resources do not yet have matching data sources.
+- Remaining buildable resource gaps are narrow: interface LAGG and tunables/sysctl. Source NAT, Unbound forward, Dnsmasq item resources, and OSPF area are already supported; HASync configuration needs `syncitems` model-shape research; Kea DHCPv4 option/DDNS need live endpoint recheck before implementation.
+- **Three domains are upstream-blocked**: interface base assignment/IP config/PPPoE, gateway group, and system general settings. Tunables/sysctl is Coming with a safety/live-validation gate after Story 28.3 confirmed persistent `core/tunables` item CRUD/search and `reconfigure` in current upstream docs/source.
 
-## PRD expansion required
+## PRD expansion applied / still required
 
-The original PRD (68 FRs) does **not** equal "all core config." These domains must be added as new functional requirements before/with implementation:
+The original PRD (68 FRs) did **not** equal "all core config." These domains are now treated as the expanded feature-complete scope:
 
 - **FR69-71** OpenVPN: instances (server/client), client overwrites, static keys
 - **FR72-73** PKI/Trust: certificate authorities, certificates
@@ -34,7 +36,7 @@ The original PRD (68 FRs) does **not** equal "all core config." These domains mu
 - **FR95-96** BGP global config + FRR general settings (closes original FR30/FR31 via singletons)
 - **FR97-101** Kea extensions: DHCPv6, HA peers, DHCPv4 options, ctrl_agent, ddns
 - **FR102-105** Unbound extensions: general, forward, host alias, blocklist
-- **FR106-110** Dnsmasq (alternative backend): host, domain, range, option, tag
+- **FR106-110** Dnsmasq (alternative backend): host, domain, range, option, tag, boot
 - **FR111-113** System services: cron jobs, monit (service/test/alert), syslog destinations
 - **FR114-120** Interface types: bridge, LAGG, GRE, GIF, VXLAN, loopback, neighbor
 - **FR121-122** Firewall: source NAT, one-to-one NAT
@@ -42,72 +44,71 @@ The original PRD (68 FRs) does **not** equal "all core config." These domains mu
 
 ---
 
-## Foundation epic (do first — unblocks ~10 resources)
+## Foundation epic
 
 ### Epic 13: API Client Singleton Support
-Add singleton get/set to `pkg/opnsense` (get/set with no UUID; tolerate missing `/{id}`), with unit tests. Required by every singleton resource (FRR/OSPF/RIP/static general, BGP global, Unbound general, Kea ctrl_agent/ddns, DDNS settings). Small, high-leverage.
+Status: done. Singleton get/set support exists and has enabled singleton resources including FRR/BGP, OSPF, RIP/static, Unbound general, and Kea control agent/settings.
 
 ---
 
 ## Wave A — high-impact, confirmed APIs (ship first)
 
 ### Epic 14: OpenVPN
-instance (server/client), client overwrite, static key. (3) — biggest missing core domain.
+Status: done. Instance, client overwrite, and static key resources are implemented.
 
 ### Epic 15: PKI & Trust
-certificate authority, certificate. (2) — unblocks ACME/HAProxy SSL composition stories.
+Status: done. CA and certificate resources are implemented.
 
 ### Epic 16: Users & Access
-user, group. (2) — (privileges = optional get/set singleton).
+Status: done. User and group resources plus data sources are implemented.
 
 ### Epic 17: Interface Types
-bridge, LAGG, GRE, GIF, VXLAN, loopback, neighbor. (7) — closes most of the interfaces gap that doesn't need upstream.
+Status: mostly done. Bridge, GRE, GIF, VXLAN, loopback, and neighbor are implemented. LAGG remains coming if endpoint verification holds.
 
 ### Epic 18: Firewall Completion
-source NAT, one-to-one NAT. (2)
+Status: done. One-to-one NAT is implemented. Source NAT is already shipped as `opnsense_firewall_nat_outbound`.
 
 ### Epic 19: Dynamic Routing Completion (FRR/quagga)
-FRR general (s), BGP global (s), BGP aspath/communitylist/peergroup/redistribution, OSPF (general + 7 sub), OSPFv3 (general + 5 sub), RIP (s), FRR static (general + route). (~25) — depends on Epic 13.
+Status: substantially done. FRR general, BGP global/sub-resources, OSPF area/sub-resources, OSPFv3, RIP, and FRR static resources are implemented.
 
 ---
 
 ## Wave B — confirmed, second priority
 
 ### Epic 20: VPN Completion (IPsec)
-local, remote, pool, VTI, manual SPD, key pair. (6)
+Status: done. Local, remote, pool, VTI, manual SPD, and key pair resources are implemented.
 
 ### Epic 21: DHCP Completion (Kea)
-DHCPv6 subnet/reservation, HA peer (v4+v6), DHCPv4 option, ctrl_agent (s), ddns (s). (~7) — singletons depend on Epic 13.
+Status: partial. DHCPv6 settings/subnet/reservation, HA peer, and control agent are implemented. DHCPv4 option and Kea DDNS need live endpoint recheck before implementation.
 
 ### Epic 22: DNS Completion
-Unbound general (s), forward, host alias, blocklist. Optionally dnsmasq (host/domain/range/option/tag) as alternative backend. (4-9)
+Status: done. Unbound general, host alias, DNSBL/blocklist, Unbound forward, Dnsmasq settings, and Dnsmasq host/domain/range/option/tag/boot item resources are implemented.
 
 ### Epic 23: Traffic Shaping
-pipe, queue, rule. (3)
+Status: done. Pipe, queue, and rule resources plus data sources are implemented.
 
 ### Epic 24: System Services
-cron job, monit (service/test/alert), syslog destination. (5)
+Status: done. Cron job, Monit service/test/alert, and syslog destination resources are implemented.
 
 ---
 
 ## Wave C — release runway (extends Epic 12; runs in parallel)
 
 ### Epic 25: Data Sources, Docs & Registry Release
-- Data source for every resource (~30+) + `system_info` data source.
-- `templates/index.md.tmpl` + `tfplugindocs` registry docs + composition examples.
-- CI release pipeline (GoReleaser + GPG), `make check` gate, structure validation.
-- **v0.x tag with an honest support matrix** (Supported / Coming / Upstream-blocked).
-- Ship as soon as Wave A is stable — do NOT wait for Wave B.
+- 83 data sources are implemented, including standalone `system_info`; 15 singleton or sensitive special-case resource-matching data sources remain.
+- Provider index, tfplugindocs output, examples, GoReleaser, signed checksum workflow, Registry manifest, and changelog exist.
+- Support matrix now lives in `support-matrix.md` and should be mirrored in Registry-facing docs.
+- First release can proceed once release workflow dry-run/secrets are confirmed and the support matrix is accepted.
 
 ---
 
-## Two-front: upstream contribution track (the 3 blocked domains)
+## Two-front: upstream contribution track
 
 | Domain | Upstream item | Action | Unblocks |
 |---|---|---|---|
-| Interface base assignment | PR #8436 (Terraform-motivated) | track, test, contribute; review companion TF provider for overlap | `opnsense_interface` (assignment/IP/PPPoE) |
+| Interface base assignment / IP config / PPPoE | PR #8436 (Terraform-motivated) | track, test, contribute; review companion TF provider for overlap | `opnsense_interface` (assignment/IP/PPPoE) |
 | Gateway group | none tracked | author fresh MVC PR (model on VIP #6105 / IPsec #6187) | `opnsense_system_gateway_group` |
-| System general + tunables | roadmap: System Settings → MVC | watch release notes (CE 26.x), adopt when shipped | `opnsense_system_general`, tunables |
+| System general settings | roadmap: System Settings -> MVC | watch release notes (CE 26.x), adopt when shipped | `opnsense_system_general` |
 
 Each merged endpoint → a new provider release adding that resource. Document blocked items publicly so users see an active roadmap, not gaps.
 
@@ -121,13 +122,14 @@ User decision: **keep & build.** With ~80 more resources following the identical
 
 ## Suggested execution order
 
-1. Epic 13 (singleton client) — foundation
-2. Epic 14 OpenVPN + Epic 15 Trust + Epic 16 Users — highest adoption value
-3. Epic 25 partial: data sources + docs + **first registry release (v0.1.0)** with what's built
-4. Epic 6 codegen (pattern now stable) → accelerate the rest
-5. Epics 17-24 via codegen, releasing incrementally (v0.2, v0.3, …)
-6. Upstream track runs continuously; fold in blocked resources as APIs land → v1.0 when core-complete
+1. v0.1.0 is published. Treat release-readiness work as historical unless a regression is found.
+2. Execute the post-release epic plan in `post-release-epics.md`.
+3. Start with Story 25B.1 to create the exact data-source parity batch plan.
+4. Harden public Registry docs through Epic 26.
+5. Maintain data-source parity follow-up for the remaining singleton or sensitive special cases through the parity plan.
+6. Verify and implement remaining buildable resources through Epic 27.
+7. Maintain upstream-blocked transparency through Epic 28.
 
 ## Definition of done: "feature complete"
 
-All core-config domains either (a) shipped as resources, or (b) explicitly blocked upstream with a tracked item and public roadmap note. v1.0 = all buildable resources shipped + the 3 upstream domains resolved or formally documented as OPNsense limitations.
+All core-config domains are either (a) shipped as resources/data sources, (b) explicitly listed as Coming after endpoint and durable-semantics verification, (c) explicitly listed as Needs research with the missing evidence called out, or (d) explicitly blocked upstream with a tracked item and public roadmap note. v1.0 = all buildable resources and data-source parity shipped, plus Needs research and upstream-blocked domains resolved or formally documented as OPNsense limitations.
