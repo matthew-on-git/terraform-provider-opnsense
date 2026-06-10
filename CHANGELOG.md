@@ -2,6 +2,82 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.2.0 (June 10, 2026)
+
+FEATURES:
+
+* **New Resource:** `opnsense_dnsmasq_boot`
+* **New Resource:** `opnsense_dnsmasq_domain`
+* **New Resource:** `opnsense_dnsmasq_host`
+* **New Resource:** `opnsense_dnsmasq_option`
+* **New Resource:** `opnsense_dnsmasq_range`
+* **New Resource:** `opnsense_dnsmasq_tag`
+* **New Resource:** `opnsense_quagga_ospf_area`
+
+* **New Data Source:** `opnsense_acme_account`
+* **New Data Source:** `opnsense_acme_certificate`
+* **New Data Source:** `opnsense_acme_challenge`
+* **New Data Source:** `opnsense_ddclient_account`
+* **New Data Source:** `opnsense_dhcpv4_reservation`
+* **New Data Source:** `opnsense_dhcpv4_subnet`
+* **New Data Source:** `opnsense_dnsmasq_boot`
+* **New Data Source:** `opnsense_dnsmasq_domain`
+* **New Data Source:** `opnsense_dnsmasq_host`
+* **New Data Source:** `opnsense_dnsmasq_option`
+* **New Data Source:** `opnsense_dnsmasq_range`
+* **New Data Source:** `opnsense_dnsmasq_tag`
+* **New Data Source:** `opnsense_firewall_category`
+* **New Data Source:** `opnsense_firewall_filter_rule`
+* **New Data Source:** `opnsense_firewall_nat_outbound`
+* **New Data Source:** `opnsense_firewall_nat_port_forward`
+* **New Data Source:** `opnsense_haproxy_acl`
+* **New Data Source:** `opnsense_haproxy_backend`
+* **New Data Source:** `opnsense_haproxy_frontend`
+* **New Data Source:** `opnsense_haproxy_healthcheck`
+* **New Data Source:** `opnsense_haproxy_server`
+* **New Data Source:** `opnsense_ipsec_child`
+* **New Data Source:** `opnsense_ipsec_connection`
+* **New Data Source:** `opnsense_ipsec_local`
+* **New Data Source:** `opnsense_ipsec_remote`
+* **New Data Source:** `opnsense_kea_dhcpv6_reservation`
+* **New Data Source:** `opnsense_kea_dhcpv6_subnet`
+* **New Data Source:** `opnsense_openvpn_client_overwrite`
+* **New Data Source:** `opnsense_openvpn_instance`
+* **New Data Source:** `opnsense_quagga_bgp_aspath`
+* **New Data Source:** `opnsense_quagga_bgp_communitylist`
+* **New Data Source:** `opnsense_quagga_bgp_neighbor`
+* **New Data Source:** `opnsense_quagga_bgp_peergroup`
+* **New Data Source:** `opnsense_quagga_bgp_redistribution`
+* **New Data Source:** `opnsense_quagga_ospf_area`
+* **New Data Source:** `opnsense_quagga_prefix_list`
+* **New Data Source:** `opnsense_quagga_route_map`
+* **New Data Source:** `opnsense_quagga_static_route`
+* **New Data Source:** `opnsense_system_gateway`
+* **New Data Source:** `opnsense_system_route`
+* **New Data Source:** `opnsense_system_vip`
+* **New Data Source:** `opnsense_system_vlan`
+* **New Data Source:** `opnsense_trust_ca`
+* **New Data Source:** `opnsense_unbound_acl`
+* **New Data Source:** `opnsense_unbound_domain_override`
+* **New Data Source:** `opnsense_unbound_host_alias`
+* **New Data Source:** `opnsense_unbound_host_override`
+* **New Data Source:** `opnsense_wireguard_peer`
+* **New Data Source:** `opnsense_wireguard_server`
+
+IMPROVEMENTS:
+
+* Expanded generated Registry documentation and examples for 97 resources and 83 data sources.
+* Added migration/import guidance for brownfield appliance adoption.
+* Added a public upstream-blocked register and support-matrix planning artifacts.
+* Added post-release research classifications for HASync configuration, HASync status/actions, and system tunables/sysctl.
+* Added OpenCode BMad command shims under `.opencode/commands`.
+* Added `toolchain go1.25.11` so validation uses the expected Go toolchain.
+
+BUG FIXES:
+
+* Added Dnsmasq option validation for fields OPNsense clears for incompatible option types.
+* Corrected OSPF area no-summary option values to match OPNsense API values.
+
 ## 0.1.0 (June 1, 2026)
 
 FEATURES:
