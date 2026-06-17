@@ -43,7 +43,7 @@ func (r *serverResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				MarkdownDescription: "Listen port for this WireGuard instance.",
 			},
 			"private_key": schema.StringAttribute{
-				Optional:            true,
+				Required:            true,
 				Sensitive:           true,
 				MarkdownDescription: "Private key for this WireGuard instance. Write-only; not returned by API.",
 				PlanModifiers: []planmodifier.String{

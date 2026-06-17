@@ -29,8 +29,10 @@ func TestAccOption_basic(t *testing.T) {
 }
 
 const testAccOptionConfig = `
+
 resource "opnsense_dnsmasq_option" "test" {
   type = "set"
-  value = "66,192.0.2.20"
+  option = "66"
+  value = "192.0.2.20"
 }
 `

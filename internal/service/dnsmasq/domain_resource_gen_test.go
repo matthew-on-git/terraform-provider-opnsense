@@ -29,6 +29,7 @@ func TestAccDomain_basic(t *testing.T) {
 }
 
 const testAccDomainConfig = `
+
 resource "opnsense_dnsmasq_domain" "test" {
   domain = "corp.example.com"
   ip = "192.0.2.53"

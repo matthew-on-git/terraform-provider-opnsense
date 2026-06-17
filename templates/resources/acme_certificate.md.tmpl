@@ -6,6 +6,10 @@ description: |-
 ---
 # {{.Name}} ({{.Type}})
 Manages an ACME certificate on OPNsense. Requires `os-acme-client`.
+
+Creating or updating this resource triggers OPNsense ACME issuance via the certificate `sign` action, then waits for OPNsense to report `status_code = "200"` and a non-empty `cert_ref_id`. The `cert_ref_id` is the HAProxy certificate reference used by `opnsense_haproxy_frontend.certificates`. Renewal remains managed by OPNsense automation/cron, not by Terraform.
+
+Use conservative polling values. Public ACME providers enforce rate limits, so tight retry loops can exhaust issuance quota.
 ## Example Usage
 {{tffile "examples/resources/opnsense_acme_certificate/resource.tf"}}
 {{ .SchemaMarkdown | trimspace }}

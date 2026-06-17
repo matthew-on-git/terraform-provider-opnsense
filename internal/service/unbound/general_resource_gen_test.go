@@ -27,6 +27,7 @@ func TestAccGeneral_basic(t *testing.T) {
 }
 
 const testAccGeneralConfig = `
+
 resource "opnsense_unbound_general" "test" {
 }
 `

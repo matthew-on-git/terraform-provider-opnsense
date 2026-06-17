@@ -29,6 +29,7 @@ func TestAccBridge_basic(t *testing.T) {
 }
 
 const testAccBridgeConfig = `
+
 resource "opnsense_interface_bridge" "test" {
   members = ["opt1"]
   description = "tf-acc-bridge"

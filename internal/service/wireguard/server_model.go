@@ -24,11 +24,12 @@ type ServerResourceModel struct {
 
 // wireguardServerAPIResponse is the struct for unmarshaling OPNsense GET responses.
 type wireguardServerAPIResponse struct {
-	Enabled       string `json:"enabled"`
-	Name          string `json:"name"`
-	Port          string `json:"port"`
-	TunnelAddress string `json:"tunneladdress"`
-	Description   string `json:"description"`
+	Enabled       string               `json:"enabled"`
+	Name          string               `json:"name"`
+	Port          string               `json:"port"`
+	PrivateKey    string               `json:"privkey"`
+	TunnelAddress opnsense.SelectedMap `json:"tunneladdress"`
+	Description   string               `json:"description"`
 }
 
 // wireguardServerAPIRequest is the struct for marshaling OPNsense POST requests.
@@ -60,6 +61,9 @@ func (m *ServerResourceModel) fromAPI(_ context.Context, a *wireguardServerAPIRe
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Name = types.StringValue(a.Name)
 	m.Port = types.StringValue(a.Port)
-	m.TunnelAddress = types.StringValue(a.TunnelAddress)
+	if a.PrivateKey != "" {
+		m.PrivateKey = types.StringValue(a.PrivateKey)
+	}
+	m.TunnelAddress = types.StringValue(string(a.TunnelAddress))
 	m.Description = types.StringValue(a.Description)
 }

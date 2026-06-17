@@ -18,6 +18,7 @@ func Resources() []func() resource.Resource {
 		newGREResource,
 		newGIFResource,
 		newBridgeResource,
+		newLaggResource,
 	}
 }
 
@@ -27,6 +28,7 @@ func DataSources() []func() datasource.DataSource {
 		newBridgeDataSource,
 		newGIFDataSource,
 		newGREDataSource,
+		newLaggDataSource,
 		newLoopbackDataSource,
 		newNeighborDataSource,
 		newVxlanDataSource,

@@ -29,6 +29,7 @@ func TestAccVxlan_basic(t *testing.T) {
 }
 
 const testAccVxlanConfig = `
+
 resource "opnsense_interface_vxlan" "test" {
   vni = 100
   local = "192.168.56.10"

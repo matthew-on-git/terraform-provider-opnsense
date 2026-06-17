@@ -16,7 +16,7 @@ import (
 func TestAccOSPFNeighbor_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { preCheck(t) },
 		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_quagga_ospf_neighbor", opnsense.ReqOpts{GetEndpoint: "/api/quagga/ospfsettings/get_neighbor", Monad: "neighbor"}),
 		Steps: []resource.TestStep{
 			{
@@ -29,6 +29,7 @@ func TestAccOSPFNeighbor_basic(t *testing.T) {
 }
 
 const testAccOSPFNeighborConfig = `
+
 resource "opnsense_quagga_ospf_neighbor" "test" {
   address = "192.0.2.10"
 }

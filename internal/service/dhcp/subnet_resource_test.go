@@ -17,7 +17,7 @@ func TestAccDHCPv4Subnet_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_dhcpv4_subnet", opnsense.ReqOpts{GetEndpoint: "/api/kea/dhcpv4/get_subnet", Monad: "subnet"}),
+		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_dhcpv4_subnet", opnsense.ReqOpts{GetEndpoint: "/api/kea/dhcpv4/get_subnet", Monad: "subnet4"}),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDHCPv4SubnetConfig("10.99.0.0/24"),

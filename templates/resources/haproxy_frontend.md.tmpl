@@ -7,7 +7,9 @@ description: |-
 
 # {{.Name}} ({{.Type}})
 
-Manages an HAProxy frontend on OPNsense. Frontends define how HAProxy listens for incoming traffic and routes it to backends. Supports SSL offloading and ACL-based routing via linked actions. Requires the `os-haproxy` plugin.
+Manages an HAProxy frontend on OPNsense. Frontends define how HAProxy listens for incoming traffic and routes it to backends. Supports SSL offloading, certificate binding, and ACL-based routing via linked actions. Requires the `os-haproxy` plugin.
+
+HAProxy certificate fields use OPNsense certificate **refids**, not certificate API UUIDs. When ACME certificate issuance exposes `cert_ref_id`, pass that value directly to `certificates` and `default_certificate`. Avoid managing the same frontend certificate bindings out-of-band, or Terraform will report drift.
 
 ## Example Usage
 

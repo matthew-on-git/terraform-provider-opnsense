@@ -29,6 +29,7 @@ func TestAccAlert_basic(t *testing.T) {
 }
 
 const testAccAlertConfig = `
+
 resource "opnsense_monit_alert" "test" {
   recipient = "test@example.com"
 }

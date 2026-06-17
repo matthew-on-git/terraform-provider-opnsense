@@ -7,6 +7,8 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
 
 // ReservationResourceModel is the Terraform state model for opnsense_dhcpv4_reservation.
@@ -20,11 +22,11 @@ type ReservationResourceModel struct {
 }
 
 type reservationAPIResponse struct {
-	Subnet      string `json:"subnet"`
-	IPAddress   string `json:"ip_address"`
-	MACAddress  string `json:"hw_address"`
-	Hostname    string `json:"hostname"`
-	Description string `json:"description"`
+	Subnet      opnsense.SelectedMap `json:"subnet"`
+	IPAddress   string               `json:"ip_address"`
+	MACAddress  string               `json:"hw_address"`
+	Hostname    string               `json:"hostname"`
+	Description string               `json:"description"`
 }
 
 type reservationAPIRequest struct {
@@ -47,7 +49,7 @@ func (m *ReservationResourceModel) toAPI(_ context.Context) *reservationAPIReque
 
 func (m *ReservationResourceModel) fromAPI(_ context.Context, a *reservationAPIResponse, uuid string) {
 	m.ID = types.StringValue(uuid)
-	m.Subnet = types.StringValue(a.Subnet)
+	m.Subnet = types.StringValue(string(a.Subnet))
 	m.IPAddress = types.StringValue(a.IPAddress)
 	m.MACAddress = types.StringValue(a.MACAddress)
 	m.Hostname = types.StringValue(a.Hostname)

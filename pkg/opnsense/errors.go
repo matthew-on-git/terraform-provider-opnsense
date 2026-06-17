@@ -64,6 +64,24 @@ type ServerError struct {
 func (e *ServerError) Error() string { return e.Message }
 func (e *ServerError) Unwrap() error { return e.Cause }
 
+// MutationReconfigureError is returned when OPNsense accepted and saved a
+// mutation, but the follow-up reconfigure/apply step failed.
+type MutationReconfigureError struct {
+	Operation  string
+	Endpoint   string
+	ResourceID string
+	Cause      error
+}
+
+func (e *MutationReconfigureError) Error() string {
+	if e.ResourceID == "" {
+		return fmt.Sprintf("%s %s: mutation saved but reconfigure failed: %s", e.Operation, e.Endpoint, e.Cause)
+	}
+	return fmt.Sprintf("%s %s: mutation saved for %s but reconfigure failed: %s", e.Operation, e.Endpoint, e.ResourceID, e.Cause)
+}
+
+func (e *MutationReconfigureError) Unwrap() error { return e.Cause }
+
 // PluginNotFoundError is returned for HTTP 404 on plugin API endpoints.
 type PluginNotFoundError struct {
 	PluginName string
@@ -99,6 +117,23 @@ func ParseMutationResponse(body []byte) (string, error) {
 		return "", &ValidationError{Fields: resp.Validations}
 	}
 	return resp.UUID, nil
+}
+
+// ParseDeleteResponse parses a delete API response body. OPNsense delete
+// endpoints commonly return result="deleted" instead of result="saved", but
+// failed delete attempts still use result="failed" with validations.
+func ParseDeleteResponse(body []byte) error {
+	if len(strings.TrimSpace(string(body))) == 0 {
+		return nil
+	}
+	var resp mutationResponse
+	if err := json.Unmarshal(body, &resp); err != nil {
+		return fmt.Errorf("failed to parse delete response: %w", err)
+	}
+	if resp.Result == "" || resp.Result == "deleted" || resp.Result == "saved" {
+		return nil
+	}
+	return &ValidationError{Fields: resp.Validations}
 }
 
 // CheckHTTPError returns an appropriate error type for non-success HTTP status codes.

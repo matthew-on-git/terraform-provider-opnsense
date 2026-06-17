@@ -27,6 +27,7 @@ func TestAccSettings_basic(t *testing.T) {
 }
 
 const testAccSettingsConfig = `
+
 resource "opnsense_dnsmasq_settings" "test" {
 }
 `

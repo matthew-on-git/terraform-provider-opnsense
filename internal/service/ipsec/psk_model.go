@@ -23,18 +23,18 @@ type PSKResourceModel struct {
 
 // ipsecPSKAPIResponse is the struct for unmarshaling OPNsense GET responses.
 type ipsecPSKAPIResponse struct {
-	Identity       string               `json:"identity"`
-	RemoteIdentity string               `json:"remote_identity"`
-	KeyType        opnsense.SelectedMap `json:"type"`
+	Identity       string               `json:"ident"`
+	RemoteIdentity string               `json:"remote_ident"`
+	KeyType        opnsense.SelectedMap `json:"keyType"`
 	Description    string               `json:"description"`
 }
 
 // ipsecPSKAPIRequest is the struct for marshaling OPNsense POST requests.
 type ipsecPSKAPIRequest struct {
-	Identity       string `json:"identity"`
-	RemoteIdentity string `json:"remote_identity"`
-	KeyType        string `json:"type"`
-	Key            string `json:"key"`
+	Identity       string `json:"ident"`
+	RemoteIdentity string `json:"remote_ident"`
+	KeyType        string `json:"keyType"`
+	Key            string `json:"Key"`
 	Description    string `json:"description"`
 }
 

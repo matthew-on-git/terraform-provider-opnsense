@@ -29,7 +29,7 @@ Credentials can also be supplied with `OPNSENSE_URI`, `OPNSENSE_API_KEY`, `OPNSE
 
 ## Support
 
-The current implementation supports 97 resources and 83 data sources across firewall, HAProxy, ACME, DNS/Dnsmasq, DHCP/Kea, VPN, FRR/Quagga, interfaces, auth, trust, syslog, Monit, cron, and traffic shaping.
+The current implementation supports 102 resources and 88 data sources across firewall, HAProxy, ACME, DNS/Dnsmasq, DHCP/Kea, Dynamic DNS, VPN, FRR/Quagga, interfaces, system, auth, trust, syslog, Monit, cron, and traffic shaping.
 
 See [`_bmad-output/planning-artifacts/support-matrix.md`](_bmad-output/planning-artifacts/support-matrix.md) for the current Supported / Coming / Needs research / Upstream-blocked product matrix. Confirmed upstream blockers are summarized in [`docs/upstream-blocked.md`](docs/upstream-blocked.md).
 

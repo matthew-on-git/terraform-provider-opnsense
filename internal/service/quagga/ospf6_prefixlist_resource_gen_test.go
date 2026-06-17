@@ -16,7 +16,7 @@ import (
 func TestAccOSPF6PrefixList_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { preCheck(t) },
 		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_quagga_ospf6_prefixlist", opnsense.ReqOpts{GetEndpoint: "/api/quagga/ospf6settings/get_prefixlist", Monad: "prefixlist"}),
 		Steps: []resource.TestStep{
 			{
@@ -29,6 +29,7 @@ func TestAccOSPF6PrefixList_basic(t *testing.T) {
 }
 
 const testAccOSPF6PrefixListConfig = `
+
 resource "opnsense_quagga_ospf6_prefixlist" "test" {
   name = "test"
   seq_number = 1

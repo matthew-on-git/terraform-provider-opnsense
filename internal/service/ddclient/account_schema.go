@@ -40,6 +40,12 @@ func (r *accountResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Required:            true,
 				MarkdownDescription: "Hostnames to update.",
 			},
+			"check_ip": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString("web_icanhazip"),
+				MarkdownDescription: "IP discovery service used by OPNsense to detect the current address. Defaults to `web_icanhazip`.",
+			},
 			"username": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,

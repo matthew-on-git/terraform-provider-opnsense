@@ -21,8 +21,8 @@ func TestDataSources_schemaIDs(t *testing.T) {
 	t.Parallel()
 
 	constructors := DataSources()
-	if len(constructors) != 5 {
-		t.Fatalf("expected 5 HAProxy data sources, got %d", len(constructors))
+	if len(constructors) != 7 {
+		t.Fatalf("expected 7 HAProxy data sources, got %d", len(constructors))
 	}
 
 	for _, constructor := range constructors {
@@ -81,6 +81,49 @@ func TestServerDataSource_read(t *testing.T) {
 	}
 	if state.Name.ValueString() != "app-1" || state.Port.ValueInt64() != 8443 || !state.Enabled.ValueBool() {
 		t.Fatalf("unexpected state: %#v", state)
+	}
+}
+
+func TestMapfileDataSource_read(t *testing.T) {
+	t.Parallel()
+
+	const id = "mapfile-uuid"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet || r.URL.Path != mapfileReqOpts.GetEndpoint+"/"+id {
+			t.Fatalf("unexpected request %s %s", r.Method, r.URL.Path)
+		}
+		_, _ = w.Write([]byte(`{"mapfile":{"name":"domain-map","description":"domains","type":{"dom":{"value":"dom - Domains","selected":1},"str":{"value":"str - Strings","selected":0}},"content":"grafana.example.test grafana-backend\n\n"}}`))
+	}))
+	t.Cleanup(server.Close)
+
+	client, err := opnsense.NewClient(opnsense.ClientConfig{
+		BaseURL: server.URL, APIKey: "key", APISecret: "secret", RetryMax: 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ds := newMapfileDataSource()
+	configureDataSource(t, ds, client)
+	schema := dataSourceSchema(t, ds)
+	config := MapfileResourceModel{ID: types.StringValue(id)}
+	req := datasource.ReadRequest{Config: modelConfig(t, schema, &config)}
+	resp := datasource.ReadResponse{State: tfsdk.State{Schema: schema}}
+
+	ds.Read(context.Background(), req, &resp)
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("read diagnostics: %v", resp.Diagnostics)
+	}
+
+	var state MapfileResourceModel
+	if diags := resp.State.Get(context.Background(), &state); diags.HasError() {
+		t.Fatalf("state diagnostics: %v", diags)
+	}
+	if state.Name.ValueString() != "domain-map" || state.Type.ValueString() != "dom" {
+		t.Fatalf("unexpected state metadata: %#v", state)
+	}
+	if state.Content.ValueString() != "grafana.example.test grafana-backend" {
+		t.Fatalf("content was not normalized: %q", state.Content.ValueString())
 	}
 }
 

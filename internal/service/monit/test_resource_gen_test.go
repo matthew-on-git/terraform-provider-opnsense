@@ -29,10 +29,11 @@ func TestAccTest_basic(t *testing.T) {
 }
 
 const testAccTestConfig = `
+
 resource "opnsense_monit_test" "test" {
   name = "test"
-  type = "test"
-  condition = "test"
-  action = "test"
+  type = "SystemResource"
+  condition = "loadavg (1min) is greater than 100"
+  action = "alert"
 }
 `

@@ -29,6 +29,7 @@ func TestAccGroup_basic(t *testing.T) {
 }
 
 const testAccGroupConfig = `
+
 resource "opnsense_auth_group" "test" {
   name = "tfaccgroup"
 }

@@ -29,6 +29,7 @@ func TestAccHAPeer_basic(t *testing.T) {
 }
 
 const testAccHAPeerConfig = `
+
 resource "opnsense_kea_ha_peer" "test" {
   name = "tfaccpeer"
   url = "http://192.0.2.5:8000/"

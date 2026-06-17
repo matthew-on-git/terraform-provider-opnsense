@@ -1,0 +1,24 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "HAProxy"
+description: |-
+  Manages an HAProxy map file on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Manages an HAProxy map file on OPNsense. Map files store key/value routing tables such as domain-to-backend mappings for `map_use_backend` actions. Requires the `os-haproxy` plugin.
+
+OPNsense stores mapfile content as one object. This provider normalizes trailing whitespace in `content` to avoid drift from heredoc trailing newlines. Keep one mapping per line, with values matching the HAProxy backend names that HAProxy resolves at runtime.
+
+## Example Usage
+
+{{tffile "examples/resources/opnsense_haproxy_mapfile/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the map file UUID from OPNsense.
+
+{{codefile "shell" "examples/resources/opnsense_haproxy_mapfile/import.sh"}}

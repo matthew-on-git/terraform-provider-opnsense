@@ -14,7 +14,7 @@ import (
 func TestAccQuaggaOSPFGeneral_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { preCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: `

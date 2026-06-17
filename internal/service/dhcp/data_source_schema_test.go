@@ -37,7 +37,7 @@ func TestSubnetDataSource_read(t *testing.T) {
 		if r.Method != http.MethodGet || r.URL.Path != subnetReqOpts.GetEndpoint+"/"+id {
 			t.Fatalf("unexpected request %s %s", r.Method, r.URL.Path)
 		}
-		_, _ = w.Write([]byte(`{"subnet":{"subnet":"192.0.2.0/24","description":"lan","pools":"192.0.2.10-192.0.2.20","option_data":"routers=192.0.2.1"}}`))
+		_, _ = w.Write([]byte(`{"subnet4":{"subnet":"192.0.2.0/24","description":"lan","pools":"192.0.2.10-192.0.2.20","option_data":{"routers":{"192.0.2.1":{"value":"192.0.2.1","selected":1}}}}}`))
 	}))
 	t.Cleanup(server.Close)
 

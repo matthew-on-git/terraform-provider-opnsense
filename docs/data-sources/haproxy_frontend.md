@@ -32,7 +32,9 @@ output "haproxy_frontend_id" {
 ### Read-Only
 
 - `bind` (String) Listen address and port (e.g., '0.0.0.0:443', '192.168.1.1:80', ':8080').
+- `certificates` (Set of String) Set of HAProxy certificate refids bound to this frontend.
 - `default_backend` (String) UUID of the default HAProxy backend for this frontend.
+- `default_certificate` (String) Default HAProxy certificate refid for this frontend.
 - `description` (String) Description of the frontend.
 - `enabled` (Boolean) Whether this frontend is enabled. Defaults to 'true'.
 - `forward_for` (Boolean) Add X-Forwarded-For header. Defaults to 'false'.

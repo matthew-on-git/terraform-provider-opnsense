@@ -113,6 +113,13 @@ func (s *SelectedMapList) UnmarshalJSON(data []byte) error {
 		*s = []string{}
 		return nil
 	}
+	if len(trimmed) > 0 && trimmed[0] == '"' {
+		var str string
+		if err := json.Unmarshal(data, &str); err == nil {
+			*s = []string{str}
+			return nil
+		}
+	}
 
 	var raw map[string]selectedEntry
 	if err := json.Unmarshal(data, &raw); err != nil {

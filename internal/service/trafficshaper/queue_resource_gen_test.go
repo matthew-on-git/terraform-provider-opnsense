@@ -29,8 +29,15 @@ func TestAccQueue_basic(t *testing.T) {
 }
 
 const testAccQueueConfig = `
+resource "opnsense_trafficshaper_pipe" "prereq" {
+  bandwidth        = 10
+  bandwidth_metric = "Mbit"
+  description      = "tf-acc-queue-pipe"
+}
+
 resource "opnsense_trafficshaper_queue" "test" {
-  pipe = "test"
+  pipe = opnsense_trafficshaper_pipe.prereq.id
   weight = 1
+  description = "tf-acc-queue"
 }
 `

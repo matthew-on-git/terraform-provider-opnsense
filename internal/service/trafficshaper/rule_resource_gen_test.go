@@ -29,10 +29,19 @@ func TestAccRule_basic(t *testing.T) {
 }
 
 const testAccRuleConfig = `
+resource "opnsense_trafficshaper_pipe" "prereq" {
+  bandwidth        = 10
+  bandwidth_metric = "Mbit"
+  description      = "tf-acc-rule-pipe"
+}
+
 resource "opnsense_trafficshaper_rule" "test" {
   sequence = 1
-  interface = "test"
-  protocol = "test"
-  target = "test"
+  interface = "lan"
+  protocol = "ip"
+  source_port = "any"
+  destination_port = "any"
+  target = opnsense_trafficshaper_pipe.prereq.id
+  description = "tf-acc-rule"
 }
 `

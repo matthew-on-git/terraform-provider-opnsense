@@ -1,0 +1,22 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "HAProxy"
+description: |-
+  Manages an HAProxy action on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Manages an HAProxy action on OPNsense. Actions connect ACL matches to routing behavior such as selecting a backend, denying requests, redirecting HTTP to HTTPS, or setting request headers. Link action UUIDs from `opnsense_haproxy_frontend.linked_actions`. Requires the `os-haproxy` plugin.
+
+## Example Usage
+
+{{tffile "examples/resources/opnsense_haproxy_action/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the action UUID from OPNsense.
+
+{{codefile "shell" "examples/resources/opnsense_haproxy_action/import.sh"}}

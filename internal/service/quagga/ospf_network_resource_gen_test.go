@@ -16,7 +16,7 @@ import (
 func TestAccOSPFNetwork_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { preCheck(t) },
 		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_quagga_ospf_network", opnsense.ReqOpts{GetEndpoint: "/api/quagga/ospfsettings/get_network", Monad: "network"}),
 		Steps: []resource.TestStep{
 			{
@@ -29,6 +29,7 @@ func TestAccOSPFNetwork_basic(t *testing.T) {
 }
 
 const testAccOSPFNetworkConfig = `
+
 resource "opnsense_quagga_ospf_network" "test" {
   ip_address = "192.0.2.0"
   netmask = 24

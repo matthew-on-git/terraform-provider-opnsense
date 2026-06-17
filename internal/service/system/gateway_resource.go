@@ -26,7 +26,7 @@ var gatewayReqOpts = opnsense.ReqOpts{
 	DeleteEndpoint:      "/api/routing/settings/del_gateway",
 	SearchEndpoint:      "/api/routing/settings/search_gateway",
 	ReconfigureEndpoint: "/api/routing/settings/reconfigure",
-	Monad:               "gateway",
+	Monad:               "gateway_item",
 }
 
 type gatewayResource struct{ client *opnsense.Client }

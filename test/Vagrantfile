@@ -36,6 +36,15 @@ Vagrant.configure("2") do |config|
     # OPNsense needs a second NIC for LAN.
     vb.customize ["modifyvm", :id, "--nic2", "intnet"]
     vb.customize ["modifyvm", :id, "--intnet2", "opnsense-lan"]
+
+    # Dedicated, non-management NICs for interface acceptance tests that need
+    # free physical members, such as LAGG. The puzzle/opnsense box may already
+    # assign earlier NICs as WAN/OPT interfaces, so reserve later adapters for
+    # tests and keep them off the management path.
+    vb.customize ["modifyvm", :id, "--nic5", "intnet"]
+    vb.customize ["modifyvm", :id, "--intnet5", "opnsense-lagg-test"]
+    vb.customize ["modifyvm", :id, "--nic6", "intnet"]
+    vb.customize ["modifyvm", :id, "--intnet6", "opnsense-lagg-test"]
   end
 
   # SSH settings — OPNsense default credentials.

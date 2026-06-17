@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 // Reconfigure triggers the OPNsense service reconfigure after a successful
@@ -37,6 +38,24 @@ func Reconfigure(ctx context.Context, client *Client, opts ReqOpts) error {
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("reconfigure %s: unexpected status %d", opts.ReconfigureEndpoint, resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("reconfigure %s: failed to read response: %w", opts.ReconfigureEndpoint, err)
+	}
+	if strings.TrimSpace(string(body)) == "" {
+		return nil
+	}
+	var result struct {
+		Status string `json:"status"`
+		Result string `json:"result"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return fmt.Errorf("reconfigure %s: failed to parse response: %w", opts.ReconfigureEndpoint, err)
+	}
+	if result.Status == "failed" || result.Result == "failed" {
+		return fmt.Errorf("reconfigure %s: failed", opts.ReconfigureEndpoint)
 	}
 
 	return nil

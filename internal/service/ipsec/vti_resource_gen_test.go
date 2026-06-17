@@ -29,6 +29,7 @@ func TestAccVTI_basic(t *testing.T) {
 }
 
 const testAccVTIConfig = `
+
 resource "opnsense_ipsec_vti" "test" {
   req_id = 100
   local = "192.168.56.10"

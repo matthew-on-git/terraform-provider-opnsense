@@ -48,8 +48,10 @@ func TestAccWireguardServer_basic(t *testing.T) {
 func testAccWireguardServerConfig(name, port string) string {
 	return fmt.Sprintf(`
 resource "opnsense_wireguard_server" "test" {
-  name = %[1]q
-  port = %[2]q
+  name           = %[1]q
+  port           = %[2]q
+  private_key    = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+  tunnel_address = "10.10.0.1/24"
 }
 `, name, port)
 }

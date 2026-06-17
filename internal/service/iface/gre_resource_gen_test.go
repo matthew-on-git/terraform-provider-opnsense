@@ -29,6 +29,7 @@ func TestAccGRE_basic(t *testing.T) {
 }
 
 const testAccGREConfig = `
+
 resource "opnsense_interface_gre" "test" {
   parent_interface = "lan"
   local_address = "192.168.56.10"

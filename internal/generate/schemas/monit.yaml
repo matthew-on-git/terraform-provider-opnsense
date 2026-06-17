@@ -18,7 +18,7 @@ resources:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this service check is enabled."}
       - {name: Name, tf: name, json: name, type: string, required: true, desc: "Service name."}
       - {name: Description, tf: description, json: description, type: string, default: "", desc: "Description."}
-      - {name: Type, tf: type, json: type, type: selectmap, required: true, desc: "Service type (process, file, host, system, network, ...)."}
+      - {name: Type, tf: type, json: type, type: selectmap, required: true, test_value: '"system"', desc: "Service type (process, file, host, system, network, ...)."}
       - {name: PIDFile, tf: pidfile, json: pidfile, type: string, default: "", desc: "PID file path (process type)."}
       - {name: Match, tf: match, json: match, type: string, default: "", desc: "Process match string."}
       - {name: Path, tf: path, json: path, type: string, default: "", desc: "Path (file/filesystem types)."}
@@ -45,9 +45,9 @@ resources:
       search: /api/monit/settings/search_test
     fields:
       - {name: Name, tf: name, json: name, type: string, required: true, desc: "Test name."}
-      - {name: Type, tf: type, json: type, type: selectmap, required: true, desc: "Test type (e.g. SystemResource, ProcessMemory)."}
-      - {name: Condition, tf: condition, json: condition, type: string, required: true, desc: "Monit condition expression."}
-      - {name: Action, tf: action, json: action, type: selectmap, required: true, desc: "Action on match (alert, restart, stop, exec, ...)."}
+      - {name: Type, tf: type, json: type, type: selectmap, required: true, test_value: '"SystemResource"', desc: "Test type (e.g. SystemResource, ProcessMemory)."}
+      - {name: Condition, tf: condition, json: condition, type: string, required: true, test_value: '"loadavg (1min) is greater than 100"', desc: "Monit condition expression."}
+      - {name: Action, tf: action, json: action, type: selectmap, required: true, test_value: '"alert"', desc: "Action on match (alert, restart, stop, exec, ...)."}
       - {name: Path, tf: path, json: path, type: string, default: "", desc: "Path/program for exec action."}
 
   - name: alert

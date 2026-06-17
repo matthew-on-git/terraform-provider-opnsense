@@ -16,11 +16,11 @@ strategy: Ship incrementally to the registry; drive the 3 blocked domains upstre
 
 ## Where we are
 
-- **97 resources + 83 data sources are implemented and documented** in the repository.
+- **102 resources + 88 data sources are implemented and documented** in the repository.
 - The implementation is ahead of the original PRD and the first roadmap snapshot. Wave A and most Wave B resource work are already built.
 - The largest remaining provider-owned gap is **data-source parity**: 15 singleton or sensitive special-case resources do not yet have matching data sources.
-- Remaining buildable resource gaps are narrow: interface LAGG and tunables/sysctl. Source NAT, Unbound forward, Dnsmasq item resources, and OSPF area are already supported; HASync configuration needs `syncitems` model-shape research; Kea DHCPv4 option/DDNS need live endpoint recheck before implementation.
-- **Three domains are upstream-blocked**: interface base assignment/IP config/PPPoE, gateway group, and system general settings. Tunables/sysctl is Coming with a safety/live-validation gate after Story 28.3 confirmed persistent `core/tunables` item CRUD/search and `reconfigure` in current upstream docs/source.
+- No verified provider-owned resource gap remains after system tunables/sysctl shipped. Interface LAGG, Source NAT, Unbound forward, Dnsmasq item resources, OSPF area, and system tunables are already supported; HASync configuration needs `syncitems` model-shape research; Kea DHCPv4 option/DDNS need live endpoint recheck before implementation.
+- **Three domains are upstream-blocked**: interface base assignment/IP config/PPPoE, gateway group, and system general settings. Story 5.1 revalidated interface status on 2026-06-12: OPNsense `master` now has an emerging assignment controller, but it is absent from target `stable/26.1`, absent from published API docs, missing ACL coverage, and does not cover IP config or PPPoE. Story 5.6 revalidated gateway-group status on 2026-06-14: OPNsense `master` has model-only `GatewayGroups` evidence, but no published endpoint/API controller was found and checked `stable/26.1` model paths returned 404. Story 5.7 created the system general settings revalidation gate on 2026-06-14: no durable target-release settings API was found; `core/system` is action/status-only and `core/initial_setup` is wizard-only.
 
 ## PRD expansion applied / still required
 
@@ -63,7 +63,7 @@ Status: done. CA and certificate resources are implemented.
 Status: done. User and group resources plus data sources are implemented.
 
 ### Epic 17: Interface Types
-Status: mostly done. Bridge, GRE, GIF, VXLAN, loopback, and neighbor are implemented. LAGG remains coming if endpoint verification holds.
+Status: done for durable target-release APIs. Bridge, GRE, GIF, VXLAN, loopback, neighbor, and LAGG are implemented; base assignment/IP config/PPPoE remains upstream-blocked outside this epic.
 
 ### Epic 18: Firewall Completion
 Status: done. One-to-one NAT is implemented. Source NAT is already shipped as `opnsense_firewall_nat_outbound`.
@@ -95,7 +95,7 @@ Status: done. Cron job, Monit service/test/alert, and syslog destination resourc
 ## Wave C — release runway (extends Epic 12; runs in parallel)
 
 ### Epic 25: Data Sources, Docs & Registry Release
-- 83 data sources are implemented, including standalone `system_info`; 15 singleton or sensitive special-case resource-matching data sources remain.
+- 88 data sources are implemented, including standalone `system_info`; 15 singleton or sensitive special-case resource-matching data sources remain.
 - Provider index, tfplugindocs output, examples, GoReleaser, signed checksum workflow, Registry manifest, and changelog exist.
 - Support matrix now lives in `support-matrix.md` and should be mirrored in Registry-facing docs.
 - First release can proceed once release workflow dry-run/secrets are confirmed and the support matrix is accepted.
@@ -106,9 +106,9 @@ Status: done. Cron job, Monit service/test/alert, and syslog destination resourc
 
 | Domain | Upstream item | Action | Unblocks |
 |---|---|---|---|
-| Interface base assignment / IP config / PPPoE | PR #8436 (Terraform-motivated) | track, test, contribute; review companion TF provider for overlap | `opnsense_interface` (assignment/IP/PPPoE) |
-| Gateway group | none tracked | author fresh MVC PR (model on VIP #6105 / IPsec #6187) | `opnsense_system_gateway_group` |
-| System general settings | roadmap: System Settings -> MVC | watch release notes (CE 26.x), adopt when shipped | `opnsense_system_general` |
+| Interface base assignment / IP config / PPPoE | PR #8436 plus emerging `master` assignment controller | track target release, API docs, ACL coverage, and IP/PPPoE scope; test before implementation story | `opnsense_interface` or `opnsense_system_interface` for assignment/IP/PPPoE only after stable target-release API exists |
+| Gateway group | `master` model-only `GatewayGroups` evidence; no target-release API/controller | track target release, generated API docs, API controllers, ACL/menu coverage, and tier/member semantics; author fresh MVC API if absent | `opnsense_system_gateway_group` |
+| System general settings | roadmap: System Settings -> MVC; current `core/initial_setup` evidence is wizard-only, not a day-2 singleton API | watch release notes (CE 26.x), generated API docs, controllers/models, ACL/menu entries, and stable target-release get/set semantics | `opnsense_system_general` |
 
 Each merged endpoint → a new provider release adding that resource. Document blocked items publicly so users see an active roadmap, not gaps.
 

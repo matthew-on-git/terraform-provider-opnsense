@@ -5,7 +5,9 @@
 package acctest
 
 import (
+	"io"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -21,6 +23,22 @@ import (
 // for each test step.
 var ProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
 	"opnsense": providerserver.NewProtocol6WithError(provider.New("test")()),
+}
+
+// SkipIfEndpointMissing skips an acceptance test when the target OPNsense build
+// does not expose the API endpoint under test.
+func SkipIfEndpointMissing(t *testing.T, endpoint string) {
+	t.Helper()
+	client := TestClient(t)
+	resp, err := client.HTTPClient().Get(client.BaseURL() + endpoint)
+	if err != nil {
+		return
+	}
+	defer func() { _ = resp.Body.Close() }()
+	body, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode == 404 || strings.Contains(string(body), "Endpoint not found") {
+		t.Skipf("OPNsense API endpoint %s is not available on this appliance", endpoint)
+	}
 }
 
 // PreCheck validates that required environment variables are set for

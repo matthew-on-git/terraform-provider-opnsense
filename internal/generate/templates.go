@@ -42,15 +42,27 @@ func TestAcc{{.R.GoType}}_basic(t *testing.T) {
 				Config: testAcc{{.R.GoType}}Config,
 				Check:  resource.TestCheckResourceAttrSet("opnsense_{{.R.TypeName}}.test", "id"),
 			},
-			{ResourceName: "opnsense_{{.R.TypeName}}.test", ImportState: true, {{if isSingleton .R}}ImportStateId: "{{.R.ID}}", {{end}}{{importIgnore .R}}ImportStateVerify: true},
+{{if hasUpdateTest .R}}			{
+				Config: testAcc{{.R.GoType}}UpdatedConfig,
+				Check:  resource.TestCheckResourceAttrSet("opnsense_{{.R.TypeName}}.test", "id"),
+			},
+{{end}}			{ResourceName: "opnsense_{{.R.TypeName}}.test", ImportState: true, {{if isSingleton .R}}ImportStateId: "{{.R.ID}}", {{end}}{{importIgnore .R}}ImportStateVerify: true},
 		},
 	})
 }
 
 const testAcc{{.R.GoType}}Config = ` + "`" + `
+{{.R.TestPrereq}}
 resource "opnsense_{{.R.TypeName}}" "test" {
 {{testFields .R}}}
 ` + "`" + `
+{{if hasUpdateTest .R}}
+const testAcc{{.R.GoType}}UpdatedConfig = ` + "`" + `
+{{.R.TestPrereq}}
+resource "opnsense_{{.R.TypeName}}" "test" {
+{{testUpdateFields .R}}}
+` + "`" + `
+{{end}}
 `
 
 const modelText = header + `

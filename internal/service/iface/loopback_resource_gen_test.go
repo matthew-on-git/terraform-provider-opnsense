@@ -29,6 +29,7 @@ func TestAccLoopback_basic(t *testing.T) {
 }
 
 const testAccLoopbackConfig = `
+
 resource "opnsense_interface_loopback" "test" {
   description = "tf-acc-loopback"
 }

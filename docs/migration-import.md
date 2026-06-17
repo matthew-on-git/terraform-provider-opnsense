@@ -46,7 +46,7 @@ Use this order for full-appliance migrations. Skip domains that are not managed 
 2. Network foundations: VLANs, VIPs, gateways, static routes, DHCP subnets, and interface-adjacent objects that the provider currently supports.
 3. Referenced policies: HAProxy ACLs, FRR/Quagga prefix lists, route maps, BGP neighbors, Unbound ACLs, Monit service definitions, and traffic-shaping primitives.
 4. Edge and security policies: firewall filter rules, NAT port forwards, outbound NAT, IPsec child SAs, OpenVPN instances, WireGuard servers, and WireGuard peers.
-5. Chained application services: HAProxy backends, HAProxy frontends, ACME certificates, Dynamic DNS accounts, DNS overrides, and dependent VPN or routing objects.
+5. Chained application services: HAProxy backends, HAProxy map files, HAProxy actions, HAProxy frontends, ACME certificates, Dynamic DNS settings/accounts, DNS overrides, and dependent VPN or routing objects.
 6. Appliance-level validation: run a full `terraform plan`, compare enabled/disabled flags, and verify live OPNsense service behavior before enabling CI-driven applies.
 
 ## Independent Resource Example
@@ -71,7 +71,7 @@ If the plan shows changes, update the HCL to match the live alias before importi
 
 ## HAProxy Chain Example
 
-For HAProxy, import the leaf objects first, then the resources that hold references to those UUIDs.
+For HAProxy, import the leaf objects first, then the resources that hold references to those UUIDs. A full multi-domain HTTPS edge with ACME certificate binding is expressible as of Epic 29; see `examples/compositions/multi-domain-edge` for a complete map-file, action, ACL, HTTP redirect, HTTPS frontend, and ACME `cert_ref_id` composition.
 
 Recommended order:
 
@@ -79,7 +79,11 @@ Recommended order:
 2. `opnsense_haproxy_server`
 3. `opnsense_haproxy_acl`
 4. `opnsense_haproxy_backend`
-5. `opnsense_haproxy_frontend`
+5. `opnsense_haproxy_mapfile`
+6. `opnsense_haproxy_action`
+7. `opnsense_acme_account` and `opnsense_acme_challenge`
+8. `opnsense_acme_certificate` after the account and challenge exist
+9. `opnsense_haproxy_frontend`, including `certificates`/`default_certificate` when SSL offload is enabled
 
 Example HCL for a backend and frontend that reference imported servers and ACLs:
 
@@ -107,11 +111,25 @@ resource "opnsense_haproxy_backend" "web_pool" {
   forward_for          = true
 }
 
+resource "opnsense_haproxy_acl" "site" {
+  name       = "site-host"
+  expression = "hdr_beg"
+  hdr_beg    = "www.example.com"
+}
+
+resource "opnsense_haproxy_action" "route_site" {
+  name        = "route-site"
+  type        = "use_backend"
+  use_backend = opnsense_haproxy_backend.web_pool.id
+  linked_acls = [opnsense_haproxy_acl.site.id]
+}
+
 resource "opnsense_haproxy_frontend" "http" {
   name            = "http-frontend"
   bind            = "0.0.0.0:80"
   mode            = "http"
   default_backend = opnsense_haproxy_backend.web_pool.id
+  linked_actions  = [opnsense_haproxy_action.route_site.id]
   forward_for     = true
 }
 ```
@@ -121,12 +139,14 @@ Import commands:
 ```shell
 terraform import opnsense_haproxy_server.web1 22222222-2222-3333-4444-555555555555
 terraform import opnsense_haproxy_server.web2 33333333-2222-3333-4444-555555555555
-terraform import opnsense_haproxy_backend.web_pool 44444444-2222-3333-4444-555555555555
-terraform import opnsense_haproxy_frontend.http 55555555-2222-3333-4444-555555555555
+terraform import opnsense_haproxy_acl.site 44444444-2222-3333-4444-555555555555
+terraform import opnsense_haproxy_backend.web_pool 55555555-2222-3333-4444-555555555555
+terraform import opnsense_haproxy_action.route_site 66666666-2222-3333-4444-555555555555
+terraform import opnsense_haproxy_frontend.http 77777777-2222-3333-4444-555555555555
 terraform plan
 ```
 
-Keep UUID references expressed through Terraform resource references after import. Avoid hard-coding UUID strings in dependent resources unless the referenced object remains intentionally unmanaged.
+Keep UUID references expressed through Terraform resource references after import. Avoid hard-coding UUID strings in dependent resources unless the referenced object remains intentionally unmanaged. For TLS frontends, bind ACME-issued certificates with `opnsense_acme_certificate.<name>.cert_ref_id`; HAProxy expects the certificate refid, not the ACME certificate API UUID.
 
 ## Firewall Rules and NAT Example
 
@@ -194,7 +214,7 @@ terraform import opnsense_system_route.k8s_pods aaaaaaaa-2222-3333-4444-55555555
 terraform plan
 ```
 
-Gateway groups, interface base assignment, interface IP configuration, PPPoE, and system general settings are upstream-blocked until OPNsense exposes stable APIs. System tunables/sysctl is Coming with a safety/live-validation gate and should remain managed outside Terraform until the provider ships explicit support. Keep those settings managed outside Terraform and document the boundary in your runbook.
+Gateway groups, interface base assignment, interface IP configuration, PPPoE, and system general settings are upstream-blocked until OPNsense exposes stable target-release APIs. As of 2026-06-12, OPNsense `master` has an emerging `interfaces/assignment` API, but it is absent from `stable/26.1`, absent from published interface API docs, missing ACL coverage, and does not cover IP configuration or PPPoE. As of 2026-06-14, gateway groups remain blocked: `master` has model-only `GatewayGroups` evidence, but no published API endpoint or API controller was found and checked `stable/26.1` model paths returned 404. As of 2026-06-14, system general settings remain blocked: published core API docs list no durable settings endpoint, `core/system` is action/status-only, no Core Settings controller/model was found, and `core/initial_setup` is wizard-only and unsafe for day-2 Terraform management. System tunables/sysctl is supported as `opnsense_system_tunable`; use it carefully because tunables can affect kernel, networking, firewall, or service behavior.
 
 ## VPN Examples
 
@@ -276,7 +296,7 @@ If the live secret is unknown, rotate it through Terraform during a planned main
 
 ## Upstream-Blocked Domains
 
-Some appliance settings are not currently manageable because OPNsense does not expose stable APIs for them. Current upstream-blocked areas include interface base assignment, interface IP configuration, PPPoE, gateway groups, and system general settings. System tunables/sysctl is not upstream-blocked; current `core/tunables` evidence makes it Coming with a safety/live-validation gate.
+Some appliance settings are not currently manageable because OPNsense does not expose stable APIs for them. Current upstream-blocked areas include interface base assignment, interface IP configuration, PPPoE, gateway groups, and system general settings. Gateway groups have `master` model-only evidence as of 2026-06-14, but no stable target-release API/controller evidence. System general settings have only action/status and setup-wizard evidence as of 2026-06-14, not a durable day-2 singleton API. System tunables/sysctl is supported through `opnsense_system_tunable` after live CRUD/reconfigure validation.
 
 During migration:
 
