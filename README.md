@@ -50,7 +50,7 @@ The Makefile is the universal execution interface. Every target produces consist
 | `make check` | Run all of the above; report composite summary |
 | `make install-hooks` | Install pre-commit and pre-push hooks |
 
-All targets except `help` and `install-hooks` delegate to the dev-toolchain Docker container (`ghcr.io/devrail-dev/dev-toolchain:v1`).
+All targets except `help` and `install-hooks` delegate to the dev-toolchain Docker container (`ghcr.io/devrail-dev/dev-toolchain:1.12.0`).
 
 ## Documentation
 

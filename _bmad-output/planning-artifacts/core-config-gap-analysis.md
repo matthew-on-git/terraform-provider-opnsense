@@ -117,8 +117,8 @@ A feature-complete Terraform provider covers all OPNsense core configuration tha
 | Kea DHCPv6 subnet | Supported | Resource |
 | Kea DHCPv6 reservation | Supported | Resource |
 | Kea HA peer | Supported | Resource + data source |
-| DHCPv4 option | Needs research | Published OPNsense API docs expose `kea/dhcpv4` option CRUD/search endpoints, but earlier live build returned endpoint-not-found; re-probe live target before implementation. |
-| Kea DDNS | Needs research | Published OPNsense API docs expose `kea/ddns` singleton get/set endpoints, but earlier live build returned endpoint-not-found; re-probe live target before implementation. |
+| DHCPv4 option | Needs research | Source recheck on 2026-06-18 found option CRUD/search actions in OPNsense `master`, but not in `stable/25.7`; earlier live build also returned endpoint-not-found. Re-probe the next supported target release before implementation. |
+| Kea DDNS | Needs research | Source recheck on 2026-06-18 found `Kea/Api/DdnsController.php` in OPNsense `master`, but not in `stable/25.7`; earlier live build also returned endpoint-not-found. Re-probe the next supported target release before implementation. |
 | Dynamic DNS account | Supported | Resource only |
 | DDNS provider | Not planned | Redundant with provider/service field on account unless a separate endpoint emerges. |
 
@@ -148,7 +148,7 @@ A feature-complete Terraform provider covers all OPNsense core configuration tha
 | Cron job | Supported | Resource + data source |
 | System general settings | Upstream-blocked | Story 5.7 created on 2026-06-14: published core API docs list no durable system general settings endpoint; `core/system` is action/status-only; no `Core/Api/SettingsController.php`, `Core/System.xml`, or `Core/Settings.xml` was found; `core/initial_setup` is wizard-only and unsafe for day-2 Terraform management. |
 | Tunables / sysctl | Coming with safety/live-validation gate | Story 28.3 confirmed persistent `core/tunables` item CRUD/search and `reconfigure`; implement only after live validation and safety documentation for kernel/network tunables. |
-| High availability / HASync config | Needs research | Published core API docs confirm singleton `core/hasync` get/set/reconfigure endpoints, but `Hasync.xml` uses dynamic `JsonKeyValueStoreField` `syncitems`; verify API shape and safe Terraform representation before implementation. |
+| High availability / HASync config | Needs research | Source recheck on 2026-06-18 confirms singleton `core/hasync` get/set/reconfigure exists on `stable/25.7`, but `Hasync.xml` uses dynamic `JsonKeyValueStoreField` `syncitems`; verify live API shape and safe Terraform representation before implementation. |
 | High availability / HASync status/actions | Needs research | Story 28.2 classified `services`/`version` as data-source candidates after live response validation and service operations as action candidates only after product/framework decision; no durable resource semantics. |
 
 ### Services and Shaping

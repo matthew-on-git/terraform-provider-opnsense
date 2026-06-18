@@ -89,7 +89,7 @@ Data-source parity is tracked in [data-source-parity-plan.md](data-source-parity
 
 | Domain | Research needed |
 |---|---|
-| Kea | DHCPv4 option and Kea DDNS have published endpoints but conflicting live endpoint-not-found evidence; move to Coming only after live re-probe confirms target availability. |
+| Kea | DHCPv4 option and Kea DDNS are present in OPNsense `master` source but absent from `stable/25.7` as of the 2026-06-18 source recheck; move to Coming only after live re-probe confirms target-release availability. |
 | System / HA | HASync configuration needs request/response shape research because current `Hasync.xml` uses dynamic `JsonKeyValueStoreField` `syncitems`; HASync status `services`/`version` are data-source candidates after live validation, while service operations are action candidates only after product/framework decision. |
 | Interfaces | OPNsense `master` now contains an emerging `interfaces/assignment` API backed by `NetworkInterface`, but as of 2026-06-12 it is absent from `stable/26.1`, absent from published interface API docs, missing ACL coverage, and does not cover IP configuration or PPPoE. Move only after target-release availability and durable semantics are verified. |
 

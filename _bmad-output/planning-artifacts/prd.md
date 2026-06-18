@@ -303,7 +303,7 @@ Resources are built in dependency and usage-priority order. Each tier delivers i
 
 **Phase 2 (Growth):**
 - Data-source parity for all supported resources
-- No verified buildable core-config gap remains after tunables/sysctl shipped. LAGG, Source NAT, Unbound forward, Dnsmasq item resources, OSPF area, and system tunables are already supported; HASync configuration needs `syncitems` model-shape research; Kea DHCPv4 option/DDNS need live endpoint recheck before implementation.
+- No verified current-target buildable core-config gap remains after tunables/sysctl shipped. LAGG, Source NAT, Unbound forward, Dnsmasq item resources, OSPF area, and system tunables are already supported. HASync configuration exists on `stable/25.7` but needs `syncitems` model-shape research; Kea DHCPv4 option/DDNS are present in OPNsense `master` but absent from `stable/25.7` as of the 2026-06-18 source recheck.
 - Additional OPNsense plugins based on personal need or community demand (CrowdSec, Zabbix, Telegraf, BIND)
 - Reusable Terraform modules for common patterns (HAProxy + ACME cert, BGP + MetalLB)
 - QEMU-based acceptance tests in CI (if not completed during MVP)

@@ -23,10 +23,10 @@ Some gaps have published or suspected API evidence but still need payload, lifec
 
 | Domain | Why it is not in this register |
 |---|---|
-| System tunables / sysctl | Current OPNsense docs/source expose persistent `core/tunables` item CRUD/search and `reconfigure`; this is now Coming with a safety/live-validation gate rather than upstream-blocked. |
+| System tunables / sysctl | Current OPNsense docs/source expose persistent `core/tunables` item CRUD/search and `reconfigure`; `opnsense_system_tunable` shipped in v0.3.0 and remains listed here only as an example of a former research item that moved out of this register. |
 | HASync configuration | `core/hasync` endpoints exist, but `syncitems` uses a dynamic `JsonKeyValueStoreField`; request/response shape needs verification before a safe resource can be designed. |
 | HASync status/actions | Endpoints appear operational/status-oriented rather than durable configuration. Data source or action semantics need a separate product decision. |
-| Kea DHCPv4 option / Kea DDNS | Published docs conflict with earlier live endpoint-not-found evidence. Re-probe target appliances before implementation. |
+| Kea DHCPv4 option / Kea DDNS | Present in OPNsense `master` source but absent from `stable/25.7` as of the 2026-06-18 source recheck. Re-probe the next supported target release before implementation. |
 
 ## Maintenance Workflow
 

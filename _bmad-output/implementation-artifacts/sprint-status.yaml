@@ -1,5 +1,5 @@
 # generated: 2026-03-18
-# last_updated: 2026-06-17
+# last_updated: 2026-06-18
 # project: terraform-provider-opnsense
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-18
-last_updated: 2026-06-17
+last_updated: 2026-06-18
 project: terraform-provider-opnsense
 project_key: NOKEY
 tracking_system: file-system

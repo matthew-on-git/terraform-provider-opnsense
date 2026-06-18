@@ -128,7 +128,7 @@ Current provider baseline:
 
 | Supported today | Coming / provider-owned follow-up | Needs research | Upstream-blocked / OPNsense dependency |
 |-----------------|------------------------------------|----------------|----------------------------------------|
-| Firewall, HAProxy, ACME, DNS/Dnsmasq, DHCP/Kea, Dynamic DNS, VPN, FRR/Quagga, interfaces including LAGG, system tunables, auth, trust, syslog, Monit, cron, and traffic shaping resources. | Data-source parity for 15 singleton or sensitive special-case resources. | Kea DHCPv4 option/DDNS live endpoint conflict; HASync configuration `syncitems` model shape; HASync status/actions; emerging OPNsense `master` interface assignment API until it lands in target release docs/ACL. | Interface base assignment/IP config/PPPoE, gateway groups, and system general settings until OPNsense exposes stable target-release APIs; gateway groups currently have only `master` model evidence, and system general settings currently have only action/status plus setup-wizard evidence, not durable target-release API/controller support. |
+| Firewall, HAProxy, ACME, DNS/Dnsmasq, DHCP/Kea, Dynamic DNS, VPN, FRR/Quagga, interfaces including LAGG, system tunables, auth, trust, syslog, Monit, cron, and traffic shaping resources. | Data-source parity for 15 singleton or sensitive special-case resources. | Kea DHCPv4 option/DDNS are present in OPNsense `master` but absent from `stable/25.7`; HASync configuration `syncitems` model shape; HASync status/actions; emerging OPNsense `master` interface assignment API until it lands in target release docs/ACL. | Interface base assignment/IP config/PPPoE, gateway groups, and system general settings until OPNsense exposes stable target-release APIs; gateway groups currently have only `master` model evidence, and system general settings currently have only action/status plus setup-wizard evidence, not durable target-release API/controller support. |
 
 The full current Supported / Coming / Needs research / Upstream-blocked matrix is maintained in
 the repository at
@@ -143,10 +143,10 @@ or settings-style resources use stable provider-defined IDs documented on each
 resource. For brownfield migration, import resources in dependency order so
 references can be represented cleanly in HCL:
 
-1. Independent primitives: aliases, categories, users, groups, certificates, DNS records.
-2. Network foundations: interfaces, VLANs, VIPs, gateways, static routes.
-3. Referenced policies: prefix lists, route maps, ACLs, health checks.
-4. Dependent resources: firewall rules/NAT, HAProxy backends/frontends, VPN tunnels, ACME certificates.
+1. Independent primitives: aliases, categories, users, groups, DNS records, and ACME accounts/challenges.
+2. Network foundations: interfaces, VLANs, VIPs, gateways, static routes, and trust/CA material.
+3. Referenced policies and reusable objects: prefix lists, route maps, HAProxy ACLs, health checks, mapfiles, backends, and ACME certificates.
+4. Dependent resources: firewall rules/NAT, HAProxy actions/frontends, VPN tunnels, and certificate-bound listeners.
 
 After each import, run `terraform plan` and adjust HCL until Terraform reports no
 changes. This confirms the imported state matches the live appliance before more
