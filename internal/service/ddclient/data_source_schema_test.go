@@ -21,13 +21,24 @@ func TestDataSources_schemaIDs(t *testing.T) {
 	t.Parallel()
 
 	constructors := DataSources()
-	if len(constructors) != 1 {
-		t.Fatalf("expected 1 ddclient data source, got %d", len(constructors))
+	if len(constructors) != 2 {
+		t.Fatalf("expected 2 ddclient data sources, got %d", len(constructors))
 	}
 	ds := constructors[0]()
 	assertRequiredID(t, ds)
 	if _, ok := dataSourceSchema(t, ds).Attributes["password"]; ok {
 		t.Fatal("ddclient_account data source must not expose password")
+	}
+	settings := constructors[1]()
+	assertRequiredID(t, settings)
+}
+
+func TestResources_includeSettings(t *testing.T) {
+	t.Parallel()
+
+	constructors := Resources()
+	if len(constructors) != 2 {
+		t.Fatalf("expected 2 ddclient resources, got %d", len(constructors))
 	}
 }
 
@@ -60,6 +71,59 @@ func TestAccountDataSource_read(t *testing.T) {
 	}
 	if state.Service.ValueString() != "cloudflare" || state.Username.ValueString() != "user" {
 		t.Fatalf("unexpected state: %#v", state)
+	}
+}
+
+func TestSettingsDataSource_read(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet || r.URL.Path != ddclientSettingsReqOpts.GetEndpoint {
+			t.Fatalf("unexpected request %s %s", r.Method, r.URL.Path)
+		}
+		_, _ = w.Write([]byte(`{"ddclient":{"general":{"enabled":"1","backend":{"ddclient":{"value":"ddclient","selected":1}},"daemon_delay":"300","verbose":"0","allowipv6":"1"}}}`))
+	}))
+	t.Cleanup(server.Close)
+
+	client := testClient(t, server.URL)
+	ds := newSettingsDataSource()
+	configureDataSource(t, ds, client)
+	schema := dataSourceSchema(t, ds)
+	req := datasource.ReadRequest{Config: modelConfig(t, schema, &SettingsResourceModel{ID: types.StringValue(settingsID)})}
+	resp := datasource.ReadResponse{State: tfsdk.State{Schema: schema}}
+
+	ds.Read(context.Background(), req, &resp)
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("read diagnostics: %v", resp.Diagnostics)
+	}
+	var state SettingsResourceModel
+	if diags := resp.State.Get(context.Background(), &state); diags.HasError() {
+		t.Fatalf("state diagnostics: %v", diags)
+	}
+	if state.ID.ValueString() != settingsID || state.Backend.ValueString() != "ddclient" || state.Interval.ValueInt64() != 300 || !state.AllowIPv6.ValueBool() {
+		t.Fatalf("unexpected state: %#v", state)
+	}
+}
+
+func TestSettingsDataSource_rejectsInvalidID(t *testing.T) {
+	t.Parallel()
+
+	ds := newSettingsDataSource()
+	schema := dataSourceSchema(t, ds)
+	req := datasource.ReadRequest{Config: modelConfig(t, schema, &SettingsResourceModel{ID: types.StringValue("wrong")})}
+	resp := datasource.ReadResponse{State: tfsdk.State{Schema: schema}}
+
+	ds.Read(context.Background(), req, &resp)
+	if !resp.Diagnostics.HasError() {
+		t.Fatal("expected invalid singleton ID diagnostic")
+	}
+}
+
+func TestSettingsReqOpts_useDdclientGeneralMonad(t *testing.T) {
+	t.Parallel()
+
+	if ddclientSettingsReqOpts.Monad != "ddclient.general" {
+		t.Fatalf("unexpected settings monad %q", ddclientSettingsReqOpts.Monad)
 	}
 }
 

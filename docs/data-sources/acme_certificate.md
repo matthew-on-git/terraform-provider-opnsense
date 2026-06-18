@@ -34,8 +34,11 @@ output "acme_certificate_id" {
 - `account` (String) ACME account UUID.
 - `alt_names` (String) Alternative names.
 - `auto_renewal` (Boolean) Whether automatic renewal is enabled.
+- `cert_ref_id` (String) HAProxy legacy certificate refid populated after successful issuance.
 - `description` (String) Description of the certificate.
 - `enabled` (Boolean) Whether this ACME certificate is enabled.
 - `key_length` (String) Certificate key length.
 - `name` (String) Certificate name.
+- `status` (String) Human-readable ACME issuance status reported by OPNsense.
+- `status_code` (String) ACME issuance status code reported by OPNsense.
 - `validation_method` (String) Validation method UUID.

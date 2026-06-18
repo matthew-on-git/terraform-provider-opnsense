@@ -27,12 +27,12 @@ type ChildResourceModel struct {
 // ipsecChildAPIResponse is the struct for unmarshaling OPNsense GET responses.
 type ipsecChildAPIResponse struct {
 	Enabled      string               `json:"enabled"`
-	Connection   string               `json:"connection"`
+	Connection   opnsense.SelectedMap `json:"connection"`
 	Description  string               `json:"description"`
 	Mode         opnsense.SelectedMap `json:"mode"`
-	LocalTS      string               `json:"local_ts"`
-	RemoteTS     string               `json:"remote_ts"`
-	EspProposals string               `json:"esp_proposals"`
+	LocalTS      opnsense.SelectedMap `json:"local_ts"`
+	RemoteTS     opnsense.SelectedMap `json:"remote_ts"`
+	EspProposals opnsense.SelectedMap `json:"esp_proposals"`
 	StartAction  opnsense.SelectedMap `json:"start_action"`
 }
 
@@ -66,11 +66,11 @@ func (m *ChildResourceModel) toAPI(_ context.Context) *ipsecChildAPIRequest {
 func (m *ChildResourceModel) fromAPI(_ context.Context, a *ipsecChildAPIResponse, uuid string) {
 	m.ID = types.StringValue(uuid)
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
-	m.Connection = types.StringValue(a.Connection)
+	m.Connection = types.StringValue(string(a.Connection))
 	m.Description = types.StringValue(a.Description)
 	m.Mode = types.StringValue(string(a.Mode))
-	m.LocalTS = types.StringValue(a.LocalTS)
-	m.RemoteTS = types.StringValue(a.RemoteTS)
-	m.EspProposals = types.StringValue(a.EspProposals)
+	m.LocalTS = types.StringValue(string(a.LocalTS))
+	m.RemoteTS = types.StringValue(string(a.RemoteTS))
+	m.EspProposals = types.StringValue(string(a.EspProposals))
 	m.StartAction = types.StringValue(string(a.StartAction))
 }

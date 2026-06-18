@@ -18,11 +18,11 @@ This matrix is the current source of truth for release positioning. It reconcile
 
 | Area | Count | Status |
 |---|---:|---|
-| Resources | 97 | Supported |
-| Data sources | 83 | Supported |
-| Resource docs | 97 | Supported |
-| Data source docs | 83 | Supported |
-| Remaining resource gaps | 2 verified provider-owned candidates plus research and upstream-blocked domains | Coming, Needs research, or upstream-blocked |
+| Resources | 102 | Supported |
+| Data sources | 88 | Supported |
+| Resource docs | 102 | Supported |
+| Data source docs | 88 | Supported |
+| Remaining resource gaps | Research and upstream-blocked domains only | Needs research or upstream-blocked |
 | Remaining data-source gaps | 15 | Coming |
 
 Data-source parity is tracked in [data-source-parity-plan.md](data-source-parity-plan.md). Remaining resource-gap verification is tracked in [resource-gap-verification.md](resource-gap-verification.md).
@@ -36,17 +36,17 @@ Data-source parity is tracked in [data-source-parity-plan.md](data-source-parity
 | Cron | job |
 | DHCPv4 | reservation, subnet |
 | Dnsmasq | boot, domain, host, option, range, settings, tag |
-| Dynamic DNS | ddclient account |
+| Dynamic DNS | ddclient account, ddclient settings |
 | Firewall | alias, category, filter rule, NAT one-to-one, NAT outbound, NAT port forward |
-| HAProxy | ACL, backend, frontend, health check, server |
-| Interfaces | bridge, GIF, GRE, loopback, neighbor, VXLAN |
+| HAProxy | ACL, action, backend, frontend, health check, map file, server |
+| Interfaces | bridge, GIF, GRE, LAGG, loopback, neighbor, VXLAN |
 | IPsec | child, connection, key pair, local, manual SPD, pool, PSK, remote, VTI |
 | Kea | control agent, DHCPv6 reservation, DHCPv6 settings, DHCPv6 subnet, HA peer |
 | Monit | alert, service, test |
 | OpenVPN | client overwrite, instance, static key |
 | Quagga / FRR | BGP AS path, BGP community list, BGP global, BGP neighbor, BGP peer group, BGP redistribution, general, OSPF area/general/interface/neighbor/network/prefix list/redistribution/route map, OSPFv3 general/interface/network/prefix list/redistribution/route map, prefix list, RIP, route map, static general, static route |
 | Syslog | destination |
-| System | gateway, route, VIP, VLAN |
+| System | gateway, route, tunable, VIP, VLAN |
 | Traffic shaper | pipe, queue, rule |
 | Trust | CA, certificate |
 | Unbound | ACL, DNSBL, domain override, general, host alias, host override |
@@ -61,17 +61,17 @@ Data-source parity is tracked in [data-source-parity-plan.md](data-source-parity
 | ACME | account, certificate, challenge |
 | DHCPv4 | reservation, subnet |
 | Dnsmasq | boot, domain, host, option, range, tag |
-| Dynamic DNS | ddclient account |
+| Dynamic DNS | ddclient account, ddclient settings |
 | Firewall | alias, category, filter rule, NAT one-to-one, NAT outbound, NAT port forward |
-| HAProxy | ACL, backend, frontend, health check, server |
-| Interfaces | bridge, GIF, GRE, loopback, neighbor, VXLAN |
+| HAProxy | ACL, action, backend, frontend, health check, map file, server |
+| Interfaces | bridge, GIF, GRE, LAGG, loopback, neighbor, VXLAN |
 | IPsec | child, connection, local, manual SPD, pool, remote, VTI |
 | Kea | DHCPv6 reservation, DHCPv6 subnet, HA peer |
 | Monit | alert, service, test |
 | Quagga / FRR | BGP AS path, BGP community list, BGP neighbor, BGP peer group, BGP redistribution, OSPF area/interface/neighbor/network/prefix list/redistribution/route map, OSPFv3 interface/network/prefix list/redistribution/route map, prefix list, route map, static route |
 | Syslog | destination |
 | OpenVPN | client overwrite, instance |
-| System | gateway, route, system info, VIP, VLAN |
+| System | gateway, route, system info, tunable, VIP, VLAN |
 | Traffic shaper | pipe, queue, rule |
 | Trust | CA |
 | Unbound | ACL, domain override, host alias, host override |
@@ -82,8 +82,6 @@ Data-source parity is tracked in [data-source-parity-plan.md](data-source-parity
 | Domain | Work |
 |---|---|
 | Data-source parity | Add read-only data sources for the 15 supported singleton/sensitive special-case resources that do not yet have data-source counterparts. |
-| Interfaces | Add LAGG; published API docs confirm `interfaces/lagg_settings`, but implementation still needs live validation with assignable member interfaces. |
-| System | Add tunables/sysctl item resource after live validation; current `core/tunables` docs/source confirm persistent item CRUD/search plus `reconfigure`, but safety documentation is required before implementation. |
 | Documentation | Fill missing resource templates for generated docs, expand composition examples, and keep the provider index support matrix current. |
 | Release hardening | Keep release workflow, Registry manifest, changelog, and provider docs verified for subsequent patch/minor releases. |
 
@@ -93,6 +91,7 @@ Data-source parity is tracked in [data-source-parity-plan.md](data-source-parity
 |---|---|
 | Kea | DHCPv4 option and Kea DDNS have published endpoints but conflicting live endpoint-not-found evidence; move to Coming only after live re-probe confirms target availability. |
 | System / HA | HASync configuration needs request/response shape research because current `Hasync.xml` uses dynamic `JsonKeyValueStoreField` `syncitems`; HASync status `services`/`version` are data-source candidates after live validation, while service operations are action candidates only after product/framework decision. |
+| Interfaces | OPNsense `master` now contains an emerging `interfaces/assignment` API backed by `NetworkInterface`, but as of 2026-06-12 it is absent from `stable/26.1`, absent from published interface API docs, missing ACL coverage, and does not cover IP configuration or PPPoE. Move only after target-release availability and durable semantics are verified. |
 
 Source NAT is already supported as `opnsense_firewall_nat_outbound`. Unbound forward is already supported as `opnsense_unbound_domain_override`.
 
@@ -102,9 +101,9 @@ Confirmed blockers and the maintenance workflow are documented publicly in [`doc
 
 | Resource/domain | Reason | Action |
 |---|---|---|
-| Interface base assignment / IP config / PPPoE | No stable OPNsense API in current target release. | Track and test OPNsense PR #8436. |
-| Gateway group | No usable gateway-group endpoint. | Candidate upstream MVC API contribution. |
-| System general settings | Legacy/non-MVC API status. | Watch OPNsense System Settings MVC roadmap. |
+| Interface base assignment / IP config / PPPoE | No stable OPNsense API in current target release; `master` assignment API evidence is not yet target-release support and does not cover IP config or PPPoE. | Track and test OPNsense PR #8436, generated API docs, ACL coverage, and `stable/*` branch availability. |
+| Gateway group | No stable target-release gateway-group API; `master` has model-only `GatewayGroups` evidence, but published docs list no endpoint, no API controller was found, and checked `stable/26.1` model paths returned 404. | Track generated API docs, `stable/*` branch availability, API controllers, ACL/menu entries, and model semantics; candidate upstream MVC API contribution if absent. |
+| System general settings | No stable target-release durable settings API; `core/system` is action/status-only and `core/initial_setup` is wizard-only with broad side effects. | Watch OPNsense System Settings MVC roadmap, generated API docs, controllers/models, ACL/menu entries, and stable get/set semantics. |
 
 ## Release Readiness Snapshot
 

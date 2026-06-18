@@ -26,7 +26,7 @@ type unboundACLAPIResponse struct {
 	Enabled     string               `json:"enabled"`
 	Name        string               `json:"name"`
 	Action      opnsense.SelectedMap `json:"action"`
-	Networks    string               `json:"networks"`
+	Networks    opnsense.SelectedMap `json:"networks"`
 	Description string               `json:"description"`
 }
 
@@ -56,6 +56,6 @@ func (m *ACLResourceModel) fromAPI(_ context.Context, a *unboundACLAPIResponse, 
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Name = types.StringValue(a.Name)
 	m.Action = types.StringValue(string(a.Action))
-	m.Networks = types.StringValue(a.Networks)
+	m.Networks = types.StringValue(string(a.Networks))
 	m.Description = types.StringValue(a.Description)
 }

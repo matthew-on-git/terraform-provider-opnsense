@@ -16,6 +16,8 @@ func Resources() []func() resource.Resource {
 		newBackendResource,
 		newFrontendResource,
 		newACLResource,
+		newActionResource,
+		newMapfileResource,
 		newHealthcheckResource,
 	}
 }
@@ -27,6 +29,8 @@ func DataSources() []func() datasource.DataSource {
 		newBackendDataSource,
 		newFrontendDataSource,
 		newACLDataSource,
+		newActionDataSource,
+		newMapfileDataSource,
 		newHealthcheckDataSource,
 	}
 }

@@ -55,16 +55,16 @@ resources:
       - {name: Host, tf: host, json: host, type: string, required: true, test_value: '"host1"', desc: "Hostname for this Dnsmasq host entry."}
       - {name: Domain, tf: domain, json: domain, type: string, test_value: '"example.com"', desc: "Domain for this host entry."}
       - {name: Local, tf: local, json: local, type: bool, default: "false", desc: "Serve this host locally without forwarding."}
-      - {name: IP, tf: ip, json: ip, type: string, required: true, test_value: '"192.0.2.10"', desc: "IP address or addresses for this host entry."}
-      - {name: CNames, tf: cnames, json: cnames, type: string, desc: "Canonical name aliases for this host entry."}
+      - {name: IP, tf: ip, json: ip, type: string, response_type: selectmap, required: true, test_value: '"192.0.2.10"', desc: "IP address or addresses for this host entry."}
+      - {name: CNames, tf: cnames, json: cnames, type: string, response_type: selectmap, desc: "Canonical name aliases for this host entry."}
       - {name: ClientID, tf: client_id, json: client_id, type: string, desc: "DHCP client identifier."}
-      - {name: HWAddr, tf: hwaddr, json: hwaddr, type: string, desc: "Hardware or MAC address values."}
+      - {name: HWAddr, tf: hwaddr, json: hwaddr, type: string, response_type: selectmap, desc: "Hardware or MAC address values."}
       - {name: LeaseTime, tf: lease_time, json: lease_time, type: int, default: "0", desc: "DHCP lease time for this host entry."}
       - {name: Ignore, tf: ignore, json: ignore, type: bool, default: "false", desc: "Ignore DHCP requests from this host."}
       - {name: SetTag, tf: set_tag, json: set_tag, type: selectmap, desc: "DHCP tag to set for this host."}
       - {name: Description, tf: description, json: descr, type: string, desc: "Description for this host entry."}
       - {name: Comments, tf: comments, json: comments, type: string, desc: "Additional comments for this host entry."}
-      - {name: Aliases, tf: aliases, json: aliases, type: string, desc: "Legacy aliases for this host entry."}
+      - {name: Aliases, tf: aliases, json: aliases, type: string, response_type: selectmap, desc: "Legacy aliases for this host entry."}
 
   - name: domain
     go_type: Domain
@@ -152,12 +152,12 @@ resources:
       search: /api/dnsmasq/settings/search_option
     fields:
       - {name: Type, tf: type, json: type, type: selectmap, required: true, options: [set, match], test_value: '"set"', desc: "DHCP option type."}
-      - {name: Option, tf: option, json: option, type: string, desc: "IPv4 DHCP option key."}
-      - {name: Option6, tf: option6, json: option6, type: string, desc: "IPv6 DHCP option key."}
+      - {name: Option, tf: option, json: option, type: string, response_type: selectmap, test_value: '"66"', desc: "IPv4 DHCP option key."}
+      - {name: Option6, tf: option6, json: option6, type: string, response_type: selectmap, desc: "IPv6 DHCP option key."}
       - {name: Interface, tf: interface, json: interface, type: selectmap, desc: "Interface this option applies to; blank means any allowed interface."}
       - {name: Tag, tf: tag, json: tag, type: selectmaplist, desc: "Tags this option matches."}
       - {name: SetTag, tf: set_tag, json: set_tag, type: selectmap, desc: "Tag to set when this option matches."}
-      - {name: Value, tf: value, json: value, type: string, test_value: '"66,192.0.2.20"', desc: "DHCP option value."}
+      - {name: Value, tf: value, json: value, type: string, test_value: '"192.0.2.20"', desc: "DHCP option value."}
       - {name: Force, tf: force, json: force, type: bool, default: "false", desc: "Force this option even if a client did not request it."}
       - {name: Description, tf: description, json: description, type: string, desc: "Description for this DHCP option."}
 

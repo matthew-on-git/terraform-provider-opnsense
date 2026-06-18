@@ -29,8 +29,8 @@ type OptionResourceModel struct {
 
 type optionAPIResponse struct {
 	Type        opnsense.SelectedMap     `json:"type"`
-	Option      string                   `json:"option"`
-	Option6     string                   `json:"option6"`
+	Option      opnsense.SelectedMap     `json:"option"`
+	Option6     opnsense.SelectedMap     `json:"option6"`
 	Interface   opnsense.SelectedMap     `json:"interface"`
 	Tag         opnsense.SelectedMapList `json:"tag"`
 	SetTag      opnsense.SelectedMap     `json:"set_tag"`
@@ -68,8 +68,8 @@ func (m *OptionResourceModel) toAPI(ctx context.Context) *optionAPIRequest {
 func (m *OptionResourceModel) fromAPI(_ context.Context, a *optionAPIResponse, id string) {
 	m.ID = types.StringValue(id)
 	m.Type = types.StringValue(string(a.Type))
-	m.Option = types.StringValue(a.Option)
-	m.Option6 = types.StringValue(a.Option6)
+	m.Option = types.StringValue(string(a.Option))
+	m.Option6 = types.StringValue(string(a.Option6))
 	m.Interface = types.StringValue(string(a.Interface))
 	m.Tag = tfconv.SliceToSet(a.Tag)
 	m.SetTag = types.StringValue(string(a.SetTag))

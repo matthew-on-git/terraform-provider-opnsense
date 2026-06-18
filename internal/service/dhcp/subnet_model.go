@@ -5,6 +5,7 @@ package dhcp
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -19,17 +20,17 @@ type SubnetResourceModel struct {
 }
 
 type subnetAPIResponse struct {
-	Subnet      string `json:"subnet"`
-	Description string `json:"description"`
-	Pools       string `json:"pools"`
-	OptionData  string `json:"option_data"`
+	Subnet      string          `json:"subnet"`
+	Description string          `json:"description"`
+	Pools       string          `json:"pools"`
+	OptionData  json.RawMessage `json:"option_data"`
 }
 
 type subnetAPIRequest struct {
 	Subnet      string `json:"subnet"`
-	Description string `json:"description"`
-	Pools       string `json:"pools"`
-	OptionData  string `json:"option_data"`
+	Description string `json:"description,omitempty"`
+	Pools       string `json:"pools,omitempty"`
+	OptionData  string `json:"option_data,omitempty"`
 }
 
 func (m *SubnetResourceModel) toAPI(_ context.Context) *subnetAPIRequest {
@@ -46,5 +47,10 @@ func (m *SubnetResourceModel) fromAPI(_ context.Context, a *subnetAPIResponse, u
 	m.Subnet = types.StringValue(a.Subnet)
 	m.Description = types.StringValue(a.Description)
 	m.Pools = types.StringValue(a.Pools)
-	m.OptionData = types.StringValue(a.OptionData)
+	if len(a.OptionData) > 0 && string(a.OptionData) != "{}" && string(a.OptionData) != "[]" && string(a.OptionData) != "null" && m.OptionData.ValueString() != "" {
+		m.OptionData = types.StringValue(string(a.OptionData))
+	}
+	if m.OptionData.IsNull() || m.OptionData.IsUnknown() {
+		m.OptionData = types.StringValue("")
+	}
 }

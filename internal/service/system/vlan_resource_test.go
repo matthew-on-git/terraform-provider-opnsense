@@ -38,7 +38,7 @@ func TestAccSystemVlan_basic(t *testing.T) {
 func testAccSystemVlanConfig(tag int) string {
 	return fmt.Sprintf(`
 resource "opnsense_system_vlan" "test" {
-  parent_interface = "vtnet0"
+  parent_interface = "em4"
   tag              = %d
   device           = "vlan%04d"
 }

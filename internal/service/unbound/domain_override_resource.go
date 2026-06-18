@@ -28,7 +28,7 @@ var domainOverrideReqOpts = opnsense.ReqOpts{
 	DeleteEndpoint:      "/api/unbound/settings/del_forward",
 	SearchEndpoint:      "/api/unbound/settings/search_forward",
 	ReconfigureEndpoint: "/api/unbound/service/reconfigure",
-	Monad:               "forward",
+	Monad:               "dot",
 }
 
 // domainOverrideResource implements the opnsense_unbound_domain_override resource.

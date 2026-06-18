@@ -1,0 +1,1 @@
+terraform import opnsense_ddclient_settings.daemon ddclient-settings

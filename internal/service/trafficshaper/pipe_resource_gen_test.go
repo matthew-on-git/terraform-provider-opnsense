@@ -29,6 +29,7 @@ func TestAccPipe_basic(t *testing.T) {
 }
 
 const testAccPipeConfig = `
+
 resource "opnsense_trafficshaper_pipe" "test" {
   bandwidth = 1
   bandwidth_metric = "Mbit"

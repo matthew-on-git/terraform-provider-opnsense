@@ -27,6 +27,7 @@ func TestAccCtrlAgent_basic(t *testing.T) {
 }
 
 const testAccCtrlAgentConfig = `
+
 resource "opnsense_kea_ctrl_agent" "test" {
 }
 `

@@ -29,6 +29,7 @@ func TestAccBoot_basic(t *testing.T) {
 }
 
 const testAccBootConfig = `
+
 resource "opnsense_dnsmasq_boot" "test" {
   filename = "pxelinux.0"
 }

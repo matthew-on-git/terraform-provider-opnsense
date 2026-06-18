@@ -29,7 +29,9 @@ func TestAccJob_basic(t *testing.T) {
 }
 
 const testAccJobConfig = `
+
 resource "opnsense_cron_job" "test" {
-  command = "test"
+  command = "cron restart"
+  description = "tf-acc-cron"
 }
 `

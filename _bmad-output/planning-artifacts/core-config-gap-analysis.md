@@ -24,12 +24,12 @@ A feature-complete Terraform provider covers all OPNsense core configuration tha
 
 | Area | Count | Status |
 |---|---:|---|
-| Resources | 97 | Supported |
-| Data sources | 83 | Supported |
-| Resource docs | 97 | Supported |
-| Data source docs | 83 | Supported |
+| Resources | 102 | Supported |
+| Data sources | 88 | Supported |
+| Resource docs | 102 | Supported |
+| Data source docs | 88 | Supported |
 | Resource-matching data-source backlog | 15 | Coming |
-| Verified provider-owned resource candidates | 1 plus research follow-ups | Coming / Needs research |
+| Verified provider-owned resource candidates | 0 plus research follow-ups | Needs research |
 
 ## Domain-by-Domain Status
 
@@ -45,8 +45,8 @@ A feature-complete Terraform provider covers all OPNsense core configuration tha
 | VXLAN | Supported | Resource + data source |
 | Loopback | Supported | Resource + data source |
 | Neighbor / static ARP/NDP | Supported | Resource + data source |
-| LAGG | Coming | Published API docs confirm `interfaces/lagg_settings` item endpoints; live validation still needs assignable member interfaces. |
-| Base assignment / IP config / PPPoE | Upstream-blocked | Track OPNsense PR #8436. |
+| LAGG | Supported | Resource + data source; live-validated against Vagrant with dedicated `em4`/`em5` member interfaces. |
+| Base assignment / IP config / PPPoE | Upstream-blocked | Story 5.1 revalidated on 2026-06-12: OPNsense `master` contains an emerging `interfaces/assignment` API backed by `NetworkInterface`, but it is absent from `stable/26.1`, absent from published interface API docs, missing ACL coverage, and does not cover IP configuration or PPPoE. Track PR #8436 and target-release availability. |
 
 ### Firewall & NAT
 
@@ -67,7 +67,7 @@ A feature-complete Terraform provider covers all OPNsense core configuration tha
 |---|---|---|
 | Static route | Supported | Resource only |
 | Gateway | Supported | Resource only |
-| Gateway group | Upstream-blocked | No usable gateway-group endpoint currently tracked. |
+| Gateway group | Upstream-blocked | Story 5.6 revalidated on 2026-06-14: published docs list only individual gateway/static route endpoints; OPNsense `master` has model-only `GatewayGroups` evidence with tier fields, trigger, pool options, and description, but no published endpoint/API controller was found and checked `stable/26.1` model paths returned 404. |
 
 ### Dynamic Routing (FRR / Quagga)
 
@@ -146,7 +146,7 @@ A feature-complete Terraform provider covers all OPNsense core configuration tha
 | Certificate authority | Supported | Resource only |
 | Certificate | Supported | Resource only |
 | Cron job | Supported | Resource + data source |
-| System general settings | Upstream-blocked | Waiting on OPNsense System Settings MVC work. |
+| System general settings | Upstream-blocked | Story 5.7 created on 2026-06-14: published core API docs list no durable system general settings endpoint; `core/system` is action/status-only; no `Core/Api/SettingsController.php`, `Core/System.xml`, or `Core/Settings.xml` was found; `core/initial_setup` is wizard-only and unsafe for day-2 Terraform management. |
 | Tunables / sysctl | Coming with safety/live-validation gate | Story 28.3 confirmed persistent `core/tunables` item CRUD/search and `reconfigure`; implement only after live validation and safety documentation for kernel/network tunables. |
 | High availability / HASync config | Needs research | Published core API docs confirm singleton `core/hasync` get/set/reconfigure endpoints, but `Hasync.xml` uses dynamic `JsonKeyValueStoreField` `syncitems`; verify API shape and safe Terraform representation before implementation. |
 | High availability / HASync status/actions | Needs research | Story 28.2 classified `services`/`version` as data-source candidates after live response validation and service operations as action candidates only after product/framework decision; no durable resource semantics. |
@@ -176,13 +176,13 @@ The public register and maintenance workflow live in [`docs/upstream-blocked.md`
 
 | Resource/domain | Upstream item | Action |
 |---|---|---|
-| Interface assignment / IP config / PPPoE | OPNsense PR #8436 | Track, test, and contribute if needed. |
-| Gateway group | None tracked | Candidate fresh MVC API contribution. |
-| System general settings | OPNsense System Settings MVC roadmap | Watch release notes and adopt when available. |
+| Interface assignment / IP config / PPPoE | OPNsense PR #8436 plus emerging `master` assignment controller | Track, test target-release availability, verify docs/ACL coverage, and contribute if needed. |
+| Gateway group | `master` model-only `GatewayGroups` evidence; no target-release API/controller | Track generated API docs, `stable/*` branch availability, API controllers, ACL/menu entries, and model semantics; candidate fresh MVC API contribution if absent. |
+| System general settings | OPNsense System Settings MVC roadmap; current `core/initial_setup` evidence is wizard-only, not a durable singleton API | Watch release notes, API docs, controllers/models, ACL/menu entries, and adopt only after stable target-release get/set semantics are available. |
 
 ## Release Matrix
 
-- **Supported:** 97 resources and 83 data sources listed in `support-matrix.md` and generated docs.
-- **Coming:** data-source parity plus the verified provider-owned resource gaps above: LAGG and tunables/sysctl.
-- **Needs research:** Kea DHCPv4 option, Kea DDNS, HASync configuration, and HASync status/actions.
+- **Supported:** 102 resources and 88 data sources listed in `support-matrix.md` and generated docs.
+- **Coming:** data-source parity for singleton and sensitive special cases.
+- **Needs research:** Kea DHCPv4 option, Kea DDNS, HASync configuration, HASync status/actions, and emerging OPNsense `master` interface assignment API semantics before any future unblocked story.
 - **Upstream-blocked:** interface assignment/IP config/PPPoE, gateway group, and system general settings.

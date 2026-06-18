@@ -17,6 +17,7 @@ type AccountResourceModel struct {
 	Enabled     types.Bool   `tfsdk:"enabled"`
 	Service     types.String `tfsdk:"service"`
 	Hostnames   types.String `tfsdk:"hostnames"`
+	CheckIP     types.String `tfsdk:"check_ip"`
 	Username    types.String `tfsdk:"username"`
 	Password    types.String `tfsdk:"password"`
 	Description types.String `tfsdk:"description"`
@@ -26,7 +27,8 @@ type AccountResourceModel struct {
 type ddclientAccountAPIResponse struct {
 	Enabled     string               `json:"enabled"`
 	Service     opnsense.SelectedMap `json:"service"`
-	Hostnames   string               `json:"hostnames"`
+	Hostnames   opnsense.SelectedMap `json:"hostnames"`
+	CheckIP     opnsense.SelectedMap `json:"checkip"`
 	Username    string               `json:"username"`
 	Password    string               `json:"password"`
 	Description string               `json:"description"`
@@ -37,6 +39,7 @@ type ddclientAccountAPIRequest struct {
 	Enabled     string `json:"enabled"`
 	Service     string `json:"service"`
 	Hostnames   string `json:"hostnames"`
+	CheckIP     string `json:"checkip"`
 	Username    string `json:"username"`
 	Password    string `json:"password"`
 	Description string `json:"description"`
@@ -48,6 +51,7 @@ func (m *AccountResourceModel) toAPI(_ context.Context) *ddclientAccountAPIReque
 		Enabled:     opnsense.BoolToString(m.Enabled.ValueBool()),
 		Service:     m.Service.ValueString(),
 		Hostnames:   m.Hostnames.ValueString(),
+		CheckIP:     m.CheckIP.ValueString(),
 		Username:    m.Username.ValueString(),
 		Password:    m.Password.ValueString(),
 		Description: m.Description.ValueString(),
@@ -60,7 +64,8 @@ func (m *AccountResourceModel) fromAPI(_ context.Context, a *ddclientAccountAPIR
 	m.ID = types.StringValue(uuid)
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Service = types.StringValue(string(a.Service))
-	m.Hostnames = types.StringValue(a.Hostnames)
+	m.Hostnames = types.StringValue(string(a.Hostnames))
+	m.CheckIP = types.StringValue(string(a.CheckIP))
 	m.Username = types.StringValue(a.Username)
 	m.Description = types.StringValue(a.Description)
 }

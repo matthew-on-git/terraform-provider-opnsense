@@ -21,13 +21,13 @@ resource "opnsense_wireguard_server" "vpn" {
 ### Required
 
 - `name` (String) Name of the WireGuard server instance.
+- `private_key` (String, Sensitive) Private key for this WireGuard instance. Write-only; not returned by API.
 
 ### Optional
 
 - `description` (String) Description of the server instance.
 - `enabled` (Boolean) Whether this server instance is enabled. Defaults to `true`.
 - `port` (String) Listen port for this WireGuard instance.
-- `private_key` (String, Sensitive) Private key for this WireGuard instance. Write-only; not returned by API.
 - `tunnel_address` (String) Tunnel address (e.g., `10.0.0.1/24`).
 
 ### Read-Only

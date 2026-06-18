@@ -27,6 +27,7 @@ func TestAccDNSBL_basic(t *testing.T) {
 }
 
 const testAccDNSBLConfig = `
+
 resource "opnsense_unbound_dnsbl" "test" {
 }
 `

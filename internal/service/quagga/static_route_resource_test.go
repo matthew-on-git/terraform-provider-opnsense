@@ -16,7 +16,7 @@ import (
 func TestAccQuaggaStaticRoute_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { preCheck(t) },
 		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_quagga_static_route", opnsense.ReqOpts{GetEndpoint: "/api/quagga/static/get_route", Monad: "route"}),
 		Steps: []resource.TestStep{
 			{

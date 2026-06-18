@@ -26,7 +26,7 @@ var subnetReqOpts = opnsense.ReqOpts{
 	DeleteEndpoint:      "/api/kea/dhcpv4/del_subnet",
 	SearchEndpoint:      "/api/kea/dhcpv4/search_subnet",
 	ReconfigureEndpoint: "/api/kea/service/reconfigure",
-	Monad:               "subnet",
+	Monad:               "subnet4",
 }
 
 type subnetResource struct{ client *opnsense.Client }

@@ -120,15 +120,15 @@ Current provider baseline:
 
 | Capability | Count |
 |------------|------:|
-| Resources | 97 |
-| Data sources | 83 |
-| Resource docs | 97 |
-| Data source docs | 83 |
+| Resources | 102 |
+| Data sources | 88 |
+| Resource docs | 102 |
+| Data source docs | 88 |
 | Remaining data-source gaps | 15 |
 
 | Supported today | Coming / provider-owned follow-up | Needs research | Upstream-blocked / OPNsense dependency |
 |-----------------|------------------------------------|----------------|----------------------------------------|
-| Firewall, HAProxy, ACME, DNS/Dnsmasq, DHCP/Kea, Dynamic DNS, VPN, FRR/Quagga, interfaces, auth, trust, syslog, Monit, cron, and traffic shaping resources. | Data-source parity for 15 singleton or sensitive special-case resources; interface LAGG with live member validation; system tunables/sysctl with safety/live-validation gate. | Kea DHCPv4 option/DDNS live endpoint conflict; HASync configuration `syncitems` model shape; HASync status/actions. | Interface base assignment/IP config/PPPoE, gateway groups, and system general settings until OPNsense exposes stable APIs. |
+| Firewall, HAProxy, ACME, DNS/Dnsmasq, DHCP/Kea, Dynamic DNS, VPN, FRR/Quagga, interfaces including LAGG, system tunables, auth, trust, syslog, Monit, cron, and traffic shaping resources. | Data-source parity for 15 singleton or sensitive special-case resources. | Kea DHCPv4 option/DDNS live endpoint conflict; HASync configuration `syncitems` model shape; HASync status/actions; emerging OPNsense `master` interface assignment API until it lands in target release docs/ACL. | Interface base assignment/IP config/PPPoE, gateway groups, and system general settings until OPNsense exposes stable target-release APIs; gateway groups currently have only `master` model evidence, and system general settings currently have only action/status plus setup-wizard evidence, not durable target-release API/controller support. |
 
 The full current Supported / Coming / Needs research / Upstream-blocked matrix is maintained in
 the repository at

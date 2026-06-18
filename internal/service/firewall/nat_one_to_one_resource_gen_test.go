@@ -29,6 +29,7 @@ func TestAccNatOneToOne_basic(t *testing.T) {
 }
 
 const testAccNatOneToOneConfig = `
+
 resource "opnsense_firewall_nat_one_to_one" "test" {
   interface = "wan"
   external = "192.0.2.10"

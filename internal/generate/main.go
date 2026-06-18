@@ -31,6 +31,12 @@ type Field struct {
 	Default  string   `yaml:"default"`
 	Desc     string   `yaml:"desc"`
 	Options  []string `yaml:"options"`
+	Min      *int64   `yaml:"min"`
+	Max      *int64   `yaml:"max"`
+	// ResponseType overrides the API response field type when OPNsense returns a
+	// different shape than the request/schema type, e.g. a string field as a
+	// selected-map object.
+	ResponseType string `yaml:"response_type"`
 	// TestValue is a raw HCL literal used in the generated acceptance test for
 	// this field (e.g. `"permit"`, `["ipv4"]`, `65010`). Required for required
 	// selectmap/set fields, which have no sensible auto value.
@@ -40,21 +46,24 @@ type Field struct {
 	// WriteOnly marks a secret the API never echoes back: it is sent on
 	// create/update but skipped in fromAPI (state keeps the configured value) and
 	// added to ImportStateVerifyIgnore in the generated test.
-	WriteOnly bool `yaml:"write_only"`
+	WriteOnly       bool   `yaml:"write_only"`
+	UpdateTestValue string `yaml:"update_test_value"`
 }
 
 // Resource describes a single generated resource.
 type Resource struct {
-	Name        string            `yaml:"name"`
-	GoType      string            `yaml:"go_type"`
-	TypeName    string            `yaml:"type_name"`
-	Title       string            `yaml:"title"`
-	Kind        string            `yaml:"kind"` // item|singleton
-	ID          string            `yaml:"id"`
-	Reconfigure string            `yaml:"reconfigure"`
-	Monad       string            `yaml:"monad"`
-	Endpoints   map[string]string `yaml:"endpoints"`
-	Fields      []Field           `yaml:"fields"`
+	Name         string            `yaml:"name"`
+	GoType       string            `yaml:"go_type"`
+	TypeName     string            `yaml:"type_name"`
+	Title        string            `yaml:"title"`
+	Kind         string            `yaml:"kind"` // item|singleton
+	ID           string            `yaml:"id"`
+	Reconfigure  string            `yaml:"reconfigure"`
+	Monad        string            `yaml:"monad"`
+	TestPrereq   string            `yaml:"test_prereq"`
+	TestPreCheck string            `yaml:"test_precheck"`
+	Endpoints    map[string]string `yaml:"endpoints"`
+	Fields       []Field           `yaml:"fields"`
 }
 
 // Schema is one YAML schema file.
@@ -90,6 +99,9 @@ func run() error {
 			return fmt.Errorf("%s: %w", path, err)
 		}
 		for i := range s.Resources {
+			if s.Resources[i].TestPreCheck == "" {
+				s.Resources[i].TestPreCheck = "acctest.PreCheck(t)"
+			}
 			if err := generateResource(s.Package, &s.Resources[i]); err != nil {
 				return fmt.Errorf("%s/%s: %w", s.Package, s.Resources[i].Name, err)
 			}
@@ -221,11 +233,20 @@ func schemaImports(r *Resource) string {
 		case "bool":
 			add[`"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"`] = true
 		case "int":
+			if f.Min != nil || f.Max != nil {
+				add[`"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"`] = true
+				add[`"github.com/hashicorp/terraform-plugin-framework/schema/validator"`] = true
+			}
 			if !f.Required {
 				add[`"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"`] = true
 			}
 		case "selectmaplist", "csvset":
 			add[pkgTypes] = true
+			if len(f.Options) > 0 {
+				add[`"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"`] = true
+				add[`"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"`] = true
+				add[`"github.com/hashicorp/terraform-plugin-framework/schema/validator"`] = true
+			}
 		case "string", "selectmap":
 			if len(f.Options) > 0 {
 				add[`"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"`] = true
@@ -266,12 +287,23 @@ func testImports(r *Resource) string {
 // testFieldsHCL emits HCL assignments for the fields a generated acceptance test
 // must set: every required field plus any field with an explicit test_value.
 func testFieldsHCL(r *Resource) string {
+	return testFieldsHCLWithUpdates(r, false)
+}
+
+func testUpdateFieldsHCL(r *Resource) string {
+	return testFieldsHCLWithUpdates(r, true)
+}
+
+func testFieldsHCLWithUpdates(r *Resource, useUpdates bool) string {
 	var b strings.Builder
 	for _, f := range r.Fields {
-		if !f.Required && f.TestValue == "" {
+		if !f.Required && f.TestValue == "" && (!useUpdates || f.UpdateTestValue == "") {
 			continue
 		}
 		v := f.TestValue
+		if useUpdates && f.UpdateTestValue != "" {
+			v = f.UpdateTestValue
+		}
 		if v == "" {
 			switch f.Type {
 			case "bool":
@@ -287,22 +319,33 @@ func testFieldsHCL(r *Resource) string {
 	return b.String()
 }
 
+func hasUpdateTest(r *Resource) bool {
+	for _, f := range r.Fields {
+		if f.UpdateTestValue != "" {
+			return true
+		}
+	}
+	return false
+}
+
 // --- template helpers ---
 
 var funcs = template.FuncMap{
-	"camel":          camelName,
-	"goType":         goType,
-	"respType":       respType,
-	"toAPI":          toAPILine,
-	"fromAPI":        fromAPILine,
-	"schemaAttr":     schemaAttr,
-	"dataSourceAttr": dataSourceAttr,
-	"importIgnore":   importIgnore,
-	"isItem":         func(r *Resource) bool { return r.Kind == "item" },
-	"isSingleton":    func(r *Resource) bool { return r.Kind == "singleton" },
-	"hasSet":         hasSet,
-	"testFields":     testFieldsHCL,
-	"reqTag":         reqTag,
+	"camel":            camelName,
+	"goType":           goType,
+	"respType":         respType,
+	"toAPI":            toAPILine,
+	"fromAPI":          fromAPILine,
+	"schemaAttr":       schemaAttr,
+	"dataSourceAttr":   dataSourceAttr,
+	"importIgnore":     importIgnore,
+	"isItem":           func(r *Resource) bool { return r.Kind == "item" },
+	"isSingleton":      func(r *Resource) bool { return r.Kind == "singleton" },
+	"hasSet":           hasSet,
+	"hasUpdateTest":    hasUpdateTest,
+	"testFields":       testFieldsHCL,
+	"testUpdateFields": testUpdateFieldsHCL,
+	"reqTag":           reqTag,
 }
 
 // reqTag builds the request struct json tag. Optional, non-bool fields get
@@ -340,6 +383,14 @@ func goType(f Field) string {
 }
 
 func respType(f Field) string {
+	if f.ResponseType != "" {
+		switch f.ResponseType {
+		case "selectmap":
+			return "opnsense.SelectedMap"
+		case "selectmaplist":
+			return "opnsense.SelectedMapList"
+		}
+	}
 	switch f.Type {
 	case "selectmap":
 		return "opnsense.SelectedMap"
@@ -373,6 +424,12 @@ func fromAPILine(f Field) string {
 		// read) instead of clobbering it with the empty API response.
 		return fmt.Sprintf("// %s is write-only; preserved from configuration (API never returns it).", f.Name)
 	}
+	if f.ResponseType == "selectmap" {
+		return fmt.Sprintf("m.%s = types.StringValue(string(a.%s))", f.Name, f.Name)
+	}
+	if f.ResponseType == "selectmaplist" {
+		return fmt.Sprintf("m.%s = tfconv.SliceToSet(a.%s)", f.Name, f.Name)
+	}
 	switch f.Type {
 	case "bool":
 		return fmt.Sprintf("m.%s = types.BoolValue(opnsense.StringToBool(a.%s))", f.Name, f.Name)
@@ -399,16 +456,22 @@ func schemaAttr(f Field) string {
 		}
 		fmt.Fprintf(&b, "%q: schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(%s), MarkdownDescription: %q},", f.TF, def, f.Desc)
 	case "int":
+		validatorText := intRangeValidator(f)
 		if f.Required {
-			fmt.Fprintf(&b, "%q: schema.Int64Attribute{Required: true, MarkdownDescription: %q},", f.TF, f.Desc)
+			fmt.Fprintf(&b, "%q: schema.Int64Attribute{Required: true, MarkdownDescription: %q%s},", f.TF, f.Desc, validatorText)
 		} else {
 			// Optional + Computed with no static default: OPNsense assigns/normalizes
 			// these (and ,omitempty drops them when unset), so UseStateForUnknown
 			// avoids "inconsistent result after apply".
-			fmt.Fprintf(&b, "%q: schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: %q, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},", f.TF, f.Desc)
+			fmt.Fprintf(&b, "%q: schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: %q, PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}%s},", f.TF, f.Desc, validatorText)
 		}
 	case "selectmaplist", "csvset":
-		fmt.Fprintf(&b, "%q: schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, MarkdownDescription: %q},", f.TF, f.Desc)
+		validatorText := setOptionsValidator(f)
+		if f.Required {
+			fmt.Fprintf(&b, "%q: schema.SetAttribute{ElementType: types.StringType, Required: true, MarkdownDescription: %q%s},", f.TF, f.Desc, validatorText)
+		} else {
+			fmt.Fprintf(&b, "%q: schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, MarkdownDescription: %q%s},", f.TF, f.Desc, validatorText)
+		}
 	default:
 		if f.Required {
 			fmt.Fprintf(&b, "%q: schema.StringAttribute{Required: true, MarkdownDescription: %q", f.TF, f.Desc)
@@ -428,6 +491,35 @@ func schemaAttr(f Field) string {
 		b.WriteString("},")
 	}
 	return b.String()
+}
+
+func quotedOptions(options []string) string {
+	quoted := make([]string, len(options))
+	for i, o := range options {
+		quoted[i] = fmt.Sprintf("%q", o)
+	}
+	return strings.Join(quoted, ", ")
+}
+
+func setOptionsValidator(f Field) string {
+	if len(f.Options) == 0 {
+		return ""
+	}
+	return fmt.Sprintf(", Validators: []validator.Set{setvalidator.ValueStringsAre(stringvalidator.OneOf(%s))}", quotedOptions(f.Options))
+}
+
+func intRangeValidator(f Field) string {
+	if f.Min == nil && f.Max == nil {
+		return ""
+	}
+	minValue, maxValue := int64(0), int64(9223372036854775807)
+	if f.Min != nil {
+		minValue = *f.Min
+	}
+	if f.Max != nil {
+		maxValue = *f.Max
+	}
+	return fmt.Sprintf(", Validators: []validator.Int64{int64validator.Between(%d, %d)}", minValue, maxValue)
 }
 
 // dataSourceAttr renders one Computed data-source schema attribute (all fields

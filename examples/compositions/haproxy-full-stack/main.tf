@@ -1,5 +1,7 @@
 # A complete HAProxy stack: a server pool with a health check behind an
-# HTTP frontend that routes by host header.
+# HTTP frontend that routes by host header. The ACL is intentionally wired
+# through an action and linked to the frontend; standalone ACLs do not affect
+# traffic until an action references them.
 
 resource "opnsense_haproxy_healthcheck" "http_check" {
   name        = "http-health"
@@ -41,10 +43,18 @@ resource "opnsense_haproxy_acl" "site" {
   hdr_beg    = "www.example.com"
 }
 
+resource "opnsense_haproxy_action" "route_site" {
+  name        = "route-site"
+  type        = "use_backend"
+  use_backend = opnsense_haproxy_backend.web_pool.id
+  linked_acls = [opnsense_haproxy_acl.site.id]
+}
+
 resource "opnsense_haproxy_frontend" "http" {
   name            = "http-frontend"
   bind            = "0.0.0.0:80"
   mode            = "http"
   default_backend = opnsense_haproxy_backend.web_pool.id
+  linked_actions  = [opnsense_haproxy_action.route_site.id]
   forward_for     = true
 }

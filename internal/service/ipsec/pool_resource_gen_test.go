@@ -29,6 +29,7 @@ func TestAccPool_basic(t *testing.T) {
 }
 
 const testAccPoolConfig = `
+
 resource "opnsense_ipsec_pool" "test" {
   name = "tfaccpool"
   addresses = "10.20.30.0/24"

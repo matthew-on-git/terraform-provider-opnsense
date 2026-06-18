@@ -16,7 +16,7 @@ import (
 func TestAccOSPFRedistribution_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { preCheck(t) },
 		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_quagga_ospf_redistribution", opnsense.ReqOpts{GetEndpoint: "/api/quagga/ospfsettings/get_redistribution", Monad: "redistribution"}),
 		Steps: []resource.TestStep{
 			{
@@ -29,6 +29,7 @@ func TestAccOSPFRedistribution_basic(t *testing.T) {
 }
 
 const testAccOSPFRedistributionConfig = `
+
 resource "opnsense_quagga_ospf_redistribution" "test" {
   redistribute = "connected"
 }

@@ -31,6 +31,7 @@ type domainOverrideAPIResponse struct {
 // domainOverrideAPIRequest is the struct for marshaling OPNsense POST requests.
 type domainOverrideAPIRequest struct {
 	Enabled     string `json:"enabled"`
+	Type        string `json:"type"`
 	Domain      string `json:"domain"`
 	Server      string `json:"server"`
 	Description string `json:"description"`
@@ -40,6 +41,7 @@ type domainOverrideAPIRequest struct {
 func (m *DomainOverrideResourceModel) toAPI(_ context.Context) *domainOverrideAPIRequest {
 	return &domainOverrideAPIRequest{
 		Enabled:     opnsense.BoolToString(m.Enabled.ValueBool()),
+		Type:        "forward",
 		Domain:      m.Domain.ValueString(),
 		Server:      m.Server.ValueString(),
 		Description: m.Description.ValueString(),

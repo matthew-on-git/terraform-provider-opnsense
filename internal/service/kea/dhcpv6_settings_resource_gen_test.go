@@ -27,6 +27,7 @@ func TestAccDHCPv6Settings_basic(t *testing.T) {
 }
 
 const testAccDHCPv6SettingsConfig = `
+
 resource "opnsense_kea_dhcpv6_settings" "test" {
 }
 `

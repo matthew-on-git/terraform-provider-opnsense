@@ -34,6 +34,9 @@ func (d *certificateDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 		"validation_method": dsschema.StringAttribute{Computed: true, MarkdownDescription: "Validation method UUID."},
 		"key_length":        dsschema.StringAttribute{Computed: true, MarkdownDescription: "Certificate key length."},
 		"auto_renewal":      dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether automatic renewal is enabled."},
+		"cert_ref_id":       dsschema.StringAttribute{Computed: true, MarkdownDescription: "HAProxy legacy certificate refid populated after successful issuance."},
+		"status_code":       dsschema.StringAttribute{Computed: true, MarkdownDescription: "ACME issuance status code reported by OPNsense."},
+		"status":            dsschema.StringAttribute{Computed: true, MarkdownDescription: "Human-readable ACME issuance status reported by OPNsense."},
 	}}
 }
 
@@ -50,7 +53,7 @@ func (d *certificateDataSource) Configure(_ context.Context, req datasource.Conf
 }
 
 func (d *certificateDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var config CertificateResourceModel
+	var config CertificateDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return

@@ -7,7 +7,9 @@ description: |-
 
 # opnsense_haproxy_frontend (Resource)
 
-Manages an HAProxy frontend on OPNsense. Frontends define how HAProxy listens for incoming traffic and routes it to backends. Supports SSL offloading and ACL-based routing via linked actions. Requires the `os-haproxy` plugin.
+Manages an HAProxy frontend on OPNsense. Frontends define how HAProxy listens for incoming traffic and routes it to backends. Supports SSL offloading, certificate binding, and ACL-based routing via linked actions. Requires the `os-haproxy` plugin.
+
+HAProxy certificate fields use OPNsense certificate **refids**, not certificate API UUIDs. When ACME certificate issuance exposes `cert_ref_id`, pass that value directly to `certificates` and `default_certificate`. Avoid managing the same frontend certificate bindings out-of-band, or Terraform will report drift.
 
 ## Example Usage
 
@@ -26,25 +28,54 @@ resource "opnsense_haproxy_backend" "web_pool" {
   linked_servers = [opnsense_haproxy_server.web1.id]
 }
 
-# HTTP frontend routing to the backend pool
+resource "opnsense_haproxy_backend" "api_pool" {
+  name           = "api-pool"
+  mode           = "http"
+  algorithm      = "roundrobin"
+  linked_servers = [opnsense_haproxy_server.web1.id]
+}
+
+resource "opnsense_haproxy_acl" "api_host" {
+  name       = "api-host"
+  expression = "hdr"
+  hdr        = "api.example.com"
+}
+
+resource "opnsense_haproxy_action" "route_api" {
+  name        = "route-api"
+  type        = "use_backend"
+  use_backend = opnsense_haproxy_backend.api_pool.id
+  linked_acls = [opnsense_haproxy_acl.api_host.id]
+  test_type   = "if"
+}
+
+# HTTP frontend routing to the backend pool with an ACL-based action
 resource "opnsense_haproxy_frontend" "http" {
   name            = "http-frontend"
   bind            = "0.0.0.0:80"
   mode            = "http"
   default_backend = opnsense_haproxy_backend.web_pool.id
+  linked_actions  = [opnsense_haproxy_action.route_api.id]
   forward_for     = true
   description     = "HTTP traffic"
 }
 
 # HTTPS frontend with SSL offloading
 resource "opnsense_haproxy_frontend" "https" {
-  name            = "https-frontend"
-  bind            = "0.0.0.0:443"
-  mode            = "http"
-  default_backend = opnsense_haproxy_backend.web_pool.id
-  ssl_enabled     = true
-  forward_for     = true
-  description     = "HTTPS traffic with SSL offloading"
+  name                = "https-frontend"
+  bind                = "0.0.0.0:443"
+  mode                = "http"
+  default_backend     = opnsense_haproxy_backend.web_pool.id
+  ssl_enabled         = true
+  certificates        = [var.haproxy_certificate_refid]
+  default_certificate = var.haproxy_certificate_refid
+  forward_for         = true
+  description         = "HTTPS traffic with SSL offloading"
+}
+
+variable "haproxy_certificate_refid" {
+  description = "HAProxy certificate refid, not the certificate API UUID. Story 29.4 will expose this as opnsense_acme_certificate.cert_ref_id."
+  type        = string
 }
 ```
 
@@ -58,7 +89,9 @@ resource "opnsense_haproxy_frontend" "https" {
 
 ### Optional
 
+- `certificates` (Set of String) Set of HAProxy certificate refids bound to this frontend. These are certificate refids, not API UUIDs, and are only meaningful when `ssl_enabled = true`.
 - `default_backend` (String) UUID of the default HAProxy backend for this frontend.
+- `default_certificate` (String) Default HAProxy certificate refid for this frontend. This is a certificate refid, not an API UUID, and is only meaningful when `ssl_enabled = true`.
 - `description` (String) Description of the frontend.
 - `enabled` (Boolean) Whether this frontend is enabled. Defaults to `true`.
 - `forward_for` (Boolean) Add X-Forwarded-For header. Defaults to `false`.

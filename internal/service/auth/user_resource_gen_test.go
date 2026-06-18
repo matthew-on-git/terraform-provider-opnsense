@@ -29,6 +29,7 @@ func TestAccUser_basic(t *testing.T) {
 }
 
 const testAccUserConfig = `
+
 resource "opnsense_auth_user" "test" {
   name = "tfaccuser"
   password = "Tf-acc-P@ssw0rd1"

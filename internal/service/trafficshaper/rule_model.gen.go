@@ -36,10 +36,10 @@ type ruleAPIResponse struct {
 	Sequence        string               `json:"sequence"`
 	Interface       opnsense.SelectedMap `json:"interface"`
 	Protocol        opnsense.SelectedMap `json:"proto"`
-	Source          string               `json:"source"`
+	Source          opnsense.SelectedMap `json:"source"`
 	SourceNot       string               `json:"source_not"`
 	SourcePort      string               `json:"src_port"`
-	Destination     string               `json:"destination"`
+	Destination     opnsense.SelectedMap `json:"destination"`
 	DestinationNot  string               `json:"destination_not"`
 	DestinationPort string               `json:"dst_port"`
 	Direction       opnsense.SelectedMap `json:"direction"`
@@ -87,10 +87,10 @@ func (m *RuleResourceModel) fromAPI(_ context.Context, a *ruleAPIResponse, id st
 	m.Sequence = types.Int64Value(tfconv.IntOrZero(a.Sequence))
 	m.Interface = types.StringValue(string(a.Interface))
 	m.Protocol = types.StringValue(string(a.Protocol))
-	m.Source = types.StringValue(a.Source)
+	m.Source = types.StringValue(string(a.Source))
 	m.SourceNot = types.BoolValue(opnsense.StringToBool(a.SourceNot))
 	m.SourcePort = types.StringValue(a.SourcePort)
-	m.Destination = types.StringValue(a.Destination)
+	m.Destination = types.StringValue(string(a.Destination))
 	m.DestinationNot = types.BoolValue(opnsense.StringToBool(a.DestinationNot))
 	m.DestinationPort = types.StringValue(a.DestinationPort)
 	m.Direction = types.StringValue(string(a.Direction))

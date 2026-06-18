@@ -79,7 +79,7 @@ func (d *serverDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	config.Enabled = types.BoolValue(opnsense.StringToBool(result.Enabled))
 	config.Name = types.StringValue(result.Name)
 	config.Port = types.StringValue(result.Port)
-	config.TunnelAddress = types.StringValue(result.TunnelAddress)
+	config.TunnelAddress = types.StringValue(string(result.TunnelAddress))
 	config.Description = types.StringValue(result.Description)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
 }

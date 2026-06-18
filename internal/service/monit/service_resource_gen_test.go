@@ -29,8 +29,9 @@ func TestAccService_basic(t *testing.T) {
 }
 
 const testAccServiceConfig = `
+
 resource "opnsense_monit_service" "test" {
   name = "test"
-  type = "test"
+  type = "system"
 }
 `

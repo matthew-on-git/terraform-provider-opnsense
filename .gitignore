@@ -94,5 +94,6 @@ credentials.json
 test/.vagrant/
 
 # Local acceptance-test tooling / VM state
+test/acceptance-results/
 test/bin/
 test/.vagrant/

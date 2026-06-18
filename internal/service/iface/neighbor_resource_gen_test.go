@@ -29,6 +29,7 @@ func TestAccNeighbor_basic(t *testing.T) {
 }
 
 const testAccNeighborConfig = `
+
 resource "opnsense_interface_neighbor" "test" {
   mac = "00:11:22:33:44:55"
   ip_address = "192.0.2.5"

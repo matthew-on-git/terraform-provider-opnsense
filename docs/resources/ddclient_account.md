@@ -11,6 +11,7 @@ Manages a Dynamic DNS (DDNS) account on OPNsense. Requires `os-ddclient`.
 resource "opnsense_ddclient_account" "cloudflare" {
   service   = "cloudflare"
   hostnames = "home.example.com"
+  check_ip  = "web_icanhazip"
   username  = "user@example.com"
   password  = "api-token-here"
 }
@@ -25,6 +26,7 @@ resource "opnsense_ddclient_account" "cloudflare" {
 
 ### Optional
 
+- `check_ip` (String) IP discovery service used by OPNsense to detect the current address. Defaults to `web_icanhazip`.
 - `description` (String) Description of the account.
 - `enabled` (Boolean) Whether this account is enabled. Defaults to `true`.
 - `password` (String, Sensitive) Password for the dynamic DNS service.

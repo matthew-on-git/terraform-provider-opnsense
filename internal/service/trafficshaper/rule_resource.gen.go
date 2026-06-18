@@ -25,7 +25,7 @@ var ruleReqOpts = opnsense.ReqOpts{
 	GetEndpoint:         "/api/trafficshaper/settings/get_rule",
 	UpdateEndpoint:      "/api/trafficshaper/settings/set_rule",
 	DeleteEndpoint:      "/api/trafficshaper/settings/del_rule",
-	SearchEndpoint:      "/api/trafficshaper/settings/search_rule",
+	SearchEndpoint:      "/api/trafficshaper/settings/search_rules",
 	ReconfigureEndpoint: "/api/trafficshaper/service/reconfigure",
 	Monad:               "rule",
 }

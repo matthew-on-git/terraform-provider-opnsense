@@ -2,6 +2,36 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.3.0 (Unreleased)
+
+FEATURES:
+
+* **New Resource:** `opnsense_ddclient_settings`
+* **New Resource:** `opnsense_haproxy_action`
+* **New Resource:** `opnsense_haproxy_mapfile`
+* **New Resource:** `opnsense_interface_lagg`
+* **New Resource:** `opnsense_system_tunable`
+
+* **New Data Source:** `opnsense_ddclient_settings`
+* **New Data Source:** `opnsense_haproxy_action`
+* **New Data Source:** `opnsense_haproxy_mapfile`
+* **New Data Source:** `opnsense_interface_lagg`
+* **New Data Source:** `opnsense_system_tunable`
+
+IMPROVEMENTS:
+
+* Added ACME certificate issuance/refid acceptance coverage and improved certificate handling.
+* Added HAProxy frontend TLS certificate binding support and validation improvements.
+* Added multi-domain edge composition examples covering ACME, DDClient, HAProxy, and migration validation.
+* Added Vagrant acceptance runner support for serial full-provider validation against a local OPNsense appliance.
+* Updated Registry documentation, examples, templates, support matrices, and planning artifacts for the expanded resource coverage.
+
+BUG FIXES:
+
+* Detect OPNsense reconfigure responses that return HTTP 200 with failed JSON status/result bodies.
+* Return typed post-mutation reconfigure errors when OPNsense saves a mutation but the follow-up apply/reconfigure step fails.
+* Preserve custom generated acceptance prechecks for Quagga OSPF/OSPFv3 resources.
+
 ## 0.2.0 (June 10, 2026)
 
 FEATURES:

@@ -1,5 +1,5 @@
 # generated: 2026-03-18
-# last_updated: 2026-06-09
+# last_updated: 2026-06-17
 # project: terraform-provider-opnsense
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-18
-last_updated: 2026-06-09
+last_updated: 2026-06-17
 project: terraform-provider-opnsense
 project_key: NOKEY
 tracking_system: file-system
@@ -81,13 +81,13 @@ development_status:
 
   # Epic 5: Core Infrastructure
   epic-5: in-progress
-  5-1-interface-resource: backlog          # BLOCKED upstream — no OPNsense API for base interface assignment (PR #8436)
+  5-1-interface-resource: done          # BLOCKED upstream — target stable/26.1 still lacks base interface assignment/IP config/PPPoE API; master has emerging assignment API requiring future recheck
   5-2-vlan-resource: done
   5-3-virtual-ip-resource: done
   5-4-static-route-resource: done
   5-5-gateway-resource: done
-  5-6-gateway-group-resource: backlog      # BLOCKED upstream — no gateway-group MVC API (candidate for fresh PR)
-  5-7-system-general-settings-resource: backlog  # BLOCKED upstream — legacy; on OPNsense roadmap (System Settings -> MVC)
+  5-6-gateway-group-resource: done      # BLOCKED upstream — no target-release gateway-group MVC/API; master has model-only evidence requiring future recheck
+  5-7-system-general-settings-resource: done  # BLOCKED upstream — no target-release durable system general settings MVC/API; initial_setup is wizard-only and unsafe for day-2 Terraform management
   epic-5-retrospective: optional
 
   # Epic 6: Code Generation Pipeline
@@ -173,7 +173,7 @@ development_status:
   # Epic 17: Interface Types
   epic-17: in-progress
   17-1-interface-bridge-resource: done   # opnsense_interface_bridge (generated, live-validated)
-  17-2-interface-lagg-resource: backlog   # BLOCKED by environment — test VM has no free/unassigned NIC to form a LAGG; needs hardware box to build+live-validate
+  17-2-interface-lagg-resource: done          # Implemented via interfaces.yaml/codegen and live-validated against Vagrant em4/em5 LAGG members
   17-3-interface-gre-resource: done   # opnsense_interface_gre (generated, live-validated)
   17-4-interface-gif-resource: done   # opnsense_interface_gif (generated, live-validated)
   17-5-interface-vxlan-resource: done   # opnsense_interface_vxlan (generated, live-validated)
@@ -269,5 +269,15 @@ development_status:
   28-1-upstream-blocked-register-and-maintenance: done
   28-2-research-hasync-status-actions: done
   28-3-research-system-tunables-sysctl: done
-  28-4-implement-system-tunables-resource: backlog   # COMING with safety/live-validation gate — create story after live CRUD/reconfigure validation
+  28-4-implement-system-tunables-resource: done   # opnsense_system_tunable resource/data source implemented and code-reviewed
   epic-28-retrospective: optional
+
+  # Epic 29: Appliance Migration Blockers — HAProxy Routing, TLS & ACME Issuance
+  epic-29: in-progress   # gaps verified missing against v0.2.0; driven by downstream opnsense-manager appliance migration
+  29-1-haproxy-action-resource: done   # opnsense_haproxy_action + data source; live-validated ACL -> action -> frontend chain
+  29-2-haproxy-mapfile-resource: done   # opnsense_haproxy_mapfile + data source; map_use_backend action chain scaffolded
+  29-3-haproxy-frontend-tls-certificate-binding: done   # frontend certificate refid binding added; reviewed and complete
+  29-4-acme-certificate-issuance-and-refid: done   # FIX — 8.2 marked done but certificate_resource.go is plain CRUD (no /sign, no poll, no refid)
+  29-5-ddclient-daemon-settings-resource: done   # NEW — supersedes wrongly-cancelled 9.5; /dyndns/settings singleton (enabled/daemon_delay/backend)
+  29-6-multi-domain-edge-composition-and-migration-validation: done   # CAPSTONE — depends on 29.1-29.4; proves the edge is migratable
+  epic-29-retrospective: optional

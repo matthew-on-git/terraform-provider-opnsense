@@ -70,6 +70,17 @@ func (r *frontendResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Default:             booldefault.StaticBool(false),
 				MarkdownDescription: "Enable SSL offloading. Defaults to `false`.",
 			},
+			"certificates": schema.SetAttribute{
+				ElementType:         types.StringType,
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Set of HAProxy certificate refids bound to this frontend. These are certificate refids, not API UUIDs, and are only meaningful when `ssl_enabled = true`.",
+			},
+			"default_certificate": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Default HAProxy certificate refid for this frontend. This is a certificate refid, not an API UUID, and is only meaningful when `ssl_enabled = true`.",
+			},
 			"linked_actions": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,

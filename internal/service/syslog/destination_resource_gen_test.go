@@ -29,6 +29,7 @@ func TestAccDestination_basic(t *testing.T) {
 }
 
 const testAccDestinationConfig = `
+
 resource "opnsense_syslog_destination" "test" {
   transport = "udp4"
   hostname = "192.0.2.1"

@@ -16,7 +16,7 @@ import (
 func TestAccQuaggaBGPNeighbor_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { preCheck(t) },
 		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_quagga_bgp_neighbor", opnsense.ReqOpts{GetEndpoint: "/api/quagga/bgp/get_neighbor", Monad: "neighbor"}),
 		Steps: []resource.TestStep{
 			{

@@ -14,7 +14,7 @@ import (
 func TestAccQuaggaGeneral_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { preCheck(t) },
 		// Singleton: no CheckDestroy — the appliance config persists after destroy.
 		Steps: []resource.TestStep{
 			{

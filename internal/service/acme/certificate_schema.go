@@ -54,6 +54,29 @@ func (r *certificateResource) Schema(_ context.Context, _ resource.SchemaRequest
 				Optional: true, Computed: true, Default: booldefault.StaticBool(true),
 				MarkdownDescription: "Enable automatic renewal. Defaults to `true`.",
 			},
+			"issuance_timeout": schema.StringAttribute{
+				Optional: true, Computed: true, Default: stringdefault.StaticString("180s"),
+				MarkdownDescription: "Maximum time to wait for ACME issuance after create or update. Use a Go duration such as `180s`. Avoid tight values because ACME providers enforce rate limits.",
+			},
+			"issuance_poll_interval": schema.StringAttribute{
+				Optional: true, Computed: true, Default: stringdefault.StaticString("10s"),
+				MarkdownDescription: "Interval between ACME issuance status polls. Use a Go duration such as `10s`. Avoid tight loops because ACME providers enforce rate limits.",
+			},
+			"cert_ref_id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "HAProxy legacy certificate refid populated after successful issuance. Use this value in `opnsense_haproxy_frontend.certificates`.",
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			},
+			"status_code": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "ACME issuance status code reported by OPNsense. `200` indicates an issued certificate.",
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			},
+			"status": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Human-readable ACME issuance status reported by OPNsense.",
+				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			},
 		},
 	}
 }

@@ -65,6 +65,63 @@ func TestReconfigure_StandardEndpointNon200(t *testing.T) {
 	}
 }
 
+func TestReconfigure_FailedStatusBody(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"status":"failed"}`))
+	}))
+	defer server.Close()
+
+	client := newReconfigureTestClient(t, server.URL)
+	opts := ReqOpts{
+		ReconfigureEndpoint: "/test/reconfigure",
+	}
+
+	err := Reconfigure(context.Background(), client, opts)
+	if err == nil {
+		t.Fatal("expected error for failed status body")
+	}
+	if !strings.Contains(err.Error(), "/test/reconfigure") {
+		t.Errorf("expected error with endpoint path, got: %v", err)
+	}
+}
+
+func TestReconfigure_FailedResultBody(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"result":"failed"}`))
+	}))
+	defer server.Close()
+
+	client := newReconfigureTestClient(t, server.URL)
+	opts := ReqOpts{
+		ReconfigureEndpoint: "/test/reconfigure",
+	}
+
+	err := Reconfigure(context.Background(), client, opts)
+	if err == nil {
+		t.Fatal("expected error for failed result body")
+	}
+}
+
+func TestReconfigure_OkBody(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"status":"ok"}`))
+	}))
+	defer server.Close()
+
+	client := newReconfigureTestClient(t, server.URL)
+	opts := ReqOpts{
+		ReconfigureEndpoint: "/test/reconfigure",
+	}
+
+	err := Reconfigure(context.Background(), client, opts)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+}
+
 func TestReconfigure_CallsReconfigureFunc(t *testing.T) {
 	var funcCalled atomic.Bool
 

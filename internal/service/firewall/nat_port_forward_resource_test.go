@@ -16,8 +16,11 @@ import (
 func TestAccFirewallNatPortForward_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
-		PreCheck:                 func() { acctest.PreCheck(t) },
-		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_firewall_nat_port_forward", opnsense.ReqOpts{GetEndpoint: "/api/firewall/d_nat/get_rule", Monad: "rule"}),
+		PreCheck: func() {
+			acctest.PreCheck(t)
+			acctest.SkipIfEndpointMissing(t, "/api/firewall/d_nat/get_rule")
+		},
+		CheckDestroy: acctest.CheckResourceDestroyed(t, "opnsense_firewall_nat_port_forward", opnsense.ReqOpts{GetEndpoint: "/api/firewall/d_nat/get_rule", Monad: "rule"}),
 		Steps: []resource.TestStep{
 			// Step 1: Create and verify.
 			{

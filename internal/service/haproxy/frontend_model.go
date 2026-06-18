@@ -5,6 +5,7 @@ package haproxy
 
 import (
 	"context"
+	"sort"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -15,42 +16,48 @@ import (
 
 // FrontendResourceModel is the Terraform state model for opnsense_haproxy_frontend.
 type FrontendResourceModel struct {
-	ID             types.String `tfsdk:"id"`
-	Enabled        types.Bool   `tfsdk:"enabled"`
-	Name           types.String `tfsdk:"name"`
-	Description    types.String `tfsdk:"description"`
-	Bind           types.String `tfsdk:"bind"`
-	Mode           types.String `tfsdk:"mode"`
-	DefaultBackend types.String `tfsdk:"default_backend"`
-	SSLEnabled     types.Bool   `tfsdk:"ssl_enabled"`
-	LinkedActions  types.Set    `tfsdk:"linked_actions"`
-	ForwardFor     types.Bool   `tfsdk:"forward_for"`
+	ID                 types.String `tfsdk:"id"`
+	Enabled            types.Bool   `tfsdk:"enabled"`
+	Name               types.String `tfsdk:"name"`
+	Description        types.String `tfsdk:"description"`
+	Bind               types.String `tfsdk:"bind"`
+	Mode               types.String `tfsdk:"mode"`
+	DefaultBackend     types.String `tfsdk:"default_backend"`
+	SSLEnabled         types.Bool   `tfsdk:"ssl_enabled"`
+	Certificates       types.Set    `tfsdk:"certificates"`
+	DefaultCertificate types.String `tfsdk:"default_certificate"`
+	LinkedActions      types.Set    `tfsdk:"linked_actions"`
+	ForwardFor         types.Bool   `tfsdk:"forward_for"`
 }
 
 // frontendAPIResponse is the struct for unmarshaling OPNsense GET responses.
 type frontendAPIResponse struct {
-	Enabled        string                   `json:"enabled"`
-	Name           string                   `json:"name"`
-	Description    string                   `json:"description"`
-	Bind           string                   `json:"bind"`
-	Mode           opnsense.SelectedMap     `json:"mode"`
-	DefaultBackend opnsense.SelectedMap     `json:"defaultBackend"`
-	SSLEnabled     string                   `json:"ssl_enabled"`
-	LinkedActions  opnsense.SelectedMapList `json:"linkedActions"`
-	ForwardFor     string                   `json:"forwardFor"`
+	Enabled               string                   `json:"enabled"`
+	Name                  string                   `json:"name"`
+	Description           string                   `json:"description"`
+	Bind                  opnsense.SelectedMapList `json:"bind"`
+	Mode                  opnsense.SelectedMap     `json:"mode"`
+	DefaultBackend        opnsense.SelectedMap     `json:"defaultBackend"`
+	SSLEnabled            string                   `json:"ssl_enabled"`
+	SSLCertificates       opnsense.SelectedMapList `json:"ssl_certificates"`
+	SSLDefaultCertificate opnsense.SelectedMap     `json:"ssl_default_certificate"`
+	LinkedActions         opnsense.SelectedMapList `json:"linkedActions"`
+	ForwardFor            string                   `json:"forwardFor"`
 }
 
 // frontendAPIRequest is the struct for marshaling OPNsense POST requests.
 type frontendAPIRequest struct {
-	Enabled        string `json:"enabled"`
-	Name           string `json:"name"`
-	Description    string `json:"description"`
-	Bind           string `json:"bind"`
-	Mode           string `json:"mode"`
-	DefaultBackend string `json:"defaultBackend"`
-	SSLEnabled     string `json:"ssl_enabled"`
-	LinkedActions  string `json:"linkedActions"`
-	ForwardFor     string `json:"forwardFor"`
+	Enabled               string `json:"enabled"`
+	Name                  string `json:"name"`
+	Description           string `json:"description"`
+	Bind                  string `json:"bind"`
+	Mode                  string `json:"mode"`
+	DefaultBackend        string `json:"defaultBackend"`
+	SSLEnabled            string `json:"ssl_enabled"`
+	SSLCertificates       string `json:"ssl_certificates"`
+	SSLDefaultCertificate string `json:"ssl_default_certificate"`
+	LinkedActions         string `json:"linkedActions"`
+	ForwardFor            string `json:"forwardFor"`
 }
 
 // toAPI converts the Terraform model to an API request struct.
@@ -61,17 +68,30 @@ func (m *FrontendResourceModel) toAPI(ctx context.Context) *frontendAPIRequest {
 		m.LinkedActions.ElementsAs(ctx, &elements, false)
 		actionsStr = strings.Join(elements, ",")
 	}
+	var certificatesStr string
+	if m.SSLEnabled.ValueBool() && !m.Certificates.IsNull() && !m.Certificates.IsUnknown() {
+		var elements []string
+		m.Certificates.ElementsAs(ctx, &elements, false)
+		sort.Strings(elements)
+		certificatesStr = strings.Join(elements, ",")
+	}
+	var defaultCertificate string
+	if m.SSLEnabled.ValueBool() {
+		defaultCertificate = m.DefaultCertificate.ValueString()
+	}
 
 	return &frontendAPIRequest{
-		Enabled:        opnsense.BoolToString(m.Enabled.ValueBool()),
-		Name:           m.Name.ValueString(),
-		Description:    m.Description.ValueString(),
-		Bind:           m.Bind.ValueString(),
-		Mode:           m.Mode.ValueString(),
-		DefaultBackend: m.DefaultBackend.ValueString(),
-		SSLEnabled:     opnsense.BoolToString(m.SSLEnabled.ValueBool()),
-		LinkedActions:  actionsStr,
-		ForwardFor:     opnsense.BoolToString(m.ForwardFor.ValueBool()),
+		Enabled:               opnsense.BoolToString(m.Enabled.ValueBool()),
+		Name:                  m.Name.ValueString(),
+		Description:           m.Description.ValueString(),
+		Bind:                  m.Bind.ValueString(),
+		Mode:                  m.Mode.ValueString(),
+		DefaultBackend:        m.DefaultBackend.ValueString(),
+		SSLEnabled:            opnsense.BoolToString(m.SSLEnabled.ValueBool()),
+		SSLCertificates:       certificatesStr,
+		SSLDefaultCertificate: defaultCertificate,
+		LinkedActions:         actionsStr,
+		ForwardFor:            opnsense.BoolToString(m.ForwardFor.ValueBool()),
 	}
 }
 
@@ -81,10 +101,12 @@ func (m *FrontendResourceModel) fromAPI(_ context.Context, a *frontendAPIRespons
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Name = types.StringValue(a.Name)
 	m.Description = types.StringValue(a.Description)
-	m.Bind = types.StringValue(a.Bind)
+	m.Bind = types.StringValue(strings.Join(a.Bind, ","))
 	m.Mode = types.StringValue(string(a.Mode))
 	m.DefaultBackend = types.StringValue(string(a.DefaultBackend))
 	m.SSLEnabled = types.BoolValue(opnsense.StringToBool(a.SSLEnabled))
+	m.Certificates = selectedListToStringSet(a.SSLCertificates)
+	m.DefaultCertificate = types.StringValue(string(a.SSLDefaultCertificate))
 	m.ForwardFor = types.BoolValue(opnsense.StringToBool(a.ForwardFor))
 
 	// LinkedActions — SelectedMapList → types.Set of UUID strings.

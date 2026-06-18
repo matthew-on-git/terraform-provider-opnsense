@@ -35,16 +35,16 @@ type hostAPIResponse struct {
 	Host        string               `json:"host"`
 	Domain      string               `json:"domain"`
 	Local       string               `json:"local"`
-	IP          string               `json:"ip"`
-	CNames      string               `json:"cnames"`
+	IP          opnsense.SelectedMap `json:"ip"`
+	CNames      opnsense.SelectedMap `json:"cnames"`
 	ClientID    string               `json:"client_id"`
-	HWAddr      string               `json:"hwaddr"`
+	HWAddr      opnsense.SelectedMap `json:"hwaddr"`
 	LeaseTime   string               `json:"lease_time"`
 	Ignore      string               `json:"ignore"`
 	SetTag      opnsense.SelectedMap `json:"set_tag"`
 	Description string               `json:"descr"`
 	Comments    string               `json:"comments"`
-	Aliases     string               `json:"aliases"`
+	Aliases     opnsense.SelectedMap `json:"aliases"`
 }
 
 type hostAPIRequest struct {
@@ -86,14 +86,14 @@ func (m *HostResourceModel) fromAPI(_ context.Context, a *hostAPIResponse, id st
 	m.Host = types.StringValue(a.Host)
 	m.Domain = types.StringValue(a.Domain)
 	m.Local = types.BoolValue(opnsense.StringToBool(a.Local))
-	m.IP = types.StringValue(a.IP)
-	m.CNames = types.StringValue(a.CNames)
+	m.IP = types.StringValue(string(a.IP))
+	m.CNames = types.StringValue(string(a.CNames))
 	m.ClientID = types.StringValue(a.ClientID)
-	m.HWAddr = types.StringValue(a.HWAddr)
+	m.HWAddr = types.StringValue(string(a.HWAddr))
 	m.LeaseTime = types.Int64Value(tfconv.IntOrZero(a.LeaseTime))
 	m.Ignore = types.BoolValue(opnsense.StringToBool(a.Ignore))
 	m.SetTag = types.StringValue(string(a.SetTag))
 	m.Description = types.StringValue(a.Description)
 	m.Comments = types.StringValue(a.Comments)
-	m.Aliases = types.StringValue(a.Aliases)
+	m.Aliases = types.StringValue(string(a.Aliases))
 }

@@ -29,6 +29,7 @@ func TestAccHost_basic(t *testing.T) {
 }
 
 const testAccHostConfig = `
+
 resource "opnsense_dnsmasq_host" "test" {
   host = "host1"
   domain = "example.com"

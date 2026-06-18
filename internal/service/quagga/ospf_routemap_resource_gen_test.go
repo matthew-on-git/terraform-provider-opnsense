@@ -16,7 +16,7 @@ import (
 func TestAccOSPFRouteMap_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { preCheck(t) },
 		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_quagga_ospf_routemap", opnsense.ReqOpts{GetEndpoint: "/api/quagga/ospfsettings/get_routemap", Monad: "routemap"}),
 		Steps: []resource.TestStep{
 			{
@@ -29,6 +29,7 @@ func TestAccOSPFRouteMap_basic(t *testing.T) {
 }
 
 const testAccOSPFRouteMapConfig = `
+
 resource "opnsense_quagga_ospf_routemap" "test" {
   name = "test"
   action = "permit"

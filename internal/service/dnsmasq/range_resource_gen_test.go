@@ -29,6 +29,7 @@ func TestAccRange_basic(t *testing.T) {
 }
 
 const testAccRangeConfig = `
+
 resource "opnsense_dnsmasq_range" "test" {
   start_address = "192.0.2.100"
   end_address = "192.0.2.150"

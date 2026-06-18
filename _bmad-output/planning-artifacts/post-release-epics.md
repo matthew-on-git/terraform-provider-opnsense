@@ -54,10 +54,32 @@ Goal: keep OPNsense-side blockers visible, honest, and periodically reviewed.
 | 28.1 Upstream-Blocked Register and Maintenance Workflow | done | `_bmad-output/implementation-artifacts/28-1-upstream-blocked-register-and-maintenance.md` |
 | 28.2 Research HASync Status and Actions | done | `_bmad-output/implementation-artifacts/28-2-research-hasync-status-actions.md` |
 | 28.3 Research System Tunables and Sysctl API Lifecycle | done | `_bmad-output/implementation-artifacts/28-3-research-system-tunables-sysctl.md` |
-| 28.4 Implement System Tunables Resource | backlog | TBD - create story after live validation confirms safe CRUD/reconfigure behavior |
+| 28.4 Implement System Tunables Resource | done | `_bmad-output/implementation-artifacts/28-4-implement-system-tunables-resource.md` |
+
+## Epic 29: Appliance Migration Blockers — HAProxy Routing, TLS & ACME Issuance
+
+Goal: close the specific gaps that block migrating a real multi-domain OPNsense edge off Ansible onto this provider. Driven by the downstream `opnsense-manager` appliance, whose `https-in` frontend routes many domains (incl. CNAME aliases) via a domain map + actions, applies internal-only deny rules and an HTTP→HTTPS redirect, and binds an ACME-issued certificate. Verified missing/incomplete against **v0.2.0** source.
+
+| Story | Status | File |
+|---|---|---|
+| 29.1 HAProxy Action Resource | done | `_bmad-output/implementation-artifacts/29-1-haproxy-action-resource.md` |
+| 29.2 HAProxy Map File Resource | done | `_bmad-output/implementation-artifacts/29-2-haproxy-mapfile-resource.md` |
+| 29.3 HAProxy Frontend TLS Certificate Binding | done | `_bmad-output/implementation-artifacts/29-3-haproxy-frontend-tls-certificate-binding.md` |
+| 29.4 ACME Certificate Issuance & Refid Output | done | `_bmad-output/implementation-artifacts/29-4-acme-certificate-issuance-and-refid.md` |
+| 29.5 ddclient Daemon Settings Resource | done | `_bmad-output/implementation-artifacts/29-5-ddclient-daemon-settings-resource.md` |
+| 29.6 Multi-Domain Edge Composition & Migration Validation | done | `_bmad-output/implementation-artifacts/29-6-multi-domain-edge-composition-and-migration-validation.md` |
+
+**Notes / corrections to prior tracking:**
+- 29.1 / 29.2 / 29.3 were deferred in Story 4.2 ("What NOT to Build") to a Story 4.3 that only shipped ACLs — the action, map file, and frontend cert-binding were never created.
+- 29.4 corrects Story 8.2: despite being titled "...with Issuance" and marked done, `certificate_resource.go` is plain CRUD (no `/sign`, no status poll, no refid output).
+- 29.5 supersedes the wrongly-cancelled Story 9.5 — daemon settings (`enabled`/`daemon_delay`/`backend`/...) are a distinct `/dyndns/settings` object, not the account-level `service` field.
+- **Out of scope (still blocked):** DHCP PXE/TFTP options remain in Stories 11.3 / 21.4 pending live Kea `dhcpv4 *_option` endpoint verification; a full appliance cutover keeps DHCP on Ansible until then.
+
+**Recommended build order:** 29.1 → 29.2 → 29.4 → 29.3 → 29.5 (independent) → 29.6 (capstone). 29.3 wants 29.4's `cert_ref_id`; 29.6 depends on 29.1–29.4.
 
 ## Recommended Sequence
 
 1. Treat 25B.1, 25B.2, 25B.3, 26.1, 26.2, 26.3, 27.1, 27.2, 27.3, 27.4, 28.1, 28.2, and 28.3 as completed historical work.
-2. Create Story 28.4 only after live validation confirms safe tunables CRUD/reconfigure behavior on the target appliance.
-3. Keep data-source parity, interface LAGG validation, tunables safety validation, and upstream-blocked review as follow-up maintenance until new evidence changes their classification.
+2. Implement Story 28.4 only after controlled live validation confirms safe tunables CRUD/reconfigure behavior on the target appliance.
+3. Keep data-source parity, tunables safety validation, and upstream-blocked review as follow-up maintenance until new evidence changes their classification.
+4. Epic 29 unblocks the HAProxy/ACME edge migration; build in the order above. Re-verify each OPNsense endpoint/field shape against a live 25.x appliance during implementation (the Dev Notes flag the fields to confirm).

@@ -29,6 +29,7 @@ func TestAccManualSPD_basic(t *testing.T) {
 }
 
 const testAccManualSPDConfig = `
+
 resource "opnsense_ipsec_manual_spd" "test" {
   req_id = 100
   source = "10.1.0.0/24"

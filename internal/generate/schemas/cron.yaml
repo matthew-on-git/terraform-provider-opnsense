@@ -22,6 +22,6 @@ resources:
       - {name: Months, tf: months, json: months, type: string, default: "*", desc: "Month field (cron syntax)."}
       - {name: Weekdays, tf: weekdays, json: weekdays, type: string, default: "*", desc: "Day-of-week field (cron syntax)."}
       - {name: Who, tf: who, json: who, type: string, default: "root", desc: "User the job runs as."}
-      - {name: Command, tf: command, json: command, type: selectmap, required: true, desc: "Configd action to run."}
+      - {name: Command, tf: command, json: command, type: selectmap, required: true, test_value: '"cron restart"', desc: "Configd action to run."}
       - {name: Parameters, tf: parameters, json: parameters, type: string, default: "", desc: "Parameters passed to the command."}
-      - {name: Description, tf: description, json: description, type: string, default: "", desc: "Description."}
+      - {name: Description, tf: description, json: description, type: string, default: "", test_value: '"tf-acc-cron"', desc: "Description."}

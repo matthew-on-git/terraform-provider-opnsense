@@ -124,6 +124,40 @@ func TestAdd_AuthError(t *testing.T) {
 	}
 }
 
+func TestAdd_ReconfigureFailedReturnsMutationErrorWithUUID(t *testing.T) {
+	server := newCRUDTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/test/addItem"):
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"result":"saved","uuid":"test-uuid-123"}`))
+		case strings.HasPrefix(r.URL.Path, "/api/test/service/reconfigure"):
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"status":"failed"}`))
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
+	defer server.Close()
+
+	client := newCRUDTestClient(t, server.URL)
+	res := &testResource{Name: "web1"}
+
+	uuid, err := Add(context.Background(), client, testReqOpts(), res)
+	if uuid != "test-uuid-123" {
+		t.Fatalf("expected saved UUID to be returned, got: %s", uuid)
+	}
+	var mutationErr *MutationReconfigureError
+	if !errors.As(err, &mutationErr) {
+		t.Fatalf("expected MutationReconfigureError, got: %T: %v", err, err)
+	}
+	if mutationErr.Operation != "add" {
+		t.Fatalf("expected add operation, got: %s", mutationErr.Operation)
+	}
+	if mutationErr.ResourceID != "test-uuid-123" {
+		t.Fatalf("expected resource ID test-uuid-123, got: %s", mutationErr.ResourceID)
+	}
+}
+
 // --- Get tests ---
 
 func TestGet_Success(t *testing.T) {
@@ -272,6 +306,37 @@ func TestUpdate_Success(t *testing.T) {
 	}
 }
 
+func TestUpdate_ReconfigureFailedReturnsMutationError(t *testing.T) {
+	server := newCRUDTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/test/setItem/"):
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"result":"saved"}`))
+		case strings.HasPrefix(r.URL.Path, "/api/test/service/reconfigure"):
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"result":"failed"}`))
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
+	defer server.Close()
+
+	client := newCRUDTestClient(t, server.URL)
+	res := &testResource{Name: "web1-updated"}
+
+	err := Update(context.Background(), client, testReqOpts(), res, "uuid-123")
+	var mutationErr *MutationReconfigureError
+	if !errors.As(err, &mutationErr) {
+		t.Fatalf("expected MutationReconfigureError, got: %T: %v", err, err)
+	}
+	if mutationErr.Operation != "update" {
+		t.Fatalf("expected update operation, got: %s", mutationErr.Operation)
+	}
+	if mutationErr.ResourceID != "uuid-123" {
+		t.Fatalf("expected resource ID uuid-123, got: %s", mutationErr.ResourceID)
+	}
+}
+
 // --- Delete tests ---
 
 func TestDelete_Success(t *testing.T) {
@@ -318,9 +383,9 @@ func TestDelete_Success(t *testing.T) {
 	}
 }
 
-func TestDelete_DoesNotParseBody(t *testing.T) {
+func TestDelete_AcceptsDeletedResult(t *testing.T) {
 	// Delete response has result="deleted" which is not "saved".
-	// This should NOT cause a ValidationError — Delete ignores the body.
+	// This should not cause a ValidationError.
 	server := newCRUDTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case strings.HasPrefix(r.URL.Path, "/api/test/delItem/"):
@@ -339,9 +404,65 @@ func TestDelete_DoesNotParseBody(t *testing.T) {
 	if err != nil {
 		var validErr *ValidationError
 		if errors.As(err, &validErr) {
-			t.Fatal("Delete should NOT parse mutation response — got ValidationError")
+			t.Fatal("Delete should accept result=deleted without ValidationError")
 		}
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestDelete_ParsesFailedResult(t *testing.T) {
+	server := newCRUDTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api/test/delItem/") {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"result":"failed","validations":{"lagg":"interface is in use"}}`))
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, "/api/test/service/reconfigure") {
+			t.Fatal("reconfigure should not be called after failed delete")
+		}
+	})
+	defer server.Close()
+
+	client := newCRUDTestClient(t, server.URL)
+	opts := testReqOpts()
+
+	err := Delete(context.Background(), client, opts, "uuid-789")
+	var validErr *ValidationError
+	if !errors.As(err, &validErr) {
+		t.Fatalf("expected ValidationError, got: %v", err)
+	}
+	if validErr.Fields["lagg"] != "interface is in use" {
+		t.Fatalf("expected lagg validation message, got: %#v", validErr.Fields)
+	}
+}
+
+func TestDelete_ReconfigureFailedReturnsMutationError(t *testing.T) {
+	server := newCRUDTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/test/delItem/"):
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"result":"deleted"}`))
+		case strings.HasPrefix(r.URL.Path, "/api/test/service/reconfigure"):
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"status":"failed"}`))
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
+	defer server.Close()
+
+	client := newCRUDTestClient(t, server.URL)
+
+	err := Delete(context.Background(), client, testReqOpts(), "uuid-789")
+	var mutationErr *MutationReconfigureError
+	if !errors.As(err, &mutationErr) {
+		t.Fatalf("expected MutationReconfigureError, got: %T: %v", err, err)
+	}
+	if mutationErr.Operation != "delete" {
+		t.Fatalf("expected delete operation, got: %s", mutationErr.Operation)
+	}
+	if mutationErr.ResourceID != "uuid-789" {
+		t.Fatalf("expected resource ID uuid-789, got: %s", mutationErr.ResourceID)
 	}
 }
 
@@ -500,6 +621,37 @@ func TestUpdateSingleton_ValidationError(t *testing.T) {
 	}
 	if validErr.Fields["asnumber"] != "invalid value" {
 		t.Errorf("expected asnumber validation, got: %v", validErr.Fields)
+	}
+}
+
+func TestUpdateSingleton_ReconfigureFailedReturnsMutationError(t *testing.T) {
+	server := newCRUDTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/test/setSettings":
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"result":"saved"}`))
+		case "/api/test/service/reconfigure":
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"status":"failed"}`))
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
+	defer server.Close()
+
+	client := newCRUDTestClient(t, server.URL)
+	res := &testResource{Name: "frr-updated"}
+
+	err := UpdateSingleton(context.Background(), client, testSingletonReqOpts(), res)
+	var mutationErr *MutationReconfigureError
+	if !errors.As(err, &mutationErr) {
+		t.Fatalf("expected MutationReconfigureError, got: %T: %v", err, err)
+	}
+	if mutationErr.Operation != "update" {
+		t.Fatalf("expected update operation, got: %s", mutationErr.Operation)
+	}
+	if mutationErr.ResourceID != "" {
+		t.Fatalf("expected empty singleton resource ID, got: %s", mutationErr.ResourceID)
 	}
 }
 

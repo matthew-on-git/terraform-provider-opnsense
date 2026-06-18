@@ -5,6 +5,8 @@ package system
 
 import (
 	"context"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -28,7 +30,7 @@ type VipResourceModel struct {
 type vipAPIResponse struct {
 	Interface   opnsense.SelectedMap `json:"interface"`
 	Mode        opnsense.SelectedMap `json:"mode"`
-	Address     string               `json:"subnet"`
+	Address     string               `json:"network"`
 	SubnetBits  string               `json:"subnet_bits"`
 	Description string               `json:"descr"`
 	VHID        string               `json:"vhid"`
@@ -72,12 +74,17 @@ func (m *VipResourceModel) fromAPI(_ context.Context, a *vipAPIResponse, uuid st
 	m.ID = types.StringValue(uuid)
 	m.Interface = types.StringValue(string(a.Interface))
 	m.Mode = types.StringValue(string(a.Mode))
-	m.Address = types.StringValue(a.Address)
+	address, bits, hasBits := strings.Cut(a.Address, "/")
+	m.Address = types.StringValue(address)
 	m.Description = types.StringValue(a.Description)
 	m.Password = types.StringValue(a.Password)
 
 	if a.SubnetBits != "" {
 		if v, err := opnsense.StringToInt64(a.SubnetBits); err == nil {
+			m.SubnetBits = types.Int64Value(v)
+		}
+	} else if hasBits {
+		if v, err := strconv.ParseInt(bits, 10, 64); err == nil {
 			m.SubnetBits = types.Int64Value(v)
 		}
 	}

@@ -56,7 +56,7 @@ func Add[K any](ctx context.Context, c *Client, opts ReqOpts, resource *K) (stri
 	}
 
 	if err := Reconfigure(ctx, c, opts); err != nil {
-		return uuid, fmt.Errorf("add %s: reconfigure failed: %w", opts.AddEndpoint, err)
+		return uuid, &MutationReconfigureError{Operation: "add", Endpoint: opts.AddEndpoint, ResourceID: uuid, Cause: err}
 	}
 
 	return uuid, nil
@@ -135,13 +135,17 @@ func Update[K any](ctx context.Context, c *Client, opts ReqOpts, resource *K, id
 		return err
 	}
 
-	return Reconfigure(ctx, c, opts)
+	if err := Reconfigure(ctx, c, opts); err != nil {
+		return &MutationReconfigureError{Operation: "update", Endpoint: opts.UpdateEndpoint, ResourceID: id, Cause: err}
+	}
+
+	return nil
 }
 
 // Delete removes a resource by UUID from the OPNsense API. POSTs to
 // DeleteEndpoint/{id}. Acquires the write mutex and calls reconfigure
-// after success. Does NOT parse mutation response body — delete responses
-// may return non-"saved" result values that are not validation errors.
+// after success. Parses delete failures while accepting OPNsense's normal
+// non-"saved" delete success result values such as "deleted".
 func Delete(ctx context.Context, c *Client, opts ReqOpts, id string) error {
 	if err := c.LockMutex(ctx); err != nil {
 		return fmt.Errorf("delete %s: %w", opts.DeleteEndpoint, err)
@@ -164,7 +168,19 @@ func Delete(ctx context.Context, c *Client, opts ReqOpts, id string) error {
 		return httpErr
 	}
 
-	return Reconfigure(ctx, c, opts)
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("delete %s: failed to read response: %w", opts.DeleteEndpoint, err)
+	}
+	if err := ParseDeleteResponse(respBody); err != nil {
+		return err
+	}
+
+	if err := Reconfigure(ctx, c, opts); err != nil {
+		return &MutationReconfigureError{Operation: "delete", Endpoint: opts.DeleteEndpoint, ResourceID: id, Cause: err}
+	}
+
+	return nil
 }
 
 // GetSingleton reads a singleton settings object from a get endpoint that has
@@ -243,7 +259,11 @@ func UpdateSingleton[K any](ctx context.Context, c *Client, opts ReqOpts, resour
 		return err
 	}
 
-	return Reconfigure(ctx, c, opts)
+	if err := Reconfigure(ctx, c, opts); err != nil {
+		return &MutationReconfigureError{Operation: "update", Endpoint: opts.UpdateEndpoint, Cause: err}
+	}
+
+	return nil
 }
 
 // marshalWrapped marshals a resource struct wrapped in the monad key. The monad

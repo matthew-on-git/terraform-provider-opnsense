@@ -28,6 +28,13 @@ resources:
     type_name: trafficshaper_queue
     title: a traffic shaper queue
     kind: item
+    test_prereq: |
+      resource "opnsense_trafficshaper_pipe" "prereq" {
+        bandwidth        = 10
+        bandwidth_metric = "Mbit"
+        description      = "tf-acc-queue-pipe"
+      }
+
     reconfigure: /api/trafficshaper/service/reconfigure
     monad: queue
     endpoints:
@@ -39,16 +46,23 @@ resources:
     fields:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this queue is enabled."}
       - {name: Number, tf: number, json: number, type: int, desc: "Queue number (auto-assigned by OPNsense)."}
-      - {name: Pipe, tf: pipe, json: pipe, type: selectmap, required: true, desc: "UUID of the parent pipe."}
+      - {name: Pipe, tf: pipe, json: pipe, type: selectmap, required: true, test_value: 'opnsense_trafficshaper_pipe.prereq.id', desc: "UUID of the parent pipe."}
       - {name: Weight, tf: weight, json: weight, type: int, required: true, desc: "Queue weight (1-100)."}
       - {name: Mask, tf: mask, json: mask, type: selectmap, default: "none", desc: "Dynamic queue mask: none, src-ip, dst-ip."}
-      - {name: Description, tf: description, json: description, type: string, default: "", desc: "Description."}
+      - {name: Description, tf: description, json: description, type: string, default: "", test_value: '"tf-acc-queue"', desc: "Description."}
 
   - name: rule
     go_type: Rule
     type_name: trafficshaper_rule
     title: a traffic shaper rule
     kind: item
+    test_prereq: |
+      resource "opnsense_trafficshaper_pipe" "prereq" {
+        bandwidth        = 10
+        bandwidth_metric = "Mbit"
+        description      = "tf-acc-rule-pipe"
+      }
+
     reconfigure: /api/trafficshaper/service/reconfigure
     monad: rule
     endpoints:
@@ -56,18 +70,18 @@ resources:
       get: /api/trafficshaper/settings/get_rule
       set: /api/trafficshaper/settings/set_rule
       del: /api/trafficshaper/settings/del_rule
-      search: /api/trafficshaper/settings/search_rule
+      search: /api/trafficshaper/settings/search_rules
     fields:
       - {name: Enabled, tf: enabled, json: enabled, type: bool, default: "true", desc: "Whether this rule is enabled."}
       - {name: Sequence, tf: sequence, json: sequence, type: int, required: true, desc: "Rule evaluation order."}
-      - {name: Interface, tf: interface, json: interface, type: selectmap, required: true, desc: "Interface to match."}
-      - {name: Protocol, tf: protocol, json: proto, type: selectmap, required: true, desc: "Protocol to match (e.g. ip, tcp, udp)."}
-      - {name: Source, tf: source, json: source, type: string, default: "any", desc: "Source network/host."}
+      - {name: Interface, tf: interface, json: interface, type: selectmap, required: true, test_value: '"lan"', desc: "Interface to match."}
+      - {name: Protocol, tf: protocol, json: proto, type: selectmap, required: true, test_value: '"ip"', desc: "Protocol to match (e.g. ip, tcp, udp)."}
+      - {name: Source, tf: source, json: source, type: string, response_type: selectmap, default: "any", desc: "Source network/host."}
       - {name: SourceNot, tf: source_not, json: source_not, type: bool, default: "false", desc: "Invert the source match."}
-      - {name: SourcePort, tf: source_port, json: src_port, type: string, default: "", desc: "Source port (empty = any)."}
-      - {name: Destination, tf: destination, json: destination, type: string, default: "any", desc: "Destination network/host."}
+      - {name: SourcePort, tf: source_port, json: src_port, type: string, default: "any", test_value: '"any"', desc: "Source port (empty = any)."}
+      - {name: Destination, tf: destination, json: destination, type: string, response_type: selectmap, default: "any", desc: "Destination network/host."}
       - {name: DestinationNot, tf: destination_not, json: destination_not, type: bool, default: "false", desc: "Invert the destination match."}
-      - {name: DestinationPort, tf: destination_port, json: dst_port, type: string, default: "", desc: "Destination port (empty = any)."}
+      - {name: DestinationPort, tf: destination_port, json: dst_port, type: string, default: "any", test_value: '"any"', desc: "Destination port (empty = any)."}
       - {name: Direction, tf: direction, json: direction, type: selectmap, default: "", desc: "Traffic direction (empty = both)."}
-      - {name: Target, tf: target, json: target, type: selectmap, required: true, desc: "UUID of the target pipe or queue."}
-      - {name: Description, tf: description, json: description, type: string, default: "", desc: "Description."}
+      - {name: Target, tf: target, json: target, type: selectmap, required: true, test_value: 'opnsense_trafficshaper_pipe.prereq.id', desc: "UUID of the target pipe or queue."}
+      - {name: Description, tf: description, json: description, type: string, default: "", test_value: '"tf-acc-rule"', desc: "Description."}

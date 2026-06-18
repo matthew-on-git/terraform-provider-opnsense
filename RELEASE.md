@@ -23,7 +23,7 @@ The first release advertised this historical v0.1.0 baseline:
 - 90 supported resources.
 - 34 supported data sources.
 - Data-source parity as Coming.
-- Interface assignment/IP config/PPPoE, gateway groups, and system general settings as Upstream-blocked; tunables/sysctl as Coming with safety/live-validation gate.
+- Interface assignment/IP config/PPPoE, gateway groups, and system general settings as Upstream-blocked; tunables/sysctl is supported through `opnsense_system_tunable`.
 
 For every subsequent release, refresh the current release positioning from
 `docs/`, `internal/service/*/exports.go`, and

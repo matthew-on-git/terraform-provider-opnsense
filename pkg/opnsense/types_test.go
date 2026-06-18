@@ -224,3 +224,14 @@ func TestSelectedMapList_SelectedAsString(t *testing.T) {
 		t.Errorf("expected ['k1'] for string selected, got: %v", []string(sml))
 	}
 }
+
+func TestSelectedMapList_PlainString(t *testing.T) {
+	data := []byte(`"127.0.0.1:18080"`)
+	var sml SelectedMapList
+	if err := json.Unmarshal(data, &sml); err != nil {
+		t.Fatalf("unmarshal failed: %v", err)
+	}
+	if len(sml) != 1 || sml[0] != "127.0.0.1:18080" {
+		t.Errorf("expected plain string as single selected value, got: %v", []string(sml))
+	}
+}

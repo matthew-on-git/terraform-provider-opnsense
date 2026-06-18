@@ -16,7 +16,7 @@ import (
 func TestAccOSPFArea_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { preCheck(t) },
 		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_quagga_ospf_area", opnsense.ReqOpts{GetEndpoint: "/api/quagga/ospfsettings/get_area", Monad: "area"}),
 		Steps: []resource.TestStep{
 			{
@@ -29,6 +29,7 @@ func TestAccOSPFArea_basic(t *testing.T) {
 }
 
 const testAccOSPFAreaConfig = `
+
 resource "opnsense_quagga_ospf_area" "test" {
   area_id = "0.0.0.1"
   type = "stub"

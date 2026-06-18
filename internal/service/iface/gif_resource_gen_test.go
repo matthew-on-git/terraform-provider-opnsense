@@ -29,6 +29,7 @@ func TestAccGIF_basic(t *testing.T) {
 }
 
 const testAccGIFConfig = `
+
 resource "opnsense_interface_gif" "test" {
   parent_interface = "lan"
   local_address = "192.168.56.10"

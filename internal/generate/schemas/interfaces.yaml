@@ -124,3 +124,28 @@ resources:
       - {name: Protocol, tf: protocol, json: proto, type: selectmap, desc: "Spanning-tree protocol: rstp or stp."}
       - {name: EnableSTP, tf: enable_stp, json: enablestp, type: bool, default: "false", desc: "Enable spanning tree on the bridge."}
       - {name: Description, tf: description, json: descr, type: string, default: "", test_value: '"tf-acc-bridge"', desc: "Description."}
+
+  - name: lagg
+    go_type: Lagg
+    type_name: interface_lagg
+    title: a LAGG interface
+    kind: item
+    reconfigure: /api/interfaces/lagg_settings/reconfigure
+    monad: lagg
+    endpoints:
+      add: /api/interfaces/lagg_settings/add_item
+      get: /api/interfaces/lagg_settings/get_item
+      set: /api/interfaces/lagg_settings/set_item
+      del: /api/interfaces/lagg_settings/del_item
+      search: /api/interfaces/lagg_settings/search_item
+    fields:
+      - {name: Device, tf: device, json: laggif, type: string, desc: "Assigned LAGG device name (auto-assigned by OPNsense)."}
+      - {name: Members, tf: members, json: members, type: selectmaplist, required: true, test_value: '["em4", "em5"]', desc: "Member interfaces in the LAGG. Use free, non-management physical interfaces from the test appliance."}
+      - {name: PrimaryMember, tf: primary_member, json: primary_member, type: selectmap, desc: "Primary member interface; must be one of the member interfaces when set."}
+      - {name: Protocol, tf: protocol, json: proto, type: selectmap, options: [none, lacp, failover, fec, loadbalance, roundrobin], test_value: '"failover"', desc: "LAGG protocol: none, lacp, failover, fec, loadbalance, or roundrobin."}
+      - {name: LACPFastTimeout, tf: lacp_fast_timeout, json: lacp_fast_timeout, type: bool, default: "false", desc: "Use LACP fast timeout."}
+      - {name: UseFlowID, tf: use_flowid, json: use_flowid, type: selectmap, options: ["", "1", "0"], desc: "Use flow ID: empty for default, 1 for yes, 0 for no."}
+      - {name: LaggHash, tf: lagg_hash, json: lagghash, type: selectmaplist, options: [l2, l3, l4], desc: "Hash layers for protocols that support hash selection: l2, l3, and/or l4."}
+      - {name: LACPStrict, tf: lacp_strict, json: lacp_strict, type: selectmap, options: ["", "1", "0"], desc: "LACP strict mode: empty for default, 1 for yes, 0 for no."}
+      - {name: MTU, tf: mtu, json: mtu, type: int, min: 576, max: 65535, desc: "MTU for the LAGG interface (576-65535)."}
+      - {name: Description, tf: description, json: descr, type: string, default: "", test_value: '"tf-acc-lagg"', update_test_value: '"tf-acc-lagg-updated"', desc: "Description."}

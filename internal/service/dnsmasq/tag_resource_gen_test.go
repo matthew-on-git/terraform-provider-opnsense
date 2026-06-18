@@ -29,6 +29,7 @@ func TestAccTag_basic(t *testing.T) {
 }
 
 const testAccTagConfig = `
+
 resource "opnsense_dnsmasq_tag" "test" {
   tag = "pxe"
 }

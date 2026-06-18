@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Dynamic DNS"
+description: |-
+  Reads Dynamic DNS daemon settings on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Reads Dynamic DNS daemon settings on OPNsense.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_ddclient_settings/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

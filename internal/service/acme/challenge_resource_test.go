@@ -20,10 +20,11 @@ func TestAccAcmeChallenge_basic(t *testing.T) {
 		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_acme_challenge", opnsense.ReqOpts{GetEndpoint: "/api/acmeclient/validations/get", Monad: "validation"}),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAcmeChallengeConfig("tf_test_challenge", "http01"),
+				Config: testAccAcmeChallengeConfig("tf_test_challenge", "dns01", "dns_cf"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("opnsense_acme_challenge.test", "id"),
-					resource.TestCheckResourceAttr("opnsense_acme_challenge.test", "method", "http01"),
+					resource.TestCheckResourceAttr("opnsense_acme_challenge.test", "method", "dns01"),
+					resource.TestCheckResourceAttr("opnsense_acme_challenge.test", "dns_service", "dns_cf"),
 				),
 			},
 			{ResourceName: "opnsense_acme_challenge.test", ImportState: true, ImportStateVerify: true},
@@ -31,11 +32,12 @@ func TestAccAcmeChallenge_basic(t *testing.T) {
 	})
 }
 
-func testAccAcmeChallengeConfig(name, method string) string {
+func testAccAcmeChallengeConfig(name, method, dnsService string) string {
 	return fmt.Sprintf(`
 resource "opnsense_acme_challenge" "test" {
-  name   = %[1]q
-  method = %[2]q
+  name        = %[1]q
+  method      = %[2]q
+  dns_service = %[3]q
 }
-`, name, method)
+`, name, method, dnsService)
 }
