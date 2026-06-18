@@ -7,6 +7,7 @@ resources:
     type_name: quagga_ospf_area
     title: an OSPF area
     kind: item
+    test_precheck: preCheck(t)
     reconfigure: /api/quagga/service/reconfigure
     monad: area
     endpoints:
@@ -25,6 +26,7 @@ resources:
     type_name: quagga_ospf_network
     title: an OSPF network
     kind: item
+    test_precheck: preCheck(t)
     reconfigure: /api/quagga/service/reconfigure
     monad: network
     endpoints:
@@ -45,6 +47,7 @@ resources:
     type_name: quagga_ospf_interface
     title: an OSPF interface
     kind: item
+    test_precheck: preCheck(t)
     reconfigure: /api/quagga/service/reconfigure
     monad: interface
     endpoints:
@@ -69,6 +72,7 @@ resources:
     type_name: quagga_ospf_neighbor
     title: an OSPF neighbor
     kind: item
+    test_precheck: preCheck(t)
     reconfigure: /api/quagga/service/reconfigure
     monad: neighbor
     endpoints:
@@ -89,6 +93,7 @@ resources:
     type_name: quagga_ospf_prefixlist
     title: an OSPF prefix list
     kind: item
+    test_precheck: preCheck(t)
     reconfigure: /api/quagga/service/reconfigure
     monad: prefixlist
     endpoints:
@@ -109,6 +114,7 @@ resources:
     type_name: quagga_ospf_routemap
     title: an OSPF route map
     kind: item
+    test_precheck: preCheck(t)
     reconfigure: /api/quagga/service/reconfigure
     monad: routemap
     endpoints:
@@ -129,6 +135,7 @@ resources:
     type_name: quagga_ospf_redistribution
     title: an OSPF redistribution
     kind: item
+    test_precheck: preCheck(t)
     reconfigure: /api/quagga/service/reconfigure
     monad: redistribution
     endpoints:

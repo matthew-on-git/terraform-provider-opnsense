@@ -52,17 +52,18 @@ type Field struct {
 
 // Resource describes a single generated resource.
 type Resource struct {
-	Name        string            `yaml:"name"`
-	GoType      string            `yaml:"go_type"`
-	TypeName    string            `yaml:"type_name"`
-	Title       string            `yaml:"title"`
-	Kind        string            `yaml:"kind"` // item|singleton
-	ID          string            `yaml:"id"`
-	Reconfigure string            `yaml:"reconfigure"`
-	Monad       string            `yaml:"monad"`
-	TestPrereq  string            `yaml:"test_prereq"`
-	Endpoints   map[string]string `yaml:"endpoints"`
-	Fields      []Field           `yaml:"fields"`
+	Name         string            `yaml:"name"`
+	GoType       string            `yaml:"go_type"`
+	TypeName     string            `yaml:"type_name"`
+	Title        string            `yaml:"title"`
+	Kind         string            `yaml:"kind"` // item|singleton
+	ID           string            `yaml:"id"`
+	Reconfigure  string            `yaml:"reconfigure"`
+	Monad        string            `yaml:"monad"`
+	TestPrereq   string            `yaml:"test_prereq"`
+	TestPreCheck string            `yaml:"test_precheck"`
+	Endpoints    map[string]string `yaml:"endpoints"`
+	Fields       []Field           `yaml:"fields"`
 }
 
 // Schema is one YAML schema file.
@@ -98,6 +99,9 @@ func run() error {
 			return fmt.Errorf("%s: %w", path, err)
 		}
 		for i := range s.Resources {
+			if s.Resources[i].TestPreCheck == "" {
+				s.Resources[i].TestPreCheck = "acctest.PreCheck(t)"
+			}
 			if err := generateResource(s.Package, &s.Resources[i]); err != nil {
 				return fmt.Errorf("%s/%s: %w", s.Package, s.Resources[i].Name, err)
 			}

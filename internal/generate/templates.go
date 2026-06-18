@@ -35,7 +35,7 @@ import (
 func TestAcc{{.R.GoType}}_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories,
-		PreCheck:                 func() { acctest.PreCheck(t) },
+		PreCheck:                 func() { {{.R.TestPreCheck}} },
 {{if isItem .R}}		CheckDestroy:             acctest.CheckResourceDestroyed(t, "opnsense_{{.R.TypeName}}", opnsense.ReqOpts{GetEndpoint: "{{index .R.Endpoints "get"}}", Monad: "{{.R.Monad}}"}),
 {{end}}		Steps: []resource.TestStep{
 			{
