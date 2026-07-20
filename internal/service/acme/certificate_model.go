@@ -52,17 +52,17 @@ type CertificateDataSourceModel struct {
 }
 
 type certificateAPIResponse struct {
-	Enabled          string               `json:"enabled"`
-	Name             string               `json:"name"`
-	Description      string               `json:"description"`
+	Enabled          string                 `json:"enabled"`
+	Name             string                 `json:"name"`
+	Description      string                 `json:"description"`
 	AltNames         certificateAPIAltNames `json:"altNames"`
-	Account          opnsense.SelectedMap `json:"account"`
-	ValidationMethod opnsense.SelectedMap `json:"validationMethod"`
-	KeyLength        opnsense.SelectedMap `json:"keyLength"`
-	AutoRenewal      string               `json:"autoRenewal"`
-	CertRefID        string               `json:"certRefId"`
-	StatusCode       certificateAPIString `json:"statusCode"`
-	Status           string               `json:"status"`
+	Account          opnsense.SelectedMap   `json:"account"`
+	ValidationMethod opnsense.SelectedMap   `json:"validationMethod"`
+	KeyLength        opnsense.SelectedMap   `json:"keyLength"`
+	AutoRenewal      string                 `json:"autoRenewal"`
+	CertRefID        string                 `json:"certRefId"`
+	StatusCode       certificateAPIString   `json:"statusCode"`
+	Status           string                 `json:"status"`
 }
 
 type certificateAPIRequest struct {
