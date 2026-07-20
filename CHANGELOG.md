@@ -2,6 +2,17 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.3.1 (July 20, 2026)
+
+BUG FIXES:
+
+* Handle `altNames` returned as a JSON object in OPNsense 26.7 API responses for `opnsense_acme_certificate`.
+
+DEPENDENCIES:
+
+* Bumped toolchain to Go 1.25.12 to resolve govulncheck standard library vulnerabilities.
+* Updated `golang.org/x/crypto` from 0.51.0 to 0.52.0.
+
 ## 0.3.0 (June 18, 2026)
 
 FEATURES:
