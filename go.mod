@@ -2,7 +2,7 @@ module github.com/matthew-on-git/terraform-provider-opnsense
 
 go 1.25.0
 
-toolchain go1.25.11
+toolchain go1.25.12
 
 require (
 	github.com/hashicorp/go-retryablehttp v0.7.8
