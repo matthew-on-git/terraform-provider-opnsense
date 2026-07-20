@@ -5,6 +5,7 @@ package acme
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -177,6 +178,60 @@ func TestCertificateFromAPIPreservesWaitDefaults(t *testing.T) {
 	model.fromAPI(context.Background(), &certificateAPIResponse{Name: "www.example.com"}, "cert-1")
 	if model.IssuanceTimeout.ValueString() != "300s" || model.IssuanceInterval.ValueString() != "15s" {
 		t.Fatalf("expected preserved wait settings, got timeout=%q interval=%q", model.IssuanceTimeout.ValueString(), model.IssuanceInterval.ValueString())
+	}
+}
+
+func TestCertificateAltNamesUnmarshalString(t *testing.T) {
+	t.Parallel()
+
+	var altNames certificateAPIAltNames
+	if err := altNames.UnmarshalJSON([]byte(`"www.example.com"`)); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if altNames.String() != "www.example.com" {
+		t.Fatalf("expected www.example.com, got %q", altNames.String())
+	}
+}
+
+func TestCertificateAltNamesUnmarshalObject(t *testing.T) {
+	t.Parallel()
+
+	var altNames certificateAPIAltNames
+	if err := altNames.UnmarshalJSON([]byte(`{"key":{"value":"api.example.com","selected":1}}`)); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	result := altNames.String()
+	if result == "" {
+		t.Fatal("expected non-empty alt names from object")
+	}
+}
+
+func TestCertificateAltNamesUnmarshalNull(t *testing.T) {
+	t.Parallel()
+
+	var altNames certificateAPIAltNames
+	if err := altNames.UnmarshalJSON([]byte(`null`)); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if altNames.String() != "" {
+		t.Fatalf("expected empty string for null, got %q", altNames.String())
+	}
+}
+
+func TestCertificateResponseUnmarshalObjectAltNames(t *testing.T) {
+	t.Parallel()
+
+	jsonData := `{"enabled":"1","name":"svc.example.com","description":"","altNames":{"someKey":"someValue"},"account":{"uuid":{"value":"acct-1","selected":1}},"validationMethod":{"uuid":{"value":"challenge-1","selected":1}},"keyLength":{"uuid":{"value":"key_4096","selected":1}},"autoRenewal":"1","statusCode":"200","status":"issued","certRefId":"ref-123"}`
+
+	var resp certificateAPIResponse
+	if err := json.Unmarshal([]byte(jsonData), &resp); err != nil {
+		t.Fatalf("failed to unmarshal response with object altNames: %v", err)
+	}
+	if resp.AltNames.String() == "" {
+		t.Fatal("expected non-empty alt names from object")
+	}
+	if resp.Name != "svc.example.com" {
+		t.Fatalf("expected name svc.example.com, got %q", resp.Name)
 	}
 }
 

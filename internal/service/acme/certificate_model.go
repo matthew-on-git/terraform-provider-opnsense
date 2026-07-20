@@ -55,7 +55,7 @@ type certificateAPIResponse struct {
 	Enabled          string               `json:"enabled"`
 	Name             string               `json:"name"`
 	Description      string               `json:"description"`
-	AltNames         string               `json:"altNames"`
+	AltNames         certificateAPIAltNames `json:"altNames"`
 	Account          opnsense.SelectedMap `json:"account"`
 	ValidationMethod opnsense.SelectedMap `json:"validationMethod"`
 	KeyLength        opnsense.SelectedMap `json:"keyLength"`
@@ -108,6 +108,39 @@ func (s *certificateAPIString) UnmarshalJSON(data []byte) error {
 
 func (s certificateAPIString) String() string { return string(s) }
 
+// certificateAPIAltNames handles altNames which may be a string, object, or null
+// depending on the OPNsense version. OPNsense 26.7+ returns altNames as an object.
+type certificateAPIAltNames string
+
+func (a *certificateAPIAltNames) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		*a = ""
+		return nil
+	}
+
+	var text string
+	if err := json.Unmarshal(data, &text); err == nil {
+		*a = certificateAPIAltNames(text)
+		return nil
+	}
+
+	var obj interface{}
+	if err := json.Unmarshal(data, &obj); err == nil {
+		raw, err := json.Marshal(obj)
+		if err != nil {
+			*a = ""
+			return nil
+		}
+		*a = certificateAPIAltNames(string(raw))
+		return nil
+	}
+
+	*a = ""
+	return nil
+}
+
+func (a certificateAPIAltNames) String() string { return string(a) }
+
 func (m *CertificateResourceModel) toAPI(_ context.Context) *certificateAPIRequest {
 	return &certificateAPIRequest{
 		Enabled:          opnsense.BoolToString(m.Enabled.ValueBool()),
@@ -134,7 +167,7 @@ func (m *CertificateResourceModel) fromAPIResponse(_ context.Context, a *certifi
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Name = types.StringValue(a.Name)
 	m.Description = types.StringValue(a.Description)
-	m.AltNames = types.StringValue(a.AltNames)
+	m.AltNames = types.StringValue(a.AltNames.String())
 	m.Account = types.StringValue(string(a.Account))
 	m.ValidationMethod = types.StringValue(string(a.ValidationMethod))
 	m.KeyLength = types.StringValue(string(a.KeyLength))
@@ -149,7 +182,7 @@ func (m *CertificateDataSourceModel) fromAPI(_ context.Context, a *certificateAP
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Name = types.StringValue(a.Name)
 	m.Description = types.StringValue(a.Description)
-	m.AltNames = types.StringValue(a.AltNames)
+	m.AltNames = types.StringValue(a.AltNames.String())
 	m.Account = types.StringValue(string(a.Account))
 	m.ValidationMethod = types.StringValue(string(a.ValidationMethod))
 	m.KeyLength = types.StringValue(string(a.KeyLength))
