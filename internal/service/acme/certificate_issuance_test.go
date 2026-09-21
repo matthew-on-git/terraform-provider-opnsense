@@ -218,6 +218,20 @@ func TestCertificateAltNamesUnmarshalNull(t *testing.T) {
 	}
 }
 
+func TestCertificateAltNamesUnmarshalEmptyObject(t *testing.T) {
+	t.Parallel()
+
+	for _, data := range []string{`{}`, `{"":{"value":"","selected":1}}`} {
+		var altNames certificateAPIAltNames
+		if err := altNames.UnmarshalJSON([]byte(data)); err != nil {
+			t.Fatalf("unexpected error for %s: %v", data, err)
+		}
+		if altNames.String() != "" {
+			t.Fatalf("expected empty string for %s, got %q", data, altNames.String())
+		}
+	}
+}
+
 func TestCertificateResponseUnmarshalObjectAltNames(t *testing.T) {
 	t.Parallel()
 

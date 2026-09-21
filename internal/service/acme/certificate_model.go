@@ -126,6 +126,14 @@ func (a *certificateAPIAltNames) UnmarshalJSON(data []byte) error {
 
 	var obj interface{}
 	if err := json.Unmarshal(data, &obj); err == nil {
+		var selected map[string]json.RawMessage
+		if err := json.Unmarshal(data, &selected); err == nil && (len(selected) == 0 || (len(selected) == 1 && selected[""] != nil)) {
+			// OPNsense 26.7 represents an empty altNames field as either {}
+			// or {"":{"value":"","selected":1}}. Both correspond to
+			// the empty Terraform string and must normalize identically.
+			*a = ""
+			return nil
+		}
 		raw, err := json.Marshal(obj)
 		if err != nil {
 			*a = ""
