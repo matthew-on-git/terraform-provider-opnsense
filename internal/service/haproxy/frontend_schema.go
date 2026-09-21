@@ -93,6 +93,12 @@ func (r *frontendResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Default:             booldefault.StaticBool(false),
 				MarkdownDescription: "Add X-Forwarded-For header. Defaults to `false`.",
 			},
+			"timeout_client": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString(""),
+				MarkdownDescription: "Maximum client-side inactivity time, using an HAProxy time value such as `10m`. An empty value inherits the global default.",
+			},
 		},
 	}
 }

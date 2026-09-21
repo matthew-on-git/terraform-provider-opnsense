@@ -43,6 +43,7 @@ func (d *frontendDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			"default_certificate": dsschema.StringAttribute{Computed: true, MarkdownDescription: "Default HAProxy certificate refid for this frontend."},
 			"linked_actions":      dsschema.SetAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: "Set of HAProxy action UUIDs linked to this frontend for ACL-based routing."},
 			"forward_for":         dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Add X-Forwarded-For header. Defaults to 'false'."},
+			"timeout_client":      dsschema.StringAttribute{Computed: true, MarkdownDescription: "Maximum client-side inactivity time."},
 		},
 	}
 }
