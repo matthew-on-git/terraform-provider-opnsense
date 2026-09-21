@@ -49,6 +49,7 @@ resource "opnsense_haproxy_backend" "web_pool" {
 ### Optional
 
 - `algorithm` (String) Load balancing algorithm: `source`, `roundrobin`, `static-rr`, `leastconn`, `uri`, `random`.
+- `custom_options` (String) Additional HAProxy directives rendered in this backend. Validate these directives carefully because OPNsense passes them through to HAProxy.
 - `description` (String) Description of the backend.
 - `enabled` (Boolean) Whether this backend is enabled. Defaults to `true`.
 - `forward_for` (Boolean) Add X-Forwarded-For header. Defaults to `false`.
@@ -57,6 +58,9 @@ resource "opnsense_haproxy_backend" "web_pool" {
 - `linked_servers` (Set of String) Set of HAProxy server UUIDs linked to this backend.
 - `mode` (String) Backend mode: `http` (Layer 7) or `tcp` (Layer 4).
 - `persistence` (String) Session persistence mode: `sticktable` or `cookie`.
+- `timeout_check` (String) Maximum time for backend health checks, using an HAProxy time value such as `5s`. An empty value inherits the global default.
+- `timeout_connect` (String) Maximum time to establish a connection to a backend server, using an HAProxy time value such as `5s`. An empty value inherits the global default.
+- `timeout_server` (String) Maximum server-side inactivity time, using an HAProxy time value such as `10m`. An empty value inherits the global default.
 
 ### Read-Only
 

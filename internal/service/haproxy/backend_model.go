@@ -26,6 +26,10 @@ type BackendResourceModel struct {
 	HealthCheckEnabled types.Bool   `tfsdk:"health_check_enabled"`
 	Persistence        types.String `tfsdk:"persistence"`
 	ForwardFor         types.Bool   `tfsdk:"forward_for"`
+	TimeoutConnect     types.String `tfsdk:"timeout_connect"`
+	TimeoutCheck       types.String `tfsdk:"timeout_check"`
+	TimeoutServer      types.String `tfsdk:"timeout_server"`
+	CustomOptions      types.String `tfsdk:"custom_options"`
 }
 
 // backendAPIResponse is the struct for unmarshaling OPNsense GET responses.
@@ -40,6 +44,10 @@ type backendAPIResponse struct {
 	HealthCheckEnabled string                   `json:"healthCheckEnabled"`
 	Persistence        opnsense.SelectedMap     `json:"persistence"`
 	ForwardFor         string                   `json:"forwardFor"`
+	TimeoutConnect     string                   `json:"tuning_timeoutConnect"`
+	TimeoutCheck       string                   `json:"tuning_timeoutCheck"`
+	TimeoutServer      string                   `json:"tuning_timeoutServer"`
+	CustomOptions      string                   `json:"customOptions"`
 }
 
 // backendAPIRequest is the struct for marshaling OPNsense POST requests.
@@ -54,6 +62,10 @@ type backendAPIRequest struct {
 	HealthCheckEnabled string `json:"healthCheckEnabled"`
 	Persistence        string `json:"persistence"`
 	ForwardFor         string `json:"forwardFor"`
+	TimeoutConnect     string `json:"tuning_timeoutConnect"`
+	TimeoutCheck       string `json:"tuning_timeoutCheck"`
+	TimeoutServer      string `json:"tuning_timeoutServer"`
+	CustomOptions      string `json:"customOptions"`
 }
 
 // toAPI converts the Terraform model to an API request struct.
@@ -76,6 +88,10 @@ func (m *BackendResourceModel) toAPI(ctx context.Context) *backendAPIRequest {
 		HealthCheckEnabled: opnsense.BoolToString(m.HealthCheckEnabled.ValueBool()),
 		Persistence:        m.Persistence.ValueString(),
 		ForwardFor:         opnsense.BoolToString(m.ForwardFor.ValueBool()),
+		TimeoutConnect:     m.TimeoutConnect.ValueString(),
+		TimeoutCheck:       m.TimeoutCheck.ValueString(),
+		TimeoutServer:      m.TimeoutServer.ValueString(),
+		CustomOptions:      m.CustomOptions.ValueString(),
 	}
 }
 
@@ -91,6 +107,10 @@ func (m *BackendResourceModel) fromAPI(_ context.Context, a *backendAPIResponse,
 	m.HealthCheckEnabled = types.BoolValue(opnsense.StringToBool(a.HealthCheckEnabled))
 	m.Persistence = types.StringValue(string(a.Persistence))
 	m.ForwardFor = types.BoolValue(opnsense.StringToBool(a.ForwardFor))
+	m.TimeoutConnect = types.StringValue(a.TimeoutConnect)
+	m.TimeoutCheck = types.StringValue(a.TimeoutCheck)
+	m.TimeoutServer = types.StringValue(a.TimeoutServer)
+	m.CustomOptions = types.StringValue(a.CustomOptions)
 
 	// LinkedServers — SelectedMapList → types.Set of UUID strings.
 	if len(a.LinkedServers) == 0 {

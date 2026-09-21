@@ -42,6 +42,10 @@ func (d *backendDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 			"health_check_enabled": dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether health checking is enabled. OPNsense also requires health_check to select a health-check object."},
 			"persistence":          dsschema.StringAttribute{Computed: true, MarkdownDescription: "Session persistence mode: 'sticktable' or 'cookie'."},
 			"forward_for":          dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Add X-Forwarded-For header. Defaults to 'false'."},
+			"timeout_connect":      dsschema.StringAttribute{Computed: true, MarkdownDescription: "Maximum time to establish a connection to a backend server."},
+			"timeout_check":        dsschema.StringAttribute{Computed: true, MarkdownDescription: "Maximum time for backend health checks."},
+			"timeout_server":       dsschema.StringAttribute{Computed: true, MarkdownDescription: "Maximum server-side inactivity time."},
+			"custom_options":       dsschema.StringAttribute{Computed: true, MarkdownDescription: "Additional HAProxy directives rendered in this backend."},
 		},
 	}
 }
