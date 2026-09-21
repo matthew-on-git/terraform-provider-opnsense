@@ -41,7 +41,7 @@ func (d *frontendDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			"ssl_enabled":         dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Enable SSL offloading. Defaults to 'false'."},
 			"certificates":        dsschema.SetAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: "Set of HAProxy certificate refids bound to this frontend."},
 			"default_certificate": dsschema.StringAttribute{Computed: true, MarkdownDescription: "Default HAProxy certificate refid for this frontend."},
-			"linked_actions":      dsschema.SetAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: "Set of HAProxy action UUIDs linked to this frontend for ACL-based routing."},
+			"linked_actions":      dsschema.ListAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: "Ordered list of HAProxy action UUIDs linked to this frontend for ACL-based routing."},
 			"forward_for":         dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Add X-Forwarded-For header. Defaults to 'false'."},
 			"timeout_client":      dsschema.StringAttribute{Computed: true, MarkdownDescription: "Maximum client-side inactivity time."},
 		},
