@@ -40,13 +40,28 @@ func (frontendCertificateValidator) ValidateResource(ctx context.Context, req re
 	if config.DefaultCertificate.IsNull() || config.DefaultCertificate.IsUnknown() || config.DefaultCertificate.ValueString() == "" {
 		return
 	}
-	if config.Certificates.IsNull() || config.Certificates.IsUnknown() || !stringSetContains(ctx, config.Certificates, config.DefaultCertificate.ValueString()) {
+	if !certificateBindingIsValid(ctx, config.Certificates, config.DefaultCertificate.ValueString()) {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("default_certificate"),
 			"Invalid HAProxy Frontend Certificate Binding",
 			"default_certificate must be included in certificates when ssl_enabled is true.",
 		)
 	}
+}
+
+// certificateBindingIsValid defers validation when the certificate set is
+// unknown because it may contain a computed cert_ref_id from another resource.
+// Once the set is known, the default certificate must be present concretely.
+func certificateBindingIsValid(ctx context.Context, certificates types.Set, defaultCertificate string) bool {
+	if certificates.IsUnknown() {
+		return true
+	}
+	for _, element := range certificates.Elements() {
+		if element.IsUnknown() {
+			return true
+		}
+	}
+	return !certificates.IsNull() && stringSetContains(ctx, certificates, defaultCertificate)
 }
 
 func (r *frontendResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
