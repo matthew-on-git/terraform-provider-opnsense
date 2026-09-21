@@ -22,6 +22,7 @@ type BackendResourceModel struct {
 	Mode               types.String `tfsdk:"mode"`
 	Algorithm          types.String `tfsdk:"algorithm"`
 	LinkedServers      types.Set    `tfsdk:"linked_servers"`
+	HealthCheck        types.String `tfsdk:"health_check"`
 	HealthCheckEnabled types.Bool   `tfsdk:"health_check_enabled"`
 	Persistence        types.String `tfsdk:"persistence"`
 	ForwardFor         types.Bool   `tfsdk:"forward_for"`
@@ -35,6 +36,7 @@ type backendAPIResponse struct {
 	Mode               opnsense.SelectedMap     `json:"mode"`
 	Algorithm          opnsense.SelectedMap     `json:"algorithm"`
 	LinkedServers      opnsense.SelectedMapList `json:"linkedServers"`
+	HealthCheck        opnsense.SelectedMap     `json:"healthCheck"`
 	HealthCheckEnabled string                   `json:"healthCheckEnabled"`
 	Persistence        opnsense.SelectedMap     `json:"persistence"`
 	ForwardFor         string                   `json:"forwardFor"`
@@ -48,6 +50,7 @@ type backendAPIRequest struct {
 	Mode               string `json:"mode"`
 	Algorithm          string `json:"algorithm"`
 	LinkedServers      string `json:"linkedServers"`
+	HealthCheck        string `json:"healthCheck"`
 	HealthCheckEnabled string `json:"healthCheckEnabled"`
 	Persistence        string `json:"persistence"`
 	ForwardFor         string `json:"forwardFor"`
@@ -69,6 +72,7 @@ func (m *BackendResourceModel) toAPI(ctx context.Context) *backendAPIRequest {
 		Mode:               m.Mode.ValueString(),
 		Algorithm:          m.Algorithm.ValueString(),
 		LinkedServers:      serversStr,
+		HealthCheck:        m.HealthCheck.ValueString(),
 		HealthCheckEnabled: opnsense.BoolToString(m.HealthCheckEnabled.ValueBool()),
 		Persistence:        m.Persistence.ValueString(),
 		ForwardFor:         opnsense.BoolToString(m.ForwardFor.ValueBool()),
@@ -83,6 +87,7 @@ func (m *BackendResourceModel) fromAPI(_ context.Context, a *backendAPIResponse,
 	m.Description = types.StringValue(a.Description)
 	m.Mode = types.StringValue(string(a.Mode))
 	m.Algorithm = types.StringValue(string(a.Algorithm))
+	m.HealthCheck = types.StringValue(string(a.HealthCheck))
 	m.HealthCheckEnabled = types.BoolValue(opnsense.StringToBool(a.HealthCheckEnabled))
 	m.Persistence = types.StringValue(string(a.Persistence))
 	m.ForwardFor = types.BoolValue(opnsense.StringToBool(a.ForwardFor))
