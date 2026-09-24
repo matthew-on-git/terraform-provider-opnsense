@@ -2,6 +2,30 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.4.0 (September 24, 2026)
+
+FEATURES:
+
+* Added HAProxy backend `health_check` relation support alongside `health_check_enabled`.
+* Added HAProxy backend timeout and custom option fields: `timeout_connect`, `timeout_check`, `timeout_server`, and `custom_options`.
+* Added HAProxy frontend `timeout_client` support.
+
+IMPROVEMENTS:
+
+* Preserve HAProxy frontend `linked_actions` order by modeling it as an ordered list and decoding OPNsense responses without sorting selected actions.
+* Added a state upgrader for `opnsense_haproxy_frontend` to migrate existing `linked_actions` set state into the new list shape.
+* Added support for os-haproxy 5 HTTP request action mapping.
+
+BUG FIXES:
+
+* Preserve WireGuard server descriptions when OPNsense returns an empty description on readback.
+* Normalize ACME certificate empty `altNames` readback from object-shaped OPNsense responses.
+* Defer HAProxy frontend certificate validation when certificate references are unknown during planning.
+
+DEPENDENCIES:
+
+* Updated the Go, `google.golang.org/grpc`, and `golang.org/x/text` security baseline.
+
 ## 0.3.1 (July 20, 2026)
 
 BUG FIXES:
