@@ -50,6 +50,7 @@ type actionAPIResponse struct {
 	UseBackend           opnsense.SelectedMap     `json:"use_backend"`
 	MapUseBackendFile    opnsense.SelectedMap     `json:"map_use_backend_file"`
 	MapUseBackendDefault opnsense.SelectedMap     `json:"map_use_backend_default"`
+	HTTPRequestAction    opnsense.SelectedMap     `json:"http_request_action"`
 	HTTPRequestOption    string                   `json:"http_request_option"`
 	DenyStatus           string                   `json:"http_request_deny_status"`
 	Redirect             string                   `json:"http_request_redirect"`
@@ -67,6 +68,7 @@ type actionAPIRequest struct {
 	UseBackend           string `json:"use_backend"`
 	MapUseBackendFile    string `json:"map_use_backend_file"`
 	MapUseBackendDefault string `json:"map_use_backend_default"`
+	HTTPRequestAction    string `json:"http_request_action"`
 	HTTPRequestOption    string `json:"http_request_option"`
 	DenyStatus           string `json:"http_request_deny_status"`
 	Redirect             string `json:"http_request_redirect"`
@@ -98,7 +100,28 @@ func (m *ActionResourceModel) toAPI(ctx context.Context) *actionAPIRequest {
 		req.DenyStatus = opnsense.Int64ToString(m.DenyStatus.ValueInt64())
 	}
 
-	req.Type = m.Type.ValueString()
+	switch m.Type.ValueString() {
+	case actionTypeHTTPRequestDeny:
+		req.Type = "http-request"
+		req.HTTPRequestAction = "deny"
+		if req.DenyStatus != "" {
+			req.HTTPRequestOption = "deny_status " + req.DenyStatus
+		}
+		req.DenyStatus = ""
+	case actionTypeHTTPRequestRedirect:
+		req.Type = "http-request"
+		req.HTTPRequestAction = "redirect"
+		req.HTTPRequestOption = req.Redirect
+		req.Redirect = ""
+	case actionTypeHTTPRequestSetHeader:
+		req.Type = "http-request"
+		req.HTTPRequestAction = "set-header"
+		req.HTTPRequestOption = req.SetHeaderName + " " + req.SetHeaderContent
+		req.SetHeaderName = ""
+		req.SetHeaderContent = ""
+	default:
+		req.Type = m.Type.ValueString()
+	}
 
 	return req
 }
@@ -125,7 +148,29 @@ func (m *ActionResourceModel) fromAPI(_ context.Context, a *actionAPIResponse, u
 		m.DenyStatus = types.Int64Null()
 	}
 
-	m.Type = types.StringValue(string(a.Type))
+	switch {
+	case string(a.Type) == "http-request" && string(a.HTTPRequestAction) == "deny":
+		m.Type = types.StringValue(actionTypeHTTPRequestDeny)
+		m.HTTPRequestOption = types.StringValue("")
+		if status, ok := strings.CutPrefix(a.HTTPRequestOption, "deny_status "); ok {
+			if parsed, err := opnsense.StringToInt64(status); err == nil {
+				m.DenyStatus = types.Int64Value(parsed)
+			}
+		}
+	case string(a.Type) == "http-request" && string(a.HTTPRequestAction) == "redirect":
+		m.Type = types.StringValue(actionTypeHTTPRequestRedirect)
+		m.Redirect = types.StringValue(a.HTTPRequestOption)
+		m.HTTPRequestOption = types.StringValue("")
+	case string(a.Type) == "http-request" && string(a.HTTPRequestAction) == "set-header":
+		m.Type = types.StringValue(actionTypeHTTPRequestSetHeader)
+		if name, content, ok := strings.Cut(a.HTTPRequestOption, " "); ok {
+			m.SetHeaderName = types.StringValue(name)
+			m.SetHeaderContent = types.StringValue(content)
+		}
+		m.HTTPRequestOption = types.StringValue("")
+	default:
+		m.Type = types.StringValue(string(a.Type))
+	}
 	m.LinkedACLs = selectedListToStringSet(a.LinkedACLs)
 }
 
