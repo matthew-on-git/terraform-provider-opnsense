@@ -96,6 +96,30 @@ func (r *backendResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Default:             booldefault.StaticBool(false),
 				MarkdownDescription: "Add X-Forwarded-For header. Defaults to `false`.",
 			},
+			"timeout_connect": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString(""),
+				MarkdownDescription: "Maximum time to establish a connection to a backend server, using an HAProxy time value such as `5s`. An empty value inherits the global default.",
+			},
+			"timeout_check": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString(""),
+				MarkdownDescription: "Maximum time for backend health checks, using an HAProxy time value such as `5s`. An empty value inherits the global default.",
+			},
+			"timeout_server": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString(""),
+				MarkdownDescription: "Maximum server-side inactivity time, using an HAProxy time value such as `10m`. An empty value inherits the global default.",
+			},
+			"custom_options": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString(""),
+				MarkdownDescription: "Additional HAProxy directives rendered in this backend. Validate these directives carefully because OPNsense passes them through to HAProxy.",
+			},
 		},
 	}
 }

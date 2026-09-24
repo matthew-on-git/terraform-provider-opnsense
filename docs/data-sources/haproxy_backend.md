@@ -32,6 +32,7 @@ output "haproxy_backend_id" {
 ### Read-Only
 
 - `algorithm` (String) Load balancing algorithm: 'source', 'roundrobin', 'static-rr', 'leastconn', 'uri', 'random'.
+- `custom_options` (String) Additional HAProxy directives rendered in this backend.
 - `description` (String) Description of the backend.
 - `enabled` (Boolean) Whether this backend is enabled. Defaults to 'true'.
 - `forward_for` (Boolean) Add X-Forwarded-For header. Defaults to 'false'.
@@ -41,3 +42,6 @@ output "haproxy_backend_id" {
 - `mode` (String) Backend mode: 'http' (Layer 7) or 'tcp' (Layer 4).
 - `name` (String) Name of the backend pool.
 - `persistence` (String) Session persistence mode: 'sticktable' or 'cookie'.
+- `timeout_check` (String) Maximum time for backend health checks.
+- `timeout_connect` (String) Maximum time to establish a connection to a backend server.
+- `timeout_server` (String) Maximum server-side inactivity time.
