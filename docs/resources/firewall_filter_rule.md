@@ -2,12 +2,12 @@
 page_title: "opnsense_firewall_filter_rule Resource - opnsense"
 subcategory: "Firewall"
 description: |-
-  Manages a firewall filter rule on OPNsense with savepoint rollback protection.
+  Manages a firewall filter rule on OPNsense.
 ---
 
 # opnsense_firewall_filter_rule (Resource)
 
-Manages a firewall filter rule on OPNsense. Filter rules control traffic flow through the firewall. Changes are protected by OPNsense's savepoint mechanism — bad rules auto-revert within 60 seconds if connectivity is lost.
+Manages a firewall filter rule on OPNsense. Filter rules control traffic flow through the firewall.
 
 ## Example Usage
 
