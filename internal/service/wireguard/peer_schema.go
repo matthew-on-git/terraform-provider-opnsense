@@ -63,6 +63,12 @@ func (r *peerResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Default:             int64default.StaticInt64(0),
 				MarkdownDescription: "Persistent keepalive interval in seconds. `0` disables.",
 			},
+			"servers": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString(""),
+				MarkdownDescription: "Comma-separated UUIDs of WireGuard server instances this peer is assigned to.",
+			},
 		},
 	}
 }

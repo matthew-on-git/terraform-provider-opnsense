@@ -38,6 +38,7 @@ func (d *peerDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 			"server_address": dsschema.StringAttribute{Computed: true, MarkdownDescription: "Endpoint address of the remote WireGuard server."},
 			"server_port":    dsschema.StringAttribute{Computed: true, MarkdownDescription: "Endpoint port of the remote WireGuard server."},
 			"keepalive":      dsschema.Int64Attribute{Computed: true, MarkdownDescription: "Persistent keepalive interval in seconds. '0' disables."},
+			"servers":        dsschema.StringAttribute{Computed: true, MarkdownDescription: "Comma-separated UUIDs of WireGuard server instances this peer is assigned to."},
 		},
 	}
 }

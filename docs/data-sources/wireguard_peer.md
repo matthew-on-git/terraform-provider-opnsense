@@ -37,4 +37,5 @@ output "wireguard_peer_id" {
 - `public_key` (String) Public key of the WireGuard peer.
 - `server_address` (String) Endpoint address of the remote WireGuard server.
 - `server_port` (String) Endpoint port of the remote WireGuard server.
+- `servers` (String) Comma-separated UUIDs of WireGuard server instances this peer is assigned to.
 - `tunnel_address` (String) Allowed IPs / tunnel address for this peer (e.g., '10.0.0.2/32').

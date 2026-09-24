@@ -30,6 +30,7 @@ resource "opnsense_wireguard_peer" "client1" {
 - `keepalive` (Number) Persistent keepalive interval in seconds. `0` disables.
 - `server_address` (String) Endpoint address of the remote WireGuard server.
 - `server_port` (String) Endpoint port of the remote WireGuard server.
+- `servers` (String) Comma-separated UUIDs of WireGuard server instances this peer is assigned to.
 
 ### Read-Only
 
