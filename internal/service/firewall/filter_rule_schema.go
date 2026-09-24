@@ -22,7 +22,7 @@ import (
 // Schema defines the Terraform schema for opnsense_firewall_filter_rule.
 func (r *filterRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Manages a firewall filter rule on OPNsense with savepoint rollback protection. Bad rules auto-revert within 60 seconds.",
+		MarkdownDescription: "Manages a firewall filter rule on OPNsense.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
