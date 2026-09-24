@@ -38,7 +38,7 @@ func TestPeerModelMapsServers(t *testing.T) {
 		ServerAddress: "edge-01.example.invalid",
 		ServerPort:    "51822",
 		Keepalive:     "25",
-		Servers:       "server-uuid",
+		Servers:       opnsense.SelectedMapList{"server-uuid"},
 	}, "peer-uuid")
 
 	if got := read.Servers.ValueString(); got != "server-uuid" {
