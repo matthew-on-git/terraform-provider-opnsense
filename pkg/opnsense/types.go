@@ -4,6 +4,7 @@
 package opnsense
 
 import (
+	"bytes"
 	"encoding/json"
 	"sort"
 	"strconv"
@@ -142,5 +143,69 @@ func (s *SelectedMapList) UnmarshalJSON(data []byte) error {
 	} else {
 		*s = selected
 	}
+	return nil
+}
+
+// OrderedSelectedMapList is a custom type for OPNsense multi-select fields
+// where JSON object order is semantically significant.
+type OrderedSelectedMapList []string
+
+// UnmarshalJSON extracts selected keys in the order returned by OPNsense.
+// Unlike SelectedMapList, it does not sort the selected keys.
+func (s *OrderedSelectedMapList) UnmarshalJSON(data []byte) error {
+	trimmed := strings.TrimSpace(string(data))
+	if trimmed == "[]" || trimmed == "null" || trimmed == `""` {
+		*s = []string{}
+		return nil
+	}
+	if len(trimmed) > 0 && trimmed[0] == '"' {
+		var str string
+		if err := json.Unmarshal(data, &str); err == nil {
+			*s = []string{str}
+			return nil
+		}
+	}
+
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.UseNumber()
+	token, err := decoder.Token()
+	if err != nil {
+		*s = []string{}
+		return nil
+	}
+	delim, ok := token.(json.Delim)
+	if !ok || delim != '{' {
+		*s = []string{}
+		return nil
+	}
+
+	selected := make([]string, 0)
+	for decoder.More() {
+		keyToken, err := decoder.Token()
+		if err != nil {
+			*s = []string{}
+			return nil
+		}
+		key, ok := keyToken.(string)
+		if !ok {
+			*s = []string{}
+			return nil
+		}
+
+		var entry selectedEntry
+		if err := decoder.Decode(&entry); err != nil {
+			*s = []string{}
+			return nil
+		}
+		if entry.Selected.String() == "1" {
+			selected = append(selected, key)
+		}
+	}
+	if _, err := decoder.Token(); err != nil {
+		*s = []string{}
+		return nil
+	}
+
+	*s = selected
 	return nil
 }

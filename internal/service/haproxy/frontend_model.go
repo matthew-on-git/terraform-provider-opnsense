@@ -26,25 +26,25 @@ type FrontendResourceModel struct {
 	SSLEnabled         types.Bool   `tfsdk:"ssl_enabled"`
 	Certificates       types.Set    `tfsdk:"certificates"`
 	DefaultCertificate types.String `tfsdk:"default_certificate"`
-	LinkedActions      types.Set    `tfsdk:"linked_actions"`
+	LinkedActions      types.List   `tfsdk:"linked_actions"`
 	ForwardFor         types.Bool   `tfsdk:"forward_for"`
 	TimeoutClient      types.String `tfsdk:"timeout_client"`
 }
 
 // frontendAPIResponse is the struct for unmarshaling OPNsense GET responses.
 type frontendAPIResponse struct {
-	Enabled               string                   `json:"enabled"`
-	Name                  string                   `json:"name"`
-	Description           string                   `json:"description"`
-	Bind                  opnsense.SelectedMapList `json:"bind"`
-	Mode                  opnsense.SelectedMap     `json:"mode"`
-	DefaultBackend        opnsense.SelectedMap     `json:"defaultBackend"`
-	SSLEnabled            string                   `json:"ssl_enabled"`
-	SSLCertificates       opnsense.SelectedMapList `json:"ssl_certificates"`
-	SSLDefaultCertificate opnsense.SelectedMap     `json:"ssl_default_certificate"`
-	LinkedActions         opnsense.SelectedMapList `json:"linkedActions"`
-	ForwardFor            string                   `json:"forwardFor"`
-	TimeoutClient         string                   `json:"tuning_timeoutClient"`
+	Enabled               string                          `json:"enabled"`
+	Name                  string                          `json:"name"`
+	Description           string                          `json:"description"`
+	Bind                  opnsense.SelectedMapList        `json:"bind"`
+	Mode                  opnsense.SelectedMap            `json:"mode"`
+	DefaultBackend        opnsense.SelectedMap            `json:"defaultBackend"`
+	SSLEnabled            string                          `json:"ssl_enabled"`
+	SSLCertificates       opnsense.SelectedMapList        `json:"ssl_certificates"`
+	SSLDefaultCertificate opnsense.SelectedMap            `json:"ssl_default_certificate"`
+	LinkedActions         opnsense.OrderedSelectedMapList `json:"linkedActions"`
+	ForwardFor            string                          `json:"forwardFor"`
+	TimeoutClient         string                          `json:"tuning_timeoutClient"`
 }
 
 // frontendAPIRequest is the struct for marshaling OPNsense POST requests.
@@ -114,14 +114,14 @@ func (m *FrontendResourceModel) fromAPI(_ context.Context, a *frontendAPIRespons
 	m.ForwardFor = types.BoolValue(opnsense.StringToBool(a.ForwardFor))
 	m.TimeoutClient = types.StringValue(a.TimeoutClient)
 
-	// LinkedActions — SelectedMapList → types.Set of UUID strings.
+	// LinkedActions — SelectedMapList → ordered list of UUID strings.
 	if len(a.LinkedActions) == 0 {
-		m.LinkedActions = types.SetValueMust(types.StringType, []attr.Value{})
+		m.LinkedActions = types.ListValueMust(types.StringType, []attr.Value{})
 	} else {
 		vals := make([]attr.Value, len(a.LinkedActions))
 		for i, v := range a.LinkedActions {
 			vals[i] = types.StringValue(v)
 		}
-		m.LinkedActions = types.SetValueMust(types.StringType, vals)
+		m.LinkedActions = types.ListValueMust(types.StringType, vals)
 	}
 }

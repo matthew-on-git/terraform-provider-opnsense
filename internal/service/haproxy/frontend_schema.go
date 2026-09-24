@@ -19,7 +19,30 @@ import (
 
 // Schema defines the Terraform schema for opnsense_haproxy_frontend.
 func (r *frontendResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = frontendSchemaV1()
+}
+
+func frontendSchemaV1() schema.Schema {
+	return frontendSchema(1, schema.ListAttribute{
+		ElementType:         types.StringType,
+		Optional:            true,
+		Computed:            true,
+		MarkdownDescription: "Ordered list of HAProxy action UUIDs linked to this frontend for ACL-based routing.",
+	})
+}
+
+func frontendSchemaV0() schema.Schema {
+	return frontendSchema(0, schema.SetAttribute{
+		ElementType:         types.StringType,
+		Optional:            true,
+		Computed:            true,
+		MarkdownDescription: "Set of HAProxy action UUIDs linked to this frontend for ACL-based routing.",
+	})
+}
+
+func frontendSchema(version int64, linkedActions schema.Attribute) schema.Schema {
+	return schema.Schema{
+		Version:             version,
 		MarkdownDescription: "Manages an HAProxy frontend on OPNsense. Frontends define how HAProxy listens for and routes incoming traffic. Requires the `os-haproxy` plugin.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -81,12 +104,7 @@ func (r *frontendResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Computed:            true,
 				MarkdownDescription: "Default HAProxy certificate refid for this frontend. This is a certificate refid, not an API UUID, and is only meaningful when `ssl_enabled = true`.",
 			},
-			"linked_actions": schema.SetAttribute{
-				ElementType:         types.StringType,
-				Optional:            true,
-				Computed:            true,
-				MarkdownDescription: "Set of HAProxy action UUIDs linked to this frontend for ACL-based routing.",
-			},
+			"linked_actions": linkedActions,
 			"forward_for": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,

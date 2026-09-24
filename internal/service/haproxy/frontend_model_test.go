@@ -26,9 +26,12 @@ func TestFrontendModel_toAPIMapsCertificateRefIDs(t *testing.T) {
 		SSLEnabled:         types.BoolValue(true),
 		Certificates:       types.SetValueMust(types.StringType, []attr.Value{types.StringValue("cert-ref-2"), types.StringValue("cert-ref-1")}),
 		DefaultCertificate: types.StringValue("cert-ref-1"),
-		LinkedActions:      types.SetValueMust(types.StringType, []attr.Value{}),
-		ForwardFor:         types.BoolValue(true),
-		TimeoutClient:      types.StringValue("10m"),
+		LinkedActions: types.ListValueMust(types.StringType, []attr.Value{
+			types.StringValue("action-2"),
+			types.StringValue("action-1"),
+		}),
+		ForwardFor:    types.BoolValue(true),
+		TimeoutClient: types.StringValue("10m"),
 	}
 
 	req := model.toAPI(context.Background())
@@ -40,6 +43,9 @@ func TestFrontendModel_toAPIMapsCertificateRefIDs(t *testing.T) {
 	}
 	if req.TimeoutClient != "10m" {
 		t.Fatalf("timeout_client = %q, want 10m", req.TimeoutClient)
+	}
+	if req.LinkedActions != "action-2,action-1" {
+		t.Fatalf("linked_actions = %q, want action order preserved", req.LinkedActions)
 	}
 }
 
@@ -56,7 +62,7 @@ func TestFrontendModel_toAPIIgnoresCertificatesWhenSSLDisabled(t *testing.T) {
 		SSLEnabled:         types.BoolValue(false),
 		Certificates:       types.SetValueMust(types.StringType, []attr.Value{types.StringValue("cert-ref-1")}),
 		DefaultCertificate: types.StringValue("cert-ref-1"),
-		LinkedActions:      types.SetValueMust(types.StringType, []attr.Value{}),
+		LinkedActions:      types.ListValueMust(types.StringType, []attr.Value{}),
 		ForwardFor:         types.BoolValue(false),
 	}
 
@@ -79,7 +85,7 @@ func TestFrontendModel_fromAPIMapsCertificateRefIDs(t *testing.T) {
 		SSLEnabled:            "1",
 		SSLCertificates:       opnsense.SelectedMapList{"cert-ref-1", "cert-ref-2"},
 		SSLDefaultCertificate: opnsense.SelectedMap("cert-ref-1"),
-		LinkedActions:         opnsense.SelectedMapList{},
+		LinkedActions:         opnsense.OrderedSelectedMapList{"action-2", "action-1"},
 		ForwardFor:            "1",
 		TimeoutClient:         "10m",
 	}, "frontend-1")
@@ -92,5 +98,8 @@ func TestFrontendModel_fromAPIMapsCertificateRefIDs(t *testing.T) {
 	}
 	if model.TimeoutClient.ValueString() != "10m" {
 		t.Fatalf("timeout_client = %q, want 10m", model.TimeoutClient.ValueString())
+	}
+	if got := model.LinkedActions.Elements(); len(got) != 2 || got[0].(types.String).ValueString() != "action-2" || got[1].(types.String).ValueString() != "action-1" {
+		t.Fatalf("linked action order was not preserved: %#v", got)
 	}
 }

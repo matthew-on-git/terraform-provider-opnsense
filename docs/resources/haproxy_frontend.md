@@ -95,7 +95,7 @@ variable "haproxy_certificate_refid" {
 - `description` (String) Description of the frontend.
 - `enabled` (Boolean) Whether this frontend is enabled. Defaults to `true`.
 - `forward_for` (Boolean) Add X-Forwarded-For header. Defaults to `false`.
-- `linked_actions` (Set of String) Set of HAProxy action UUIDs linked to this frontend for ACL-based routing.
+- `linked_actions` (List of String) Ordered list of HAProxy action UUIDs linked to this frontend for ACL-based routing.
 - `mode` (String) Frontend mode: `http`, `ssl`, or `tcp`.
 - `ssl_enabled` (Boolean) Enable SSL offloading. Defaults to `false`.
 - `timeout_client` (String) Maximum client-side inactivity time, using an HAProxy time value such as `10m`. An empty value inherits the global default.

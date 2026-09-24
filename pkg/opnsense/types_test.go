@@ -235,3 +235,14 @@ func TestSelectedMapList_PlainString(t *testing.T) {
 		t.Errorf("expected plain string as single selected value, got: %v", []string(sml))
 	}
 }
+
+func TestOrderedSelectedMapList_PreservesJSONOrder(t *testing.T) {
+	data := []byte(`{"action-z":{"value":"Z","selected":1},"action-a":{"value":"A","selected":1},"action-m":{"value":"M","selected":0}}`)
+	var selected OrderedSelectedMapList
+	if err := json.Unmarshal(data, &selected); err != nil {
+		t.Fatalf("unmarshal failed: %v", err)
+	}
+	if len(selected) != 2 || selected[0] != "action-z" || selected[1] != "action-a" {
+		t.Errorf("expected JSON order ['action-z','action-a'], got: %v", []string(selected))
+	}
+}
