@@ -38,8 +38,8 @@ output "haproxy_frontend_id" {
 - `description` (String) Description of the frontend.
 - `enabled` (Boolean) Whether this frontend is enabled. Defaults to 'true'.
 - `forward_for` (Boolean) Add X-Forwarded-For header. Defaults to 'false'.
-- `timeout_client` (String) Maximum client-side inactivity time.
 - `linked_actions` (Set of String) Set of HAProxy action UUIDs linked to this frontend for ACL-based routing.
 - `mode` (String) Frontend mode: 'http', 'ssl', or 'tcp'.
 - `name` (String) Name of the frontend.
 - `ssl_enabled` (Boolean) Enable SSL offloading. Defaults to 'false'.
+- `timeout_client` (String) Maximum client-side inactivity time.
