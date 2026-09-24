@@ -73,7 +73,13 @@ func (r *backendResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Optional:            true,
 				Computed:            true,
 				Default:             booldefault.StaticBool(true),
-				MarkdownDescription: "Whether health checking is enabled. Defaults to `true`.",
+				MarkdownDescription: "Whether health checking is enabled. OPNsense also requires `health_check` to select a health-check object. Defaults to `true`.",
+			},
+			"health_check": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString(""),
+				MarkdownDescription: "UUID of the HAProxy health-check object selected for this backend.",
 			},
 			"persistence": schema.StringAttribute{
 				Optional:            true,

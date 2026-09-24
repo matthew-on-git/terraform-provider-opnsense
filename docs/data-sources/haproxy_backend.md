@@ -35,7 +35,8 @@ output "haproxy_backend_id" {
 - `description` (String) Description of the backend.
 - `enabled` (Boolean) Whether this backend is enabled. Defaults to 'true'.
 - `forward_for` (Boolean) Add X-Forwarded-For header. Defaults to 'false'.
-- `health_check_enabled` (Boolean) Whether health checking is enabled. Defaults to 'true'.
+- `health_check` (String) UUID of the HAProxy health-check object selected for this backend.
+- `health_check_enabled` (Boolean) Whether health checking is enabled. OPNsense also requires health_check to select a health-check object.
 - `linked_servers` (Set of String) Set of HAProxy server UUIDs linked to this backend.
 - `mode` (String) Backend mode: 'http' (Layer 7) or 'tcp' (Layer 4).
 - `name` (String) Name of the backend pool.
