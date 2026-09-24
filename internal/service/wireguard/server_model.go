@@ -65,5 +65,7 @@ func (m *ServerResourceModel) fromAPI(_ context.Context, a *wireguardServerAPIRe
 		m.PrivateKey = types.StringValue(a.PrivateKey)
 	}
 	m.TunnelAddress = types.StringValue(string(a.TunnelAddress))
-	m.Description = types.StringValue(a.Description)
+	if a.Description != "" || m.Description.IsNull() || m.Description.IsUnknown() {
+		m.Description = types.StringValue(a.Description)
+	}
 }
