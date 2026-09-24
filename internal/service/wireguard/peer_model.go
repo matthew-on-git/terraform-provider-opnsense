@@ -21,6 +21,7 @@ type PeerResourceModel struct {
 	ServerAddress types.String `tfsdk:"server_address"`
 	ServerPort    types.String `tfsdk:"server_port"`
 	Keepalive     types.Int64  `tfsdk:"keepalive"`
+	Servers       types.String `tfsdk:"servers"`
 }
 
 // wireguardPeerAPIResponse is the struct for unmarshaling OPNsense GET responses.
@@ -32,6 +33,7 @@ type wireguardPeerAPIResponse struct {
 	ServerAddress string               `json:"serveraddress"`
 	ServerPort    string               `json:"serverport"`
 	Keepalive     string               `json:"keepalive"`
+	Servers       string               `json:"servers"`
 }
 
 // wireguardPeerAPIRequest is the struct for marshaling OPNsense POST requests.
@@ -43,6 +45,7 @@ type wireguardPeerAPIRequest struct {
 	ServerAddress string `json:"serveraddress"`
 	ServerPort    string `json:"serverport"`
 	Keepalive     string `json:"keepalive"`
+	Servers       string `json:"servers"`
 }
 
 // toAPI converts the Terraform model to an API request struct.
@@ -55,6 +58,7 @@ func (m *PeerResourceModel) toAPI(_ context.Context) *wireguardPeerAPIRequest {
 		ServerAddress: m.ServerAddress.ValueString(),
 		ServerPort:    m.ServerPort.ValueString(),
 		Keepalive:     opnsense.Int64ToString(m.Keepalive.ValueInt64()),
+		Servers:       m.Servers.ValueString(),
 	}
 }
 
@@ -67,6 +71,7 @@ func (m *PeerResourceModel) fromAPI(_ context.Context, a *wireguardPeerAPIRespon
 	m.TunnelAddress = types.StringValue(string(a.TunnelAddress))
 	m.ServerAddress = types.StringValue(a.ServerAddress)
 	m.ServerPort = types.StringValue(a.ServerPort)
+	m.Servers = types.StringValue(a.Servers)
 
 	if a.Keepalive != "" {
 		if v, err := opnsense.StringToInt64(a.Keepalive); err == nil {
