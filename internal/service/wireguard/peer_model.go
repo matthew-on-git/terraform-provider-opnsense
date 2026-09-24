@@ -5,6 +5,7 @@ package wireguard
 
 import (
 	"context"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -26,14 +27,14 @@ type PeerResourceModel struct {
 
 // wireguardPeerAPIResponse is the struct for unmarshaling OPNsense GET responses.
 type wireguardPeerAPIResponse struct {
-	Enabled       string               `json:"enabled"`
-	Name          string               `json:"name"`
-	PublicKey     string               `json:"pubkey"`
-	TunnelAddress opnsense.SelectedMap `json:"tunneladdress"`
-	ServerAddress string               `json:"serveraddress"`
-	ServerPort    string               `json:"serverport"`
-	Keepalive     string               `json:"keepalive"`
-	Servers       string               `json:"servers"`
+	Enabled       string                   `json:"enabled"`
+	Name          string                   `json:"name"`
+	PublicKey     string                   `json:"pubkey"`
+	TunnelAddress opnsense.SelectedMap     `json:"tunneladdress"`
+	ServerAddress string                   `json:"serveraddress"`
+	ServerPort    string                   `json:"serverport"`
+	Keepalive     string                   `json:"keepalive"`
+	Servers       opnsense.SelectedMapList `json:"servers"`
 }
 
 // wireguardPeerAPIRequest is the struct for marshaling OPNsense POST requests.
@@ -71,7 +72,7 @@ func (m *PeerResourceModel) fromAPI(_ context.Context, a *wireguardPeerAPIRespon
 	m.TunnelAddress = types.StringValue(string(a.TunnelAddress))
 	m.ServerAddress = types.StringValue(a.ServerAddress)
 	m.ServerPort = types.StringValue(a.ServerPort)
-	m.Servers = types.StringValue(a.Servers)
+	m.Servers = types.StringValue(strings.Join(a.Servers, ","))
 
 	if a.Keepalive != "" {
 		if v, err := opnsense.StringToInt64(a.Keepalive); err == nil {
