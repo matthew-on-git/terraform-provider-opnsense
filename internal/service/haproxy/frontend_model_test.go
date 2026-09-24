@@ -28,6 +28,7 @@ func TestFrontendModel_toAPIMapsCertificateRefIDs(t *testing.T) {
 		DefaultCertificate: types.StringValue("cert-ref-1"),
 		LinkedActions:      types.SetValueMust(types.StringType, []attr.Value{}),
 		ForwardFor:         types.BoolValue(true),
+		TimeoutClient:      types.StringValue("10m"),
 	}
 
 	req := model.toAPI(context.Background())
@@ -36,6 +37,9 @@ func TestFrontendModel_toAPIMapsCertificateRefIDs(t *testing.T) {
 	}
 	if req.SSLDefaultCertificate != "cert-ref-1" {
 		t.Fatalf("ssl_default_certificate = %q, want cert-ref-1", req.SSLDefaultCertificate)
+	}
+	if req.TimeoutClient != "10m" {
+		t.Fatalf("timeout_client = %q, want 10m", req.TimeoutClient)
 	}
 }
 
@@ -77,6 +81,7 @@ func TestFrontendModel_fromAPIMapsCertificateRefIDs(t *testing.T) {
 		SSLDefaultCertificate: opnsense.SelectedMap("cert-ref-1"),
 		LinkedActions:         opnsense.SelectedMapList{},
 		ForwardFor:            "1",
+		TimeoutClient:         "10m",
 	}, "frontend-1")
 
 	if model.DefaultCertificate.ValueString() != "cert-ref-1" {
@@ -84,5 +89,8 @@ func TestFrontendModel_fromAPIMapsCertificateRefIDs(t *testing.T) {
 	}
 	if len(model.Certificates.Elements()) != 2 {
 		t.Fatalf("expected 2 certificate refids, got %#v", model.Certificates.Elements())
+	}
+	if model.TimeoutClient.ValueString() != "10m" {
+		t.Fatalf("timeout_client = %q, want 10m", model.TimeoutClient.ValueString())
 	}
 }

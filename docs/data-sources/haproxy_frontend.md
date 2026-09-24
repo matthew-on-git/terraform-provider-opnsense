@@ -42,3 +42,4 @@ output "haproxy_frontend_id" {
 - `mode` (String) Frontend mode: 'http', 'ssl', or 'tcp'.
 - `name` (String) Name of the frontend.
 - `ssl_enabled` (Boolean) Enable SSL offloading. Defaults to 'false'.
+- `timeout_client` (String) Maximum client-side inactivity time.

@@ -98,6 +98,7 @@ variable "haproxy_certificate_refid" {
 - `linked_actions` (Set of String) Set of HAProxy action UUIDs linked to this frontend for ACL-based routing.
 - `mode` (String) Frontend mode: `http`, `ssl`, or `tcp`.
 - `ssl_enabled` (Boolean) Enable SSL offloading. Defaults to `false`.
+- `timeout_client` (String) Maximum client-side inactivity time, using an HAProxy time value such as `10m`. An empty value inherits the global default.
 
 ### Read-Only
 

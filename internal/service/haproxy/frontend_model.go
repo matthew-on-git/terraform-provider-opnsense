@@ -28,6 +28,7 @@ type FrontendResourceModel struct {
 	DefaultCertificate types.String `tfsdk:"default_certificate"`
 	LinkedActions      types.Set    `tfsdk:"linked_actions"`
 	ForwardFor         types.Bool   `tfsdk:"forward_for"`
+	TimeoutClient      types.String `tfsdk:"timeout_client"`
 }
 
 // frontendAPIResponse is the struct for unmarshaling OPNsense GET responses.
@@ -43,6 +44,7 @@ type frontendAPIResponse struct {
 	SSLDefaultCertificate opnsense.SelectedMap     `json:"ssl_default_certificate"`
 	LinkedActions         opnsense.SelectedMapList `json:"linkedActions"`
 	ForwardFor            string                   `json:"forwardFor"`
+	TimeoutClient         string                   `json:"tuning_timeoutClient"`
 }
 
 // frontendAPIRequest is the struct for marshaling OPNsense POST requests.
@@ -58,6 +60,7 @@ type frontendAPIRequest struct {
 	SSLDefaultCertificate string `json:"ssl_default_certificate"`
 	LinkedActions         string `json:"linkedActions"`
 	ForwardFor            string `json:"forwardFor"`
+	TimeoutClient         string `json:"tuning_timeoutClient"`
 }
 
 // toAPI converts the Terraform model to an API request struct.
@@ -92,6 +95,7 @@ func (m *FrontendResourceModel) toAPI(ctx context.Context) *frontendAPIRequest {
 		SSLDefaultCertificate: defaultCertificate,
 		LinkedActions:         actionsStr,
 		ForwardFor:            opnsense.BoolToString(m.ForwardFor.ValueBool()),
+		TimeoutClient:         m.TimeoutClient.ValueString(),
 	}
 }
 
@@ -108,6 +112,7 @@ func (m *FrontendResourceModel) fromAPI(_ context.Context, a *frontendAPIRespons
 	m.Certificates = selectedListToStringSet(a.SSLCertificates)
 	m.DefaultCertificate = types.StringValue(string(a.SSLDefaultCertificate))
 	m.ForwardFor = types.BoolValue(opnsense.StringToBool(a.ForwardFor))
+	m.TimeoutClient = types.StringValue(a.TimeoutClient)
 
 	// LinkedActions — SelectedMapList → types.Set of UUID strings.
 	if len(a.LinkedActions) == 0 {
