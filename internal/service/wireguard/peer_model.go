@@ -27,14 +27,14 @@ type PeerResourceModel struct {
 
 // wireguardPeerAPIResponse is the struct for unmarshaling OPNsense GET responses.
 type wireguardPeerAPIResponse struct {
-	Enabled       string                   `json:"enabled"`
-	Name          string                   `json:"name"`
-	PublicKey     string                   `json:"pubkey"`
-	TunnelAddress opnsense.SelectedMap     `json:"tunneladdress"`
-	ServerAddress string                   `json:"serveraddress"`
-	ServerPort    string                   `json:"serverport"`
-	Keepalive     string                   `json:"keepalive"`
-	Servers       opnsense.SelectedMapList `json:"servers"`
+	Enabled       string                          `json:"enabled"`
+	Name          string                          `json:"name"`
+	PublicKey     string                          `json:"pubkey"`
+	TunnelAddress opnsense.OrderedSelectedMapList `json:"tunneladdress"`
+	ServerAddress string                          `json:"serveraddress"`
+	ServerPort    string                          `json:"serverport"`
+	Keepalive     string                          `json:"keepalive"`
+	Servers       opnsense.SelectedMapList        `json:"servers"`
 }
 
 // wireguardPeerAPIRequest is the struct for marshaling OPNsense POST requests.
@@ -69,7 +69,7 @@ func (m *PeerResourceModel) fromAPI(_ context.Context, a *wireguardPeerAPIRespon
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Name = types.StringValue(a.Name)
 	m.PublicKey = types.StringValue(a.PublicKey)
-	m.TunnelAddress = types.StringValue(string(a.TunnelAddress))
+	m.TunnelAddress = types.StringValue(strings.Join(a.TunnelAddress, ","))
 	m.ServerAddress = types.StringValue(a.ServerAddress)
 	m.ServerPort = types.StringValue(a.ServerPort)
 	m.Servers = types.StringValue(strings.Join(a.Servers, ","))
