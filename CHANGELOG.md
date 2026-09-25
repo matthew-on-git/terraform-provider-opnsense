@@ -2,6 +2,12 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.4.4 (September 24, 2026)
+
+BUG FIXES:
+
+* Read WireGuard peer `tunnel_address` as an ordered multi-select value so peers with multiple Allowed IPs reconcile correctly.
+
 ## 0.4.3 (September 24, 2026)
 
 BUG FIXES:

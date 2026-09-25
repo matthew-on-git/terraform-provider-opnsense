@@ -34,7 +34,7 @@ func TestPeerModelMapsServers(t *testing.T) {
 		Enabled:       "1",
 		Name:          "cross-site-peer",
 		PublicKey:     "PUBLIC_KEY",
-		TunnelAddress: opnsense.SelectedMap("169.254.155.1/32"),
+		TunnelAddress: opnsense.OrderedSelectedMapList{"169.254.155.1/32"},
 		ServerAddress: "edge-01.example.invalid",
 		ServerPort:    "51822",
 		Keepalive:     "25",
@@ -43,5 +43,24 @@ func TestPeerModelMapsServers(t *testing.T) {
 
 	if got := read.Servers.ValueString(); got != "server-uuid" {
 		t.Fatalf("fromAPI servers = %q, want %q", got, "server-uuid")
+	}
+}
+
+func TestPeerModelMapsMultipleTunnelAddresses(t *testing.T) {
+	var read PeerResourceModel
+	read.fromAPI(context.Background(), &wireguardPeerAPIResponse{
+		Enabled:       "1",
+		Name:          "cross-site-peer",
+		PublicKey:     "PUBLIC_KEY",
+		TunnelAddress: opnsense.OrderedSelectedMapList{"169.254.155.1/32", "10.129.0.0/24", "10.131.0.0/24"},
+		ServerAddress: "edge-01.example.invalid",
+		ServerPort:    "51822",
+		Keepalive:     "25",
+		Servers:       opnsense.SelectedMapList{"server-uuid"},
+	}, "peer-uuid")
+
+	want := "169.254.155.1/32,10.129.0.0/24,10.131.0.0/24"
+	if got := read.TunnelAddress.ValueString(); got != want {
+		t.Fatalf("fromAPI tunnel_address = %q, want %q", got, want)
 	}
 }
