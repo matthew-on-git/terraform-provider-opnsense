@@ -51,6 +51,11 @@ type wireguardPeerAPIRequest struct {
 
 // toAPI converts the Terraform model to an API request struct.
 func (m *PeerResourceModel) toAPI(_ context.Context) *wireguardPeerAPIRequest {
+	keepalive := ""
+	if !m.Keepalive.IsNull() && !m.Keepalive.IsUnknown() {
+		keepalive = opnsense.Int64ToString(m.Keepalive.ValueInt64())
+	}
+
 	return &wireguardPeerAPIRequest{
 		Enabled:       opnsense.BoolToString(m.Enabled.ValueBool()),
 		Name:          m.Name.ValueString(),
@@ -58,7 +63,7 @@ func (m *PeerResourceModel) toAPI(_ context.Context) *wireguardPeerAPIRequest {
 		TunnelAddress: m.TunnelAddress.ValueString(),
 		ServerAddress: m.ServerAddress.ValueString(),
 		ServerPort:    m.ServerPort.ValueString(),
-		Keepalive:     opnsense.Int64ToString(m.Keepalive.ValueInt64()),
+		Keepalive:     keepalive,
 		Servers:       m.Servers.ValueString(),
 	}
 }
@@ -78,5 +83,7 @@ func (m *PeerResourceModel) fromAPI(_ context.Context, a *wireguardPeerAPIRespon
 		if v, err := opnsense.StringToInt64(a.Keepalive); err == nil {
 			m.Keepalive = types.Int64Value(v)
 		}
+	} else {
+		m.Keepalive = types.Int64Null()
 	}
 }

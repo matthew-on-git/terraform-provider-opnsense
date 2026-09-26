@@ -32,7 +32,7 @@ output "wireguard_peer_id" {
 ### Read-Only
 
 - `enabled` (Boolean) Whether this peer is enabled. Defaults to 'true'.
-- `keepalive` (Number) Persistent keepalive interval in seconds. '0' disables.
+- `keepalive` (Number) Persistent keepalive interval in seconds. Null means disabled/unset.
 - `name` (String) Name of the WireGuard peer.
 - `public_key` (String) Public key of the WireGuard peer.
 - `server_address` (String) Endpoint address of the remote WireGuard server.
