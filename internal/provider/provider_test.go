@@ -231,7 +231,10 @@ func TestValidateRequiredConfig_AllMissing(t *testing.T) {
 // --- validateCredentials tests ---
 
 func TestValidateCredentials_Success(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/core/menu/search" {
+			t.Errorf("unexpected validation path %q", r.URL.Path)
+		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"status": "ok"}`))
@@ -262,8 +265,8 @@ func TestValidateCredentials_SuccessLogsVersion(t *testing.T) {
 	client := newTestClient(t, server.URL)
 	resp := &frameworkprovider.ConfigureResponse{}
 
-	// validateCredentials should succeed — the version parsing is best-effort
-	// and logged via tflog. We verify no errors are produced.
+	// validateCredentials should succeed even when the low-privilege endpoint
+	// happens to include unrelated metadata.
 	validateCredentials(context.Background(), client, server.URL, resp)
 
 	if resp.Diagnostics.HasError() {

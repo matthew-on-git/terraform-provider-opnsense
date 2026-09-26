@@ -6,7 +6,6 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -135,7 +134,7 @@ func (p *OpnsenseProvider) Configure(ctx context.Context, req provider.Configure
 		return
 	}
 
-	// Validate credentials by calling the firmware status endpoint.
+	// Validate credentials with a low-privilege endpoint.
 	validateCredentials(ctx, client, cfg.uri, resp)
 	if resp.Diagnostics.HasError() {
 		return
@@ -183,10 +182,9 @@ func validateRequiredConfig(cfg resolvedConfig, diags *diag.Diagnostics) {
 	}
 }
 
-// validateCredentials checks that the configured credentials are valid by
-// calling the OPNsense firmware status API endpoint.
+// validateCredentials checks that the configured credentials are valid.
 func validateCredentials(ctx context.Context, client *opnsense.Client, uri string, resp *provider.ConfigureResponse) {
-	httpResp, err := client.HTTPClient().Get(client.BaseURL() + "/api/core/firmware/status")
+	httpResp, err := client.HTTPClient().Get(client.BaseURL() + "/api/core/menu/search")
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Connect to OPNsense",
@@ -198,17 +196,7 @@ func validateCredentials(ctx context.Context, client *opnsense.Client, uri strin
 
 	switch httpResp.StatusCode {
 	case http.StatusOK:
-		logFields := map[string]interface{}{"url": uri}
-
-		// Parse version from firmware status response if available.
-		var result map[string]interface{}
-		if err := json.NewDecoder(httpResp.Body).Decode(&result); err == nil {
-			if version, ok := result["product_version"].(string); ok && version != "" {
-				logFields["version"] = version
-			}
-		}
-
-		tflog.Info(ctx, "OPNsense connection validated", logFields)
+		tflog.Info(ctx, "OPNsense connection validated", map[string]interface{}{"url": uri})
 	case http.StatusUnauthorized, http.StatusForbidden:
 		resp.Diagnostics.AddError(
 			"OPNsense Authentication Failed",

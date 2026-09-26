@@ -56,7 +56,7 @@ resource "opnsense_firewall_nat_port_forward" "ssh" {
 - `ip_protocol` (String) IP version: `inet` (IPv4), `inet6` (IPv6), or `inet46` (both).
 - `log` (Boolean) Log matching packets. Defaults to `false`.
 - `protocol` (String) Protocol (e.g., `tcp`, `udp`, `TCP/UDP`).
-- `source_net` (String) Source network (`any`, CIDR, or alias).
+- `source_net` (String) Source network (`any`, CIDR, or alias). Empty matches OPNsense's unset source.
 - `source_not` (Boolean) Invert source match. Defaults to `false`.
 - `source_port` (String) Source port or range. Empty for any.
 

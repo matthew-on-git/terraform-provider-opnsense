@@ -57,8 +57,8 @@ func (r *natPortForwardResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"source_net": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Default:             stringdefault.StaticString("any"),
-				MarkdownDescription: "Source network (`any`, CIDR, or alias).",
+				Default:             stringdefault.StaticString(""),
+				MarkdownDescription: "Source network (`any`, CIDR, or alias). Empty matches OPNsense's unset source.",
 			},
 			"source_port": schema.StringAttribute{
 				Optional:            true,

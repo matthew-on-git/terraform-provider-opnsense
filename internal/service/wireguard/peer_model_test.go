@@ -64,3 +64,39 @@ func TestPeerModelMapsMultipleTunnelAddresses(t *testing.T) {
 		t.Fatalf("fromAPI tunnel_address = %q, want %q", got, want)
 	}
 }
+
+func TestPeerModelOmitsUnsetKeepalive(t *testing.T) {
+	model := PeerResourceModel{
+		Enabled:       types.BoolValue(true),
+		Name:          types.StringValue("no-keepalive-peer"),
+		PublicKey:     types.StringValue("PUBLIC_KEY"),
+		TunnelAddress: types.StringValue("169.254.155.1/32"),
+		ServerAddress: types.StringValue("edge-01.example.invalid"),
+		ServerPort:    types.StringValue("51822"),
+		Keepalive:     types.Int64Null(),
+		Servers:       types.StringValue("server-uuid"),
+	}
+
+	api := model.toAPI(context.Background())
+	if api.Keepalive != "" {
+		t.Fatalf("toAPI keepalive = %q, want empty string for unset keepalive", api.Keepalive)
+	}
+}
+
+func TestPeerModelMapsEmptyKeepaliveToNull(t *testing.T) {
+	var read PeerResourceModel
+	read.fromAPI(context.Background(), &wireguardPeerAPIResponse{
+		Enabled:       "1",
+		Name:          "no-keepalive-peer",
+		PublicKey:     "PUBLIC_KEY",
+		TunnelAddress: opnsense.OrderedSelectedMapList{"169.254.155.1/32"},
+		ServerAddress: "edge-01.example.invalid",
+		ServerPort:    "51822",
+		Keepalive:     "",
+		Servers:       opnsense.SelectedMapList{"server-uuid"},
+	}, "peer-uuid")
+
+	if !read.Keepalive.IsNull() {
+		t.Fatalf("fromAPI keepalive = %#v, want null for empty API keepalive", read.Keepalive)
+	}
+}
