@@ -33,6 +33,7 @@ func (d *natPortForwardDataSource) Schema(_ context.Context, _ datasource.Schema
 				MarkdownDescription: "UUID to look up.",
 			},
 			"enabled":          dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this rule is enabled. Defaults to 'true'."},
+			"sequence":         dsschema.Int64Attribute{Computed: true, MarkdownDescription: "Rule sequence number (1-999999). Controls evaluation order."},
 			"interface":        dsschema.StringAttribute{Computed: true, MarkdownDescription: "Network interface for incoming traffic (e.g., 'wan')."},
 			"ip_protocol":      dsschema.StringAttribute{Computed: true, MarkdownDescription: "IP version: 'inet' (IPv4), 'inet6' (IPv6), or 'inet46' (both)."},
 			"protocol":         dsschema.StringAttribute{Computed: true, MarkdownDescription: "Protocol (e.g., 'tcp', 'udp', 'TCP/UDP')."},
@@ -46,6 +47,7 @@ func (d *natPortForwardDataSource) Schema(_ context.Context, _ datasource.Schema
 			"local_port":       dsschema.StringAttribute{Computed: true, MarkdownDescription: "Internal target port to redirect to."},
 			"log":              dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Log matching packets. Defaults to 'false'."},
 			"description":      dsschema.StringAttribute{Computed: true, MarkdownDescription: "Description of the rule."},
+			"reflection":       dsschema.StringAttribute{Computed: true, MarkdownDescription: "NAT reflection for this rule: `purenat` (enable), `disable`, or empty to use the system default."},
 			"categories":       dsschema.SetAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: "Set of category UUIDs assigned to this rule."},
 		},
 	}

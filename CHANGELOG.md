@@ -2,7 +2,13 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.5.0 (Unreleased)
+## 0.6.0 (Unreleased)
+
+FEATURES:
+
+* Added `sequence` and `reflection` attributes to `opnsense_firewall_nat_port_forward` so NAT order and reflection survive create/recreate.
+
+## 0.5.0 (September 29, 2026)
 
 FEATURES:
 

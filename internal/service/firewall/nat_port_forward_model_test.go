@@ -14,6 +14,7 @@ import (
 func TestNatPortForwardRequestUsesNestedSourceDestination(t *testing.T) {
 	m := NatPortForwardResourceModel{
 		Enabled:         types.BoolValue(true),
+		Sequence:        types.Int64Value(700),
 		Interface:       types.StringValue("wan"),
 		IPProtocol:      types.StringValue("inet"),
 		Protocol:        types.StringValue("tcp"),
@@ -27,6 +28,7 @@ func TestNatPortForwardRequestUsesNestedSourceDestination(t *testing.T) {
 		LocalPort:       types.StringValue("3074"),
 		Log:             types.BoolValue(false),
 		Description:     types.StringValue("probe"),
+		Reflection:      types.StringValue("disable"),
 		Categories:      types.SetNull(types.StringType),
 	}
 
@@ -66,6 +68,12 @@ func TestNatPortForwardRequestUsesNestedSourceDestination(t *testing.T) {
 	if got := destination["port"]; got != "3074" {
 		t.Errorf(`destination.port = %v, want "3074"`, got)
 	}
+	if got := payload["sequence"]; got != "700" {
+		t.Errorf(`sequence = %v, want "700"`, got)
+	}
+	if got := payload["natreflection"]; got != "disable" {
+		t.Errorf(`natreflection = %v, want "disable"`, got)
+	}
 
 	if _, present := payload["source.network"]; present {
 		t.Errorf(`flat "source.network" key still present in payload: %s`, raw)
@@ -75,8 +83,47 @@ func TestNatPortForwardRequestUsesNestedSourceDestination(t *testing.T) {
 	}
 }
 
+// Unset sequence must be OMITTED from the API request (not "0", not "1"):
+// sending "0" is rejected by OPNsense (min 1), and hardcoding "1" would slot
+// new rules to the top of the DNAT order. An omitted field lets OPNsense
+// assign max+100 (append-at-end), which fromAPI then reads back.
+func TestNatPortForwardRequestOmitsUnsetSequence(t *testing.T) {
+	m := NatPortForwardResourceModel{
+		Enabled:         types.BoolValue(true),
+		Interface:       types.StringValue("wan"),
+		IPProtocol:      types.StringValue("inet"),
+		Protocol:        types.StringValue("tcp"),
+		SourceNet:       types.StringValue("any"),
+		DestinationNet:  types.StringValue("wanip"),
+		DestinationPort: types.StringValue("3074"),
+		Target:          types.StringValue("192.168.1.8"),
+		LocalPort:       types.StringValue("3074"),
+		Description:     types.StringValue("probe"),
+		Reflection:      types.StringValue("disable"),
+		Categories:      types.SetNull(types.StringType),
+		// Sequence intentionally left null (never set in config).
+	}
+
+	req := m.toAPI(context.Background())
+
+	raw, err := json.Marshal(req)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+
+	var payload map[string]any
+	if err := json.Unmarshal(raw, &payload); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+
+	if _, present := payload["sequence"]; present {
+		t.Errorf(`sequence present in payload when unset: %s`, raw)
+	}
+}
+
 func TestNatPortForwardResponseNestedRoundTrip(t *testing.T) {
 	const resp = `{
+		"sequence": "700",
 		"disabled": "0",
 		"interface": {"wan": {"value": "WAN", "selected": 1}},
 		"ipprotocol": {"inet": {"value": "IPv4", "selected": 1}},
@@ -87,6 +134,7 @@ func TestNatPortForwardResponseNestedRoundTrip(t *testing.T) {
 		"local-port": "3074",
 		"log": "0",
 		"descr": "probe",
+		"natreflection": {"": {"value": "Use system default", "selected": 0}, "purenat": {"value": "Enable", "selected": 0}, "disable": {"value": "Disable", "selected": 1}},
 		"categories": []
 	}`
 
@@ -106,6 +154,12 @@ func TestNatPortForwardResponseNestedRoundTrip(t *testing.T) {
 	}
 	if got := m.Target.ValueString(); got != "192.168.1.8" {
 		t.Errorf("Target = %q, want %q", got, "192.168.1.8")
+	}
+	if got := m.Sequence.ValueInt64(); got != 700 {
+		t.Errorf("Sequence = %v, want 700", got)
+	}
+	if got := m.Reflection.ValueString(); got != "disable" {
+		t.Errorf("Reflection = %q, want %q", got, "disable")
 	}
 	if m.Enabled.ValueBool() != true {
 		t.Errorf("Enabled = %v, want true (disabled=\"0\")", m.Enabled.ValueBool())

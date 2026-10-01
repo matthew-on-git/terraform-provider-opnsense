@@ -6,6 +6,7 @@ package firewall
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -34,6 +35,14 @@ func (r *natPortForwardResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Computed:            true,
 				Default:             booldefault.StaticBool(true),
 				MarkdownDescription: "Whether this rule is enabled. Defaults to `true`.",
+			},
+			"sequence": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Rule sequence number (1-999999). Controls evaluation order. Unset lets OPNsense append the rule at the end (max+100); an explicit value places it at that position. Leaving it unset on create is safe - OPNsense assigns the next slot and the provider reads it back.",
+				Validators: []validator.Int64{
+					int64validator.Between(1, 999999),
+				},
 			},
 			"interface": schema.StringAttribute{
 				Required:            true,
@@ -105,6 +114,15 @@ func (r *natPortForwardResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Computed:            true,
 				Default:             stringdefault.StaticString(""),
 				MarkdownDescription: "Description of the rule.",
+			},
+			"reflection": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString(""),
+				MarkdownDescription: "NAT reflection for this rule: `purenat` (enable), `disable`, or empty to use the system default.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("", "purenat", "disable"),
+				},
 			},
 			"categories": schema.SetAttribute{
 				ElementType:         types.StringType,

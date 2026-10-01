@@ -42,6 +42,8 @@ output "firewall_nat_port_forward_id" {
 - `local_port` (String) Internal target port to redirect to.
 - `log` (Boolean) Log matching packets. Defaults to 'false'.
 - `protocol` (String) Protocol (e.g., 'tcp', 'udp', 'TCP/UDP').
+- `reflection` (String) NAT reflection for this rule: `purenat` (enable), `disable`, or empty to use the system default.
+- `sequence` (Number) Rule sequence number (1-999999). Controls evaluation order.
 - `source_net` (String) Source network ('any', CIDR, or alias).
 - `source_not` (Boolean) Invert source match. Defaults to 'false'.
 - `source_port` (String) Source port or range. Empty for any.

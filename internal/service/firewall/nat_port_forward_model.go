@@ -17,6 +17,7 @@ import (
 type NatPortForwardResourceModel struct {
 	ID              types.String `tfsdk:"id"`
 	Enabled         types.Bool   `tfsdk:"enabled"`
+	Sequence        types.Int64  `tfsdk:"sequence"`
 	Interface       types.String `tfsdk:"interface"`
 	IPProtocol      types.String `tfsdk:"ip_protocol"`
 	Protocol        types.String `tfsdk:"protocol"`
@@ -30,6 +31,7 @@ type NatPortForwardResourceModel struct {
 	LocalPort       types.String `tfsdk:"local_port"`
 	Log             types.Bool   `tfsdk:"log"`
 	Description     types.String `tfsdk:"description"`
+	Reflection      types.String `tfsdk:"reflection"`
 	Categories      types.Set    `tfsdk:"categories"`
 }
 
@@ -38,6 +40,7 @@ type NatPortForwardResourceModel struct {
 // matching the DNat model's field structure.
 type natPortForwardAPIResponse struct {
 	Disabled    string                   `json:"disabled"`
+	Sequence    string                   `json:"sequence"`
 	Interface   opnsense.SelectedMap     `json:"interface"`
 	IPProtocol  opnsense.SelectedMap     `json:"ipprotocol"`
 	Protocol    opnsense.SelectedMap     `json:"protocol"`
@@ -47,12 +50,17 @@ type natPortForwardAPIResponse struct {
 	LocalPort   string                   `json:"local-port"`
 	Log         string                   `json:"log"`
 	Description string                   `json:"descr"`
+	Reflection  opnsense.SelectedMap     `json:"natreflection"`
 	Categories  opnsense.SelectedMapList `json:"categories"`
 }
 
 // natPortForwardAPIRequest is the struct for marshaling OPNsense POST requests.
 type natPortForwardAPIRequest struct {
-	Disabled    string          `json:"disabled"`
+	Disabled string `json:"disabled"`
+	// Sequence is omitted when unset so OPNsense assigns the next slot
+	// (max+100, append-at-end). A static default of 1 would silently slot new
+	// rules to the top of the DNAT order; sending "0" is rejected (min 1).
+	Sequence    *string         `json:"sequence,omitempty"`
 	Interface   string          `json:"interface"`
 	IPProtocol  string          `json:"ipprotocol"`
 	Protocol    string          `json:"protocol"`
@@ -62,6 +70,7 @@ type natPortForwardAPIRequest struct {
 	LocalPort   string          `json:"local-port"`
 	Log         string          `json:"log"`
 	Description string          `json:"descr"`
+	Reflection  string          `json:"natreflection"`
 	Categories  string          `json:"categories"`
 }
 
@@ -83,8 +92,18 @@ func (m *NatPortForwardResourceModel) toAPI(ctx context.Context) *natPortForward
 		categoriesStr = strings.Join(elements, ",")
 	}
 
+	// Omit sequence when unset so OPNsense assigns the next slot (max+100,
+	// append-at-end). A hardcoded default of 1 would slot new rules to the top
+	// of the DNAT order; sending "0" is rejected (min 1).
+	var sequence *string
+	if !m.Sequence.IsNull() && !m.Sequence.IsUnknown() {
+		s := opnsense.Int64ToString(m.Sequence.ValueInt64())
+		sequence = &s
+	}
+
 	return &natPortForwardAPIRequest{
 		Disabled:   opnsense.BoolToString(!m.Enabled.ValueBool()), // Invert: enabled=true → disabled="0"
+		Sequence:   sequence,
 		Interface:  m.Interface.ValueString(),
 		IPProtocol: m.IPProtocol.ValueString(),
 		Protocol:   m.Protocol.ValueString(),
@@ -102,6 +121,7 @@ func (m *NatPortForwardResourceModel) toAPI(ctx context.Context) *natPortForward
 		LocalPort:   m.LocalPort.ValueString(),
 		Log:         opnsense.BoolToString(m.Log.ValueBool()),
 		Description: m.Description.ValueString(),
+		Reflection:  m.Reflection.ValueString(),
 		Categories:  categoriesStr,
 	}
 }
@@ -124,6 +144,15 @@ func (m *NatPortForwardResourceModel) fromAPI(_ context.Context, a *natPortForwa
 	m.LocalPort = types.StringValue(a.LocalPort)
 	m.Log = types.BoolValue(opnsense.StringToBool(a.Log))
 	m.Description = types.StringValue(a.Description)
+	m.Reflection = types.StringValue(string(a.Reflection))
+
+	// Sequence (required — always has a value).
+	if a.Sequence != "" {
+		seqVal, err := opnsense.StringToInt64(a.Sequence)
+		if err == nil {
+			m.Sequence = types.Int64Value(seqVal)
+		}
+	}
 
 	// Categories — SelectedMapList → types.Set.
 	if len(a.Categories) == 0 {

@@ -56,6 +56,8 @@ resource "opnsense_firewall_nat_port_forward" "ssh" {
 - `ip_protocol` (String) IP version: `inet` (IPv4), `inet6` (IPv6), or `inet46` (both).
 - `log` (Boolean) Log matching packets. Defaults to `false`.
 - `protocol` (String) Protocol (e.g., `tcp`, `udp`, `TCP/UDP`).
+- `reflection` (String) NAT reflection for this rule: `purenat` (enable), `disable`, or empty to use the system default.
+- `sequence` (Number) Rule sequence number (1-999999). Controls evaluation order. Unset lets OPNsense append the rule at the end (max+100); an explicit value places it at that position. Leaving it unset on create is safe - OPNsense assigns the next slot and the provider reads it back.
 - `source_net` (String) Source network (`any`, CIDR, or alias). Empty matches OPNsense's unset source.
 - `source_not` (Boolean) Invert source match. Defaults to `false`.
 - `source_port` (String) Source port or range. Empty for any.
