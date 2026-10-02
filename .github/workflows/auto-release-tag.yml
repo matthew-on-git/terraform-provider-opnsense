@@ -23,6 +23,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: auto-release-tag-${{ github.event.workflow_run.head_sha || github.run_id }}
@@ -100,6 +101,18 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "${tag}" -m "Release ${tag}"
           git push origin "refs/tags/${tag}"
+
+      - name: Start release workflow
+        if: >
+          steps.version.outputs.should_release == 'true' &&
+          steps.existing.outputs.exists == 'false' &&
+          github.event.inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run release.yml --ref "${{ steps.version.outputs.tag }}"
 
       - name: Report decision
         shell: bash
