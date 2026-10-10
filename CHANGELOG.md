@@ -2,7 +2,7 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.6.0 (Unreleased)
+## 0.6.0 (October 10, 2026)
 
 FEATURES:
 
