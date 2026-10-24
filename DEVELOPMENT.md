@@ -596,3 +596,35 @@ All AI agents (Claude, Cursor, OpenCode, Windsurf, and others) operating on DevR
 6. **Consult per-language sections for tool-specific guidance.** Each language section above defines which tools run and how.
 
 Agent shim files use a hybrid strategy: critical rules are inlined directly in the shim, and the shim contains a pointer to this DEVELOPMENT.md for full standards. This ensures critical behaviors are present regardless of whether the agent follows cross-references.
+
+## Provider Release Automation
+
+The provider uses `.github/workflows/auto-release-tag.yml` and `release.yml`.
+Merging alone is not sufficient: a successful **push** `CI` run on `main`
+triggers Auto Release Tag, which reads a `## X.Y.Z (Unreleased)` heading in
+`CHANGELOG.md`. If the corresponding `vX.Y.Z` tag does not exist, it creates the
+tag at that verified commit and explicitly dispatches Release. GoReleaser then
+builds platform archives, manifest, checksums and their signature for the GitHub
+release consumed by the Terraform Registry. No matching heading or an existing
+tag means no new release. PR CI does not publish releases.
+
+Before opening a releasable provider PR:
+
+1. Compare the current changelog, published versions and remote tags. Reuse an
+   existing unreleased section or choose the next semantic version; do not reuse
+   a published version.
+2. Add user-visible changes and migration notes to that versioned section in the
+   same PR. When preparing a catch-up release, cover every merged provider change
+   since the last release. Explicitly explain docs/planning-only exemptions.
+3. Run `make check` and state the proposed version in the PR. Treat merging a
+   new release heading as authorization for the automatic publication path.
+
+After merge, verify successful main CI, the Auto Release Tag decision and tag
+SHA, then the Release workflow and actual assets. Verify Registry availability
+separately; a green CI run or tag alone is not proof of publication. Do not race
+pending automation with manual tagging. If a correct tag exists without a
+release, investigate dispatch/Release logs and recover that release at the same
+verified tag rather than moving the tag or inventing a new version.
+
+After successful publication, finalize the changelog heading with its release
+date. Subsequent provider changes need a new versioned unreleased section.

@@ -2,6 +2,34 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.7.0 (Unreleased)
+
+UPGRADE NOTES:
+
+* WireGuard multi-value fields now use Terraform sets; existing scalar state upgrades without replacement, but configuration must use set syntax. Server `peers` owns associations and peer `servers` is computed. Preserve complete memberships and existing PSKs before applying; omitting a peer PSK disables it on update. See the WireGuard resource migration guides.
+* BGP compatibility now detects the installed `os-frr` package and model, requiring read permission for `/api/core/firmware/info`. Unknown or contradictory plugin capabilities fail closed. The FRR 2.0 live proof covers `os-frr` 2.0_1 on OPNsense 26.7.7; it does not establish live compatibility with every legacy plugin or OpenTofu.
+
+FEATURES:
+
+* Added `opnsense_interface_assignment` to adopt existing interface assignments and manage the documented safe IP/DHCP settings through the expanded OPNsense 26.7.6+ API.
+* Added Kea DHCPv6 delegated-prefix-pool and HA-peer resources/data sources, and expanded DHCPv4/DHCPv6 subnet option and field coverage.
+* Added an OpenVPN static-key data source and `opnsense_openvpn_generate_key` ephemeral resource. Ephemeral key generation requires Terraform 1.10+ and OPNsense 26.7.6+; its output cannot feed ordinary persisted resource attributes.
+* Added an Unbound settings data source and expanded general, DNS blocklist, domain override and forwarding configuration coverage.
+* Added core WireGuard settings resource/data source and expanded typed peer/server fields and relationships.
+
+IMPROVEMENTS:
+
+* Expanded firewall alias, filter-rule and NAT port-forward field coverage, including matching data-source fields.
+* Expanded OpenVPN instance and client-overwrite field coverage and key handling.
+* Added explicit IPv4/IPv6 BGP family support and installed-plugin-aware legacy/FRR 2.0 serialization, logical grouped-policy identity and canonical import handling.
+* Raised the build/CI/release Go security baseline to 1.26.10 and aligned DevRail tooling to 1.12.24.
+
+BUG FIXES:
+
+* Preserve BGP family intent and UUIDs during version-0 state migration, grouped-policy associations on read/import, and saved-mutation activation recovery after interrupted or ambiguous API responses.
+* Preserve WireGuard server membership during peer updates, normalize valid empty selectors, and retain saved write-only key rotations through activation failure/restart recovery. Data sources do not expose secrets.
+* Harden lifecycle validation and state recovery for the expanded firewall, Kea, OpenVPN and Unbound surfaces.
+
 ## 0.6.0 (October 10, 2026)
 
 FEATURES:
