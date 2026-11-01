@@ -7,6 +7,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -71,7 +73,11 @@ func (r *natPortForwardResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	apiReq := plan.toAPI(ctx)
+	apiReq, err := r.prepareAPI(ctx, &plan)
+	if err != nil {
+		resp.Diagnostics.AddError("Error resolving NAT port-forward categories", err.Error())
+		return
+	}
 	plannedInterface := plan.Interface
 
 	uuid, err := opnsense.Add(ctx, r.client, natPortForwardReqOpts, apiReq)
@@ -175,11 +181,15 @@ func (r *natPortForwardResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	apiReq := plan.toAPI(ctx)
+	apiReq, err := r.prepareAPI(ctx, &plan)
+	if err != nil {
+		resp.Diagnostics.AddError("Error resolving NAT port-forward categories", err.Error())
+		return
+	}
 	plannedInterface := plan.Interface
 	id := state.ID.ValueString()
 
-	err := opnsense.Update(ctx, r.client, natPortForwardReqOpts, apiReq, id)
+	err = opnsense.Update(ctx, r.client, natPortForwardReqOpts, apiReq, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating NAT port-forward rule",
@@ -231,4 +241,36 @@ func (r *natPortForwardResource) Delete(ctx context.Context, req resource.Delete
 // ImportState imports an existing NAT port-forward rule by UUID.
 func (r *natPortForwardResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+// prepareAPI retains UUIDs in Terraform while resolving names for DNat writes.
+// OPNsense's plural "categories" is a volatile read mapper: writing UUIDs there
+// is silently ignored. The persisted singular "category" field accepts names.
+func (r *natPortForwardResource) prepareAPI(ctx context.Context, plan *NatPortForwardResourceModel) (*natPortForwardAPIRequest, error) {
+	request := plan.toAPI(ctx)
+	// Optional/computed categories may be unknown when omitted. Preserve remote
+	// labels in that case; an explicitly empty set must instead clear them.
+	if plan.Categories.IsNull() || plan.Categories.IsUnknown() {
+		return request, nil
+	}
+	var ids []string
+	if diags := plan.Categories.ElementsAs(ctx, &ids, false); diags.HasError() {
+		return nil, fmt.Errorf("category UUIDs must be known strings: %v", diags)
+	}
+	sort.Strings(ids)
+	names := make([]string, 0, len(ids))
+	for _, id := range ids {
+		category, err := opnsense.Get[categoryAPIResponse](ctx, r.client, categoryReqOpts, id)
+		if err != nil {
+			return nil, fmt.Errorf("resolve category %q before writing NAT rule: %w", id, err)
+		}
+		if strings.TrimSpace(category.Name) == "" || strings.Contains(category.Name, ",") {
+			return nil, fmt.Errorf("category %q has an empty or comma-containing name that cannot be serialized", id)
+		}
+		names = append(names, category.Name)
+	}
+	sort.Strings(names)
+	value := strings.Join(names, ",")
+	request.Category = &value
+	return request, nil
 }

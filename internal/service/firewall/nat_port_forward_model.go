@@ -73,7 +73,7 @@ type natPortForwardAPIRequest struct {
 	Log         string          `json:"log"`
 	Description string          `json:"descr"`
 	Reflection  string          `json:"natreflection"`
-	Categories  string          `json:"categories"`
+	Category    *string         `json:"category,omitempty"`
 }
 
 // natDNatEndpoint is the nested source/destination matcher object the DNat API
@@ -87,14 +87,6 @@ type natDNatEndpoint struct {
 // toAPI converts the Terraform model to an API request struct.
 // NOTE: The API uses "disabled" (inverted logic) — we invert the Terraform "enabled" value.
 func (m *NatPortForwardResourceModel) toAPI(ctx context.Context) *natPortForwardAPIRequest {
-	var categoriesStr string
-	if !m.Categories.IsNull() && !m.Categories.IsUnknown() {
-		var elements []string
-		m.Categories.ElementsAs(ctx, &elements, false)
-		sort.Strings(elements)
-		categoriesStr = strings.Join(elements, ",")
-	}
-
 	// Omit sequence when unset so OPNsense assigns the next slot (max+100,
 	// append-at-end). A hardcoded default of 1 would slot new rules to the top
 	// of the DNAT order; sending "0" is rejected (min 1).
@@ -130,7 +122,6 @@ func (m *NatPortForwardResourceModel) toAPI(ctx context.Context) *natPortForward
 		Log:         opnsense.BoolToString(m.Log.ValueBool()),
 		Description: m.Description.ValueString(),
 		Reflection:  m.Reflection.ValueString(),
-		Categories:  categoriesStr,
 	}
 }
 

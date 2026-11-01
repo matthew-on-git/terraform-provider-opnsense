@@ -2,7 +2,17 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.10.0 (Unreleased)
+## 0.10.1 (Unreleased)
+
+UPGRADE NOTES:
+
+* NAT port-forward create/update with categories now requires read access to `/api/firewall/category/getItem/<uuid>`. Existing category UUID configuration and state remain unchanged.
+
+BUG FIXES:
+
+* Resolve NAT port-forward category UUIDs to names when writing the persisted `category` field, preserving UUID state and supporting explicit label clearing. Unknown or omitted categories leave existing labels unchanged; failed lookups abort before rule mutation.
+
+## 0.10.0 (October 26, 2026)
 
 FEATURES:
 

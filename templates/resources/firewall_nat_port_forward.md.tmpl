@@ -11,6 +11,8 @@ Manages a NAT port-forward rule on OPNsense. Port-forward rules redirect inbound
 
 Use `interfaces` for lossless multi-interface rules. The deprecated scalar `interface` remains available for existing configurations; configuring both requires the scalar to be a member of the set.
 
+`categories` remains a set of category UUIDs. Before create/update, the provider reads each category using `/api/firewall/category/getItem/<uuid>` and writes its name to the DNat API's singular `category` field. Grant category-read access to the API user. An explicit empty set clears labels; omitted/computed categories are preserved.
+
 ## Example Usage
 
 {{tffile "examples/resources/opnsense_firewall_nat_port_forward/resource.tf"}}
