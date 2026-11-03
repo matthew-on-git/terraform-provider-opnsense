@@ -96,3 +96,10 @@ so that we know exactly when interface IP configuration can be safely implemente
 - Reviewed model blob transitions: `master` `53d351938c60fa3334b123c9a5d13454fd60d65c` → `4fae64840308390c95857888e73dfca6136d8379`; `stable/26.7` `b43147511612454e292429d5961e90ea0ef0d122` → `85e25100479392d5d5af13b12eb72f5aa25d3290`.
 - A fresh live probe differs from the old baseline only in those two model SHAs. Required-field detection, controller SHAs, actions, all tagged-release evidence and `first_released_tag = 26.7.6` are unchanged. Refresh the two reviewed hashes while preserving byte-for-byte comparison and all drift checks.
 - This is monitoring evidence maintenance, not a new provider feature, firmware upgrade or appliance acceptance claim. No provider code, probe logic or release heading is changed. The workflow also runs for probe/baseline/workflow changes in PRs and on main, so reviewed baseline updates get hosted validation before and after merge without a separate manual dispatch. Weekly/manual triggers and exact drift comparison remain enabled.
+
+### 2026-11-02 reviewed rolling-tag baseline refresh
+
+- The rolling 12-tag window now includes OPNsense `26.7.8` (`96978001a8343669154e4492172ce0a07dac7e4b`) instead of `26.7.r`. Every common ref and all non-result report metadata remain unchanged.
+- Retrieved and verified both new-tag source blobs: model `85e25100479392d5d5af13b12eb72f5aa25d3290` and controller `61193fc27a8c0fa77a0c77b5c708bb371d92c1ba`. Their complete contents match the previously reviewed `stable/26.7` blobs byte-for-byte; all 18 watched fields and both actions are present.
+- Preserve explicit boundary evidence: `26.7.5` remains incomplete, `26.7.6` remains complete and the first released tag. Exact baseline comparison, rolling-window size, weekly checks and PR/main triggers are unchanged.
+- Validate with probe unit tests, two independent live upstream probes matching the refreshed baseline byte-for-byte, and the full local `make check` gate. This refresh changes monitoring evidence only, not provider behavior or support claims; no release heading or live-appliance acceptance claim is added.
