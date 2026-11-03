@@ -157,6 +157,40 @@
     },
     {
       "ref": {
+        "name": "26.7.8",
+        "sha": "96978001a8343669154e4492172ce0a07dac7e4b",
+        "kind": "tag"
+      },
+      "model_url": "https://github.com/opnsense/core/blob/26.7.8/src/opnsense/mvc/app/models/OPNsense/Interfaces/NetworkInterface.xml",
+      "model_sha": "85e25100479392d5d5af13b12eb72f5aa25d3290",
+      "controller_url": "https://github.com/opnsense/core/blob/26.7.8/src/opnsense/mvc/app/controllers/OPNsense/Interfaces/Api/AssignmentController.php",
+      "controller_sha": "61193fc27a8c0fa77a0c77b5c708bb371d92c1ba",
+      "fields": {
+        "dhcp6-information-only": true,
+        "dhcp6_rapid_commit": true,
+        "dhcp6_request_dns": true,
+        "dhcp6_request_options": true,
+        "dhcp6_send_options": true,
+        "dhcp6vlanprio": true,
+        "dhcp_request_options": true,
+        "dhcp_send_options": true,
+        "dhcphonourmtu": true,
+        "dhcphostname": true,
+        "dhcprejectfrom": true,
+        "dhcpvlanprio": true,
+        "gateway": true,
+        "gatewayv6": true,
+        "ipaddr": true,
+        "ipaddrv6": true,
+        "type4": true,
+        "type6": true
+      },
+      "set_item": true,
+      "reconfigure": true,
+      "complete": true
+    },
+    {
+      "ref": {
         "name": "26.7.7",
         "sha": "f1a83f72b144469fd97839aba2419ad130d19043",
         "kind": "tag"
@@ -470,40 +504,6 @@
       "model_url": "https://github.com/opnsense/core/blob/26.7.r1/src/opnsense/mvc/app/models/OPNsense/Interfaces/NetworkInterface.xml",
       "model_sha": "519d7e35682c2f87e966413546a6ecd3a79fafb0",
       "controller_url": "https://github.com/opnsense/core/blob/26.7.r1/src/opnsense/mvc/app/controllers/OPNsense/Interfaces/Api/AssignmentController.php",
-      "controller_sha": "2ae74620dda8fa1f0b9f74fe2af2dd02f49eb569",
-      "fields": {
-        "dhcp6-information-only": false,
-        "dhcp6_rapid_commit": false,
-        "dhcp6_request_dns": false,
-        "dhcp6_request_options": false,
-        "dhcp6_send_options": false,
-        "dhcp6vlanprio": false,
-        "dhcp_request_options": false,
-        "dhcp_send_options": false,
-        "dhcphonourmtu": false,
-        "dhcphostname": false,
-        "dhcprejectfrom": false,
-        "dhcpvlanprio": false,
-        "gateway": false,
-        "gatewayv6": false,
-        "ipaddr": false,
-        "ipaddrv6": false,
-        "type4": false,
-        "type6": false
-      },
-      "set_item": true,
-      "reconfigure": true,
-      "complete": false
-    },
-    {
-      "ref": {
-        "name": "26.7.r",
-        "sha": "70be6992f8e30cd8b35cedb7fc985f3942ccd29b",
-        "kind": "tag"
-      },
-      "model_url": "https://github.com/opnsense/core/blob/26.7.r/src/opnsense/mvc/app/models/OPNsense/Interfaces/NetworkInterface.xml",
-      "model_sha": "519d7e35682c2f87e966413546a6ecd3a79fafb0",
-      "controller_url": "https://github.com/opnsense/core/blob/26.7.r/src/opnsense/mvc/app/controllers/OPNsense/Interfaces/Api/AssignmentController.php",
       "controller_sha": "2ae74620dda8fa1f0b9f74fe2af2dd02f49eb569",
       "fields": {
         "dhcp6-information-only": false,
