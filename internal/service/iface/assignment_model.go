@@ -22,29 +22,35 @@ import (
 // AssignmentResourceModel is the Terraform state model for an existing base
 // interface assignment. The assignment name is both its API key and state ID.
 type AssignmentResourceModel struct {
-	ID                   types.String `tfsdk:"id"`
-	Name                 types.String `tfsdk:"name"`
-	Enabled              types.Bool   `tfsdk:"enabled"`
-	IPv4Mode             types.String `tfsdk:"ipv4_mode"`
-	IPv4Address          types.String `tfsdk:"ipv4_address"`
-	IPv4PrefixLength     types.Int64  `tfsdk:"ipv4_prefix_length"`
-	IPv4Gateway          types.String `tfsdk:"ipv4_gateway"`
-	IPv6Mode             types.String `tfsdk:"ipv6_mode"`
-	IPv6Address          types.String `tfsdk:"ipv6_address"`
-	IPv6PrefixLength     types.Int64  `tfsdk:"ipv6_prefix_length"`
-	IPv6Gateway          types.String `tfsdk:"ipv6_gateway"`
-	DHCPHostname         types.String `tfsdk:"dhcp_hostname"`
-	DHCPRejectFrom       types.Set    `tfsdk:"dhcp_reject_from"`
-	DHCPHonorMTU         types.Bool   `tfsdk:"dhcp_honor_mtu"`
-	DHCPVLANPriority     types.String `tfsdk:"dhcp_vlan_priority"`
-	DHCPSendOptions      types.String `tfsdk:"dhcp_send_options"`
-	DHCPRequestOptions   types.String `tfsdk:"dhcp_request_options"`
-	DHCP6VLANPriority    types.String `tfsdk:"dhcp6_vlan_priority"`
-	DHCP6RequestDNS      types.Bool   `tfsdk:"dhcp6_request_dns"`
-	DHCP6InformationOnly types.Bool   `tfsdk:"dhcp6_information_only"`
-	DHCP6RapidCommit     types.Bool   `tfsdk:"dhcp6_rapid_commit"`
-	DHCP6SendOptions     types.String `tfsdk:"dhcp6_send_options"`
-	DHCP6RequestOptions  types.String `tfsdk:"dhcp6_request_options"`
+	IPv6TrackInterface        types.String `tfsdk:"ipv6_track_interface"`
+	IPv6PrefixID              types.String `tfsdk:"ipv6_prefix_id"`
+	IPv6InterfaceID           types.String `tfsdk:"ipv6_interface_id"`
+	IPv6PrefixRange           types.String `tfsdk:"ipv6_prefix_range"`
+	IPv6IdentityAssociationID types.String `tfsdk:"ipv6_identity_association_id"`
+	IPv6AllowManualDHCPv6     types.Bool   `tfsdk:"ipv6_allow_manual_dhcpv6"`
+	ID                        types.String `tfsdk:"id"`
+	Name                      types.String `tfsdk:"name"`
+	Enabled                   types.Bool   `tfsdk:"enabled"`
+	IPv4Mode                  types.String `tfsdk:"ipv4_mode"`
+	IPv4Address               types.String `tfsdk:"ipv4_address"`
+	IPv4PrefixLength          types.Int64  `tfsdk:"ipv4_prefix_length"`
+	IPv4Gateway               types.String `tfsdk:"ipv4_gateway"`
+	IPv6Mode                  types.String `tfsdk:"ipv6_mode"`
+	IPv6Address               types.String `tfsdk:"ipv6_address"`
+	IPv6PrefixLength          types.Int64  `tfsdk:"ipv6_prefix_length"`
+	IPv6Gateway               types.String `tfsdk:"ipv6_gateway"`
+	DHCPHostname              types.String `tfsdk:"dhcp_hostname"`
+	DHCPRejectFrom            types.Set    `tfsdk:"dhcp_reject_from"`
+	DHCPHonorMTU              types.Bool   `tfsdk:"dhcp_honor_mtu"`
+	DHCPVLANPriority          types.String `tfsdk:"dhcp_vlan_priority"`
+	DHCPSendOptions           types.String `tfsdk:"dhcp_send_options"`
+	DHCPRequestOptions        types.String `tfsdk:"dhcp_request_options"`
+	DHCP6VLANPriority         types.String `tfsdk:"dhcp6_vlan_priority"`
+	DHCP6RequestDNS           types.Bool   `tfsdk:"dhcp6_request_dns"`
+	DHCP6InformationOnly      types.Bool   `tfsdk:"dhcp6_information_only"`
+	DHCP6RapidCommit          types.Bool   `tfsdk:"dhcp6_rapid_commit"`
+	DHCP6SendOptions          types.String `tfsdk:"dhcp6_send_options"`
+	DHCP6RequestOptions       types.String `tfsdk:"dhcp6_request_options"`
 }
 
 // assignmentAPIResponse retains the complete assignment object. Update
@@ -222,6 +228,12 @@ func (m *AssignmentResourceModel) applyToAPI(ctx context.Context, current *assig
 	setAssignmentMode("type4", m.IPv4Mode)
 	setString("gateway", m.IPv4Gateway)
 	setAssignmentMode("type6", m.IPv6Mode)
+	setString("track6-interface", m.IPv6TrackInterface)
+	setString("track6-prefix-id", m.IPv6PrefixID)
+	setString("track6_ifid", m.IPv6InterfaceID)
+	setString("track6_prefix_range", m.IPv6PrefixRange)
+	setString("track6_assoc_pd", m.IPv6IdentityAssociationID)
+	setBool("dhcpd6track6allowoverride", m.IPv6AllowManualDHCPv6)
 	setString("gatewayv6", m.IPv6Gateway)
 	setString("dhcphostname", m.DHCPHostname)
 	if !m.DHCPRejectFrom.IsNull() && !m.DHCPRejectFrom.IsUnknown() {
@@ -259,10 +271,27 @@ func (m *AssignmentResourceModel) applyToAPI(ctx context.Context, current *assig
 			request["gatewayv6"] = ""
 		}
 	}
+	if mode, _ := request["type6"].(string); mode == "idassoc6" || mode == "track6" {
+		for _, key := range assignmentDelegationAPIFields {
+			if _, ok := current.Raw[key]; !ok {
+				return nil, &assignmentCompatibilityError{detail: "Assignment API response is missing delegation field " + key + "."}
+			}
+		}
+		parent, _ := request["track6-interface"].(string)
+		if parent == "" || parent == m.Name.ValueString() {
+			return nil, fmt.Errorf("identity association and track-interface modes require a distinct parent interface")
+		}
+	}
 	return &request, nil
 }
 
 func (m *AssignmentResourceModel) fromAPI(_ context.Context, a *assignmentAPIResponse, name string) error {
+	m.IPv6TrackInterface = types.StringValue(a.stringValue("track6-interface"))
+	m.IPv6PrefixID = types.StringValue(a.stringValue("track6-prefix-id"))
+	m.IPv6InterfaceID = types.StringValue(a.stringValue("track6_ifid"))
+	m.IPv6PrefixRange = types.StringValue(a.stringValue("track6_prefix_range"))
+	m.IPv6IdentityAssociationID = types.StringValue(a.stringValue("track6_assoc_pd"))
+	m.IPv6AllowManualDHCPv6 = types.BoolValue(opnsense.StringToBool(a.stringValue("dhcpd6track6allowoverride")))
 	m.ID = types.StringValue(name)
 	m.Name = types.StringValue(name)
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.stringValue("enable")))

@@ -2,6 +2,16 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.11.0 (Unreleased)
+
+FEATURES:
+
+* Extend `opnsense_interface_assignment` adoption and updates to IPv6 identity association (`idassoc6`) and legacy track-interface (`track6`), including parent interface, prefix/interface IDs, prefix range, association ID, and the legacy manual DHCPv6 override.
+
+UPGRADE NOTES:
+
+* Assignment adoption remains opt-in and requires an existing assignment and the expanded OPNsense API. Omitted fields preserve saved values; empty/default association settings remain distinct from explicit zero. No automatic mode migration or upstream DHCPv6 client ownership is introduced. Validate read/import with a no-change plan and test writes on a disposable interface before changing production networking.
+
 ## 0.10.1 (Unreleased)
 
 UPGRADE NOTES:
