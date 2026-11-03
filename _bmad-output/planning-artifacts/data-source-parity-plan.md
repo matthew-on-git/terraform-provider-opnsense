@@ -1,6 +1,6 @@
 ---
 title: Data Source Parity Plan
-date: 2026-06-02
+date: 2026-11-03
 author: BMad Dev
 status: current
 inputs:
@@ -22,13 +22,13 @@ This plan defines the remaining data-source work after v0.1.0. It is an implemen
 
 | Check | Command | Result |
 |---|---|---:|
-| Registered resources | Provider registration metadata | 108 |
-| Registered data sources | Provider registration metadata | 92 |
-| Resource docs | `find docs/resources -name '*.md'` | 108 |
-| Data-source docs | `find docs/data-sources -name '*.md'` | 92 |
-| Resource-matching data-source gaps | Resource doc basenames minus data-source doc basenames | 17 |
+| Registered resources | Provider registration metadata | 112 |
+| Registered data sources | Provider registration metadata | 98 |
+| Resource docs | `find docs/resources -name '*.md'` | 112 |
+| Data-source docs | `find docs/data-sources -name '*.md'` | 98 |
+| Resource-matching data-source gaps | Resource doc basenames minus data-source doc basenames | 16 |
 
-No mismatch was found between registered implementation counts and generated documentation counts. The gap is 17, not 106 minus 90, because `system_info` is a standalone data source without a matching resource. The canonical names and drift checks now live in `provider-ecosystem-coverage-audit.json` and `internal/coverageaudit`.
+No mismatch was found between registered implementation counts and generated documentation counts. The current gap is 16, not 112 minus 98, because `system_info` and `unbound_settings` are standalone data-source names without same-name resources. The OpenVPN static-key lookup is now published (v0.7.0), so it is not a remaining gap. The canonical names and drift checks now live in `provider-ecosystem-coverage-audit.json` and `internal/coverageaudit`.
 
 ## Existing Data Sources
 
@@ -45,7 +45,6 @@ The complete deterministic inventory is the set registered by `OpnsenseProvider.
 | kea_ctrl_agent | Kea | No | Singleton | Low | 4 | Singleton read pattern may differ from UUID resources. |
 | kea_dhcpv4_settings | Kea | No | Singleton | Low | 4 | Singleton/settings pattern. |
 | kea_dhcpv6_settings | Kea | No | Singleton | Low | 4 | Singleton/settings pattern. |
-| openvpn_static_key | OpenVPN | No | UUID-backed-special | Medium | 4 | Key material may be write-only/sensitive. |
 | quagga_bgp_global | Quagga / FRR | No | Singleton | Low | 4 | Singleton resource. |
 | quagga_general | Quagga / FRR | No | Singleton | Low | 4 | Singleton resource. |
 | quagga_ospf6_general | Quagga / FRR | No | Singleton | Low | 4 | Singleton resource; sub-resource data sources exist. |
@@ -144,7 +143,6 @@ Goal: keep non-standard cases from blocking straightforward UUID-backed data sou
 | unbound_dnsbl | `internal/service/unbound/dnsbl_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
 | ipsec_psk | `internal/service/ipsec/psk_*` | UUID-backed-special | Data-source docs/example | Secret material is write-only. |
 | ipsec_key_pair | `internal/service/ipsec/keypair_*` | UUID-backed-special | Data-source docs/example | Private key is write-only. |
-| openvpn_static_key | `internal/service/openvpn/static_key_*` | UUID-backed-special | Data-source docs/example | Key material is write-only. |
 | trust_cert | `internal/service/trust/cert_*` | UUID-backed-special | Data-source docs/example | Private key/certificate material sensitivity. |
 
 ## Deferred and Exception Rules
