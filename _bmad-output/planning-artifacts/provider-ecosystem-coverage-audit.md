@@ -2,7 +2,7 @@
 
 Pinned baseline: `browningluke/opnsense` v0.26.0 at `33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba` (47 resources, 45 data sources, 1 ephemeral resource, and provider retry configuration).
 
-Current local inventory: **112 resources and 98 data sources**, with 112/98 generated docs. There are **16 resource-only same-name data-source gaps** and the data-only surfaces are `system_info`, `unbound_settings`.
+Current local inventory: **113 resources and 99 data sources**, with 113/99 generated docs. There are **16 resource-only same-name data-source gaps** and the data-only surfaces are `system_info`, `unbound_settings`.
 
 ## Ownership Direction
 
@@ -467,14 +467,14 @@ Use one provider per appliance and object domain in steady state. Never configur
 
 #### `resource:trust_settings` — missing-buildable
 
-- **Domain / local mapping:** Trust / none
+- **Domain / local mapping:** Trust / `trust_settings`
 - **Baseline fields:** cipher_string, enable_config_constraints, enable_legacy_sect, fetch_crls, id, install_crls, store_intermediate_certs
 - **Shared semantics:** same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema
-- **Baseline-only:** global cipher, OpenSSL legacy/constraint, CRL fetch/install, and intermediate-store settings have no local singleton
-- **Local-only:** none material
-- **Lifecycle:** import-first singleton; update/reconfigure; destroy removes Terraform state without deleting upstream settings
+- **Baseline-only:** No missing audited six-field owner/lookup; five additional upstream TLS fields remain deliberately unaudited and unmanaged.
+- **Local-only:** Import-first six-field singleton implementation; HTTP-backed framework/protocol tests, not appliance or release evidence.
+- **Lifecycle:** Fixed trust_settings import; targeted update/read/reconfigure, durable saved/uncertain recovery without repeated set, state-only Delete. Disposable lifecycle not executed; full Trust action parity remains outstanding.
 - **Sensitive/write-only:** none
-- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/resources/trust_settings.md; internal/provider/provider.go
+- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/resources/trust_settings.md; internal/provider/provider.go; internal/service/trust/settings_resource.go; internal/service/trust/settings_protocol_test.go; _bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md
 - **Follow-up:** `_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md`
 
 #### `resource:unbound_acl` — covered
@@ -973,14 +973,14 @@ Use one provider per appliance and object domain in steady state. Never configur
 
 #### `data-source:trust_settings` — missing-buildable
 
-- **Domain / local mapping:** Trust / none
+- **Domain / local mapping:** Trust / `trust_settings`
 - **Baseline fields:** cipher_string, enable_config_constraints, enable_legacy_sect, fetch_crls, id, install_crls, store_intermediate_certs
 - **Shared semantics:** same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema
-- **Baseline-only:** global cipher, OpenSSL legacy/constraint, CRL fetch/install, and intermediate-store settings have no local singleton
-- **Local-only:** none material
-- **Lifecycle:** read-only API lookup; operational interface rows read live state rather than durable configuration
+- **Baseline-only:** No missing audited six-field owner/lookup; five additional upstream TLS fields remain deliberately unaudited and unmanaged.
+- **Local-only:** Read-only six-field lookup with authoritative values, strict Boolean/selected-choice decoding, fixed computed identity and drift observations; HTTP-backed protocol evidence only.
+- **Lifecycle:** GET-only lookup; no import, update, delete, mutation, activation or recovery ownership. Disposable appliance read acceptance and broader Trust lifecycle follow-up remain outstanding.
 - **Sensitive/write-only:** none
-- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/trust_settings.md; internal/provider/provider.go
+- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/trust_settings.md; internal/provider/provider.go; internal/service/trust/settings_data_source.go; internal/service/trust/settings_protocol_test.go; _bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md
 - **Follow-up:** `_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md`
 
 #### `data-source:unbound_acl` — covered

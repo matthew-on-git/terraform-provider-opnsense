@@ -13,3 +13,7 @@
 ## Deferred from: v0.3.0 release follow-up (2026-06-18)
 
 - GitHub Actions emitted Node.js 20 deprecation warnings for upstream actions during the successful `v0.3.0` release workflow. The repository already uses current major action pins (`actions/checkout@v4`, `actions/setup-go@v5`, `crazy-max/ghaction-import-gpg@v6`, and `goreleaser/goreleaser-action@v6`), so treat this as ecosystem maintenance unless a future workflow starts failing.
+
+## Deferred from: Trust settings increment review (2026-11-03)
+
+- Shared `pkg/opnsense/client.go` has no explicit HTTP deadline when callers supply none. Caller cancellation remains supported/tested. Define a provider-wide deadline policy alongside transport diagnostics rather than an arbitrary Trust-only timeout; this is not closed by configurable retry/backoff Story31.0j alone.

@@ -1,0 +1,61 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Trust"
+description: |-
+  Reads or manages the six audited Trust settings.
+---
+
+# {{.Name}} ({{.Type}})
+
+Uses the released OPNsense 26.7.8 Trust general settings API. This increment
+covers five Boolean policies and the selected `CipherString` choice keys only.
+It does not manage `Ciphersuites`, `SignatureAlgorithms`, `groups`, `MinProtocol`
+or `MinProtocol_DTLS`, CA/certificate actions or full Trust lifecycle parity.
+
+## Example Usage
+
+{{tffile "examples/resources/opnsense_trust_settings/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Adoption and ownership
+
+Create never resets or saves settings: import the exact fixed ID `trust_settings`
+first. Omitted fields preserve authoritative appliance/imported/prior policy,
+including when removing an argument. There are no static defaults. Explicit
+`false` and an empty `cipher_string` set are real clears. Unknown configured
+values or members must resolve before any save. Only configured fields are
+written under the `trust` envelope; unrelated policy is never echoed back.
+Use only one owner for these fields.
+
+The provider needs GET `/api/trust/settings/get`, POST
+`/api/trust/settings/set` and POST `/api/trust/settings/reconfigure` permissions.
+The global mutation mutex covers baseline, save, read-back and activation.
+If an omitted known planned value changed since planning, apply fails before saving;
+refresh and create a fresh plan. Nonempty private intent is stored before saving.
+Save and activation POSTs are single-attempt and refuse redirects; duplicate,
+case-aliased or contradictory outcomes retain pending recovery.
+Malformed material fields fail closed instead of silently clearing selections.
+
+## Recovery and destruction
+
+Confirmed or uncertain saves retain fixed identity, known state and canonical
+private requested intent. Preserve returned Terraform state and refresh. Recovery
+observes authoritative fields before activation and never repeats set. Matching
+requested fields permit reconfigure; contradictory truth clears pending intent
+without activation and requires a fresh plan. Invalid/unavailable truth retains
+pending intent. Validation failures remain errors. Activation requires affirmative
+`status=ok`; fixture/protocol success is not appliance or release proof.
+
+Delete itself makes zero HTTP calls, even with pending state or an unavailable
+client. It removes ownership only and never resets shared settings. Normal Core
+planning refresh before Delete can read, recover or activate pending settings;
+an entire `terraform destroy` is not promised to be zero-API. Direct Delete with
+pending intent abandons activation, without reverting saved settings.
+
+## Import
+
+{{codefile "shell" "examples/resources/opnsense_trust_settings/import.sh"}}
+
+Evidence is HTTP-backed framework/protocol testing against released source contracts.
+No disposable-appliance lifecycle or older-core/OpenTofu acceptance was executed.

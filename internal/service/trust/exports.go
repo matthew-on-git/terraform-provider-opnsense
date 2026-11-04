@@ -14,6 +14,7 @@ func Resources() []func() resource.Resource {
 	return []func() resource.Resource{
 		newCAResource,
 		newCertResource,
+		newSettingsResource,
 	}
 }
 
@@ -21,5 +22,6 @@ func Resources() []func() resource.Resource {
 func DataSources() []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		newCADataSource,
+		newSettingsDataSource,
 	}
 }

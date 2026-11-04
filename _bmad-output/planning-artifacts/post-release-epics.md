@@ -17,7 +17,7 @@ The first provider version is published. Completed post-release work closed the 
 
 ## Epic 25B: Data Source Parity
 
-Goal: close straightforward data-source parity gaps and leave only singleton or sensitive special-case follow-up work. Epic 25B completed the historical move from 34 to 76 supported data sources; subsequent work brings the current inventory to 92 data sources and 17 resource-matching gaps.
+Goal: close straightforward data-source parity gaps and leave only singleton or sensitive special-case follow-up work. Epic 25B completed the historical move from 34 to 76 supported data sources; subsequent work brings the published v0.11.0 inventory to 98 data sources and 16 resource-matching gaps.
 
 | Story | Status | File |
 |---|---|---|
@@ -99,17 +99,17 @@ Goal: make this provider complete enough to be the default provider choice for a
 | 31.0b Kea Field and Surface Parity | done | `_bmad-output/implementation-artifacts/31-0b-kea-field-and-surface-parity.md` |
 | 31.0c OpenVPN Field and Key Parity | done (repair 2 proved) | `_bmad-output/implementation-artifacts/31-0c-openvpn-field-and-key-parity.md` |
 | 31.0d Unbound Settings and Forward Parity | done | `_bmad-output/implementation-artifacts/31-0d-unbound-settings-and-forward-parity.md` |
-| 31.0e WireGuard Field and Settings Parity | review | `_bmad-output/implementation-artifacts/31-0e-wireguard-field-and-settings-parity.md` |
-| 31.0f Trust Lifecycle and Settings Parity | backlog | `_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md` |
+| 31.0e WireGuard Field and Settings Parity | done / released v0.7.0 | `_bmad-output/implementation-artifacts/31-0e-wireguard-field-and-settings-parity.md` |
+| 31.0f Trust Lifecycle and Settings Parity | in-progress / settings increment unreleased | `_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md` |
 | 31.0g IPsec Field Parity | backlog | `_bmad-output/implementation-artifacts/31-0g-ipsec-field-parity.md` |
-| 31.0h Quagga/BGP Field Parity | backlog | `_bmad-output/implementation-artifacts/31-0h-quagga-bgp-field-parity.md` |
+| 31.0h Quagga/BGP Field Parity | in-progress / compatibility released, advanced parity remains | `_bmad-output/implementation-artifacts/31-0h-quagga-bgp-field-parity.md` |
 | 31.0i Live Interface Data Sources | backlog | `_bmad-output/implementation-artifacts/31-0i-live-interface-data-sources.md` |
 | 31.0j Provider Retry Settings | backlog | `_bmad-output/implementation-artifacts/31-0j-provider-retry-settings.md` |
-| 31.0k Gateway Group Stable API Validation | review (direct-API report recorded) | `_bmad-output/implementation-artifacts/31-0k-gateway-group-stable-api-validation.md` |
-| 31.0l Kea Option and DDNS Stable API Validation | review (direct-API report recorded) | `_bmad-output/implementation-artifacts/31-0l-kea-option-ddns-stable-api-validation.md` |
-| 31.0m Gateway Group Resource/Data Source | review / live-validated, unreleased | `_bmad-output/implementation-artifacts/31-0m-gateway-group-resource.md` |
-| 31.0n Kea Generic Option Resource/Data Source | review / live-validated locally, unreleased | `_bmad-output/implementation-artifacts/31-0n-kea-generic-option-resource.md` |
-| 31.0o Kea DDNS Settings Resource/Data Source | backlog | `_bmad-output/implementation-artifacts/31-0o-kea-ddns-settings-resource.md` |
+| 31.0k Gateway Group Stable API Validation | done / PR71 | `_bmad-output/implementation-artifacts/31-0k-gateway-group-stable-api-validation.md` |
+| 31.0l Kea Option and DDNS Stable API Validation | done / PR71 | `_bmad-output/implementation-artifacts/31-0l-kea-option-ddns-stable-api-validation.md` |
+| 31.0m Gateway Group Resource/Data Source | done / released v0.9.0 | `_bmad-output/implementation-artifacts/31-0m-gateway-group-resource.md` |
+| 31.0n Kea Generic Option Resource/Data Source | done / released v0.10.0 | `_bmad-output/implementation-artifacts/31-0n-kea-generic-option-resource.md` |
+| 31.0o Kea DDNS Settings Resource/Data Source | done / released v0.10.0 | `_bmad-output/implementation-artifacts/31-0o-kea-ddns-settings-resource.md` |
 | 31.0p Kea Ordered Generic-Option Linkage | backlog / ordered-read API gate | `_bmad-output/implementation-artifacts/31-0p-kea-ordered-option-linkage.md` |
 | 31.1 Complete Provider Positioning README and Registry Pass | backlog | `_bmad-output/implementation-artifacts/31-1-complete-provider-positioning-docs.md` |
 | 31.2 Existing Provider Migration Guide | backlog | `_bmad-output/implementation-artifacts/31-2-existing-provider-migration-guide.md` |
@@ -129,6 +129,9 @@ Goal: make releases feel intentionally tested, versioned, and ready for producti
 
 1. Treat Epics 25B through 29 as completed or historical unless a regression appears.
 2. Keep completed Epic 30's weekly probe baseline current; assignment/IP support requires OPNsense 26.7.6+ and has disposable-appliance lifecycle proof.
-3. Finish active P0 WireGuard Story 31.0e first; prioritize Story 31.0h's FRR 2.0 compatibility subgate before BGP adoption. Complete remaining parity (31.0f–31.0j), gateway-group validation (31.0k) and generic Kea option/DDNS validation (31.0l) before positioning. Stable API presence, provider implementation, published release and live lifecycle proof are distinct gates. No production firmware, routing or ownership cutover is authorized by these provider stories.
-4. Follow with Stories 31.1 and 31.2 to make the Registry/README story match verified coverage.
-5. Add Story 32.1 acceptance proof before treating v1 positioning as credible.
+3. Finish P0 Trust31.0f, then advanced IPsec31.0g and remaining FRR/BGP31.0h, live-interface lookups31.0i and provider retry controls31.0j. The Trust settings resource/lookup is an unreleased first increment, not closure of CA/certificate lifecycle or disposable proof. FRR2.0 compatibility is already released; do not repeat that subgate.
+4. Research31.0p separately: generic Kea option CRUD/DDNS already shipped, but ordered linkage needs an authoritative order-preserving read API. No raw XML workaround is authorized.
+5. Complete31.1 positioning,31.2 migration and31.3 adoption examples after parity, carrying the remaining16 singleton/sensitive lookup gaps as explicit implementation or exception decisions.
+6. Complete32.1 acceptance-proof artifacts,32.2 preflight/version diagnostics and32.3 v1 stability criteria. Keep unit/protocol, real Core/disposable, release and Registry proof separate.
+
+System-general API support remains upstream-blocked; HASync model-shape and PPPoE semantics remain research-only follow-ups, not provider owners to invent. Historical cancelled/no-API aliases in older epics are not additional dependency-ready stories. No production firmware, routing or ownership cutover is authorized by this sequence.

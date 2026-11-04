@@ -2,7 +2,17 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.11.0 (Unreleased)
+## 0.12.0 (Unreleased)
+
+FEATURES:
+
+* Add import-first `opnsense_trust_settings` resource and lookup for six audited Trust policies: omission-preserving partial updates, explicit false/empty cipher clears, durable saved/uncertain recovery without repeated set, and zero-API state-only Delete. HTTP-backed protocol evidence only; live acceptance and broader CA/certificate parity remain outstanding.
+
+UPGRADE NOTES:
+
+* Import the exact fixed ID `trust_settings` before applying. This owner never resets shared Trust configuration and excludes five unaudited TLS fields. Normal planning refresh may activate a pending saved change before state-only destruction.
+
+## 0.11.0 (Released)
 
 FEATURES:
 
@@ -12,7 +22,7 @@ UPGRADE NOTES:
 
 * Assignment adoption remains opt-in and requires an existing assignment and the expanded OPNsense API. Omitted fields preserve saved values; empty/default association settings remain distinct from explicit zero. No automatic mode migration or upstream DHCPv6 client ownership is introduced. Validate read/import with a no-change plan and test writes on a disposable interface before changing production networking.
 
-## 0.10.1 (Unreleased)
+## 0.10.1 (Released)
 
 UPGRADE NOTES:
 

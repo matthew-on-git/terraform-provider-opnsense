@@ -1,0 +1,24 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Trust"
+description: |-
+  Reads the six audited Trust settings without changing them.
+---
+
+# {{.Name}} ({{.Type}})
+
+Uses the released OPNsense 26.7.8 Trust general settings API. This read-only lookup
+returns five stored Boolean policies and selected `CipherString` choice keys only.
+It does not manage `Ciphersuites`, `SignatureAlgorithms`, `groups`, `MinProtocol`
+or `MinProtocol_DTLS`, CA/certificate actions or full Trust lifecycle parity.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_trust_settings/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+This lookup only reads authoritative values; it never saves or activates.
+
+Evidence is HTTP-backed framework/protocol testing against released source contracts.
+No disposable-appliance lifecycle or older-core/OpenTofu acceptance was executed.
