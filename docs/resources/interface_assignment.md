@@ -15,18 +15,42 @@ OPNsense **26.7.6 or newer** with the complete expanded
 This resource does not create assignments. Apply calls
 `assignment/set_item/{name}`, applies the assignment reconfigure operation, and
 reads the result back from OPNsense. Fields outside the documented safe subset
-are preserved. PPP/PPPoE, 6rd, 6to4, identity association, track-interface,
-hardware tuning, MTU/MSS, and advanced DHCP options are intentionally not
-supported.
+are preserved. PPP/PPPoE, 6rd, 6to4, device binding, hardware tuning, MTU/MSS,
+and advanced DHCP client options are intentionally not managed.
 
 > **Connectivity warning:** Interface changes can immediately sever network
 > access. Test with a disposable non-management `optN` before adopting a live
 > interface. Do not experiment on the interface used to reach the OPNsense API.
 
 IPv4 modes are `none`, `staticv4`, and `dhcp`. IPv6 modes are `none`,
-`staticv6`, `dhcp6`, `linklocal`, and `slaac`. Static modes require both the
+`staticv6`, `dhcp6`, `linklocal`, `slaac`, `idassoc6`, and legacy `track6`. Static modes require both the
 matching address and prefix-length attributes. Static-only address, prefix, and
 gateway values are rejected for non-static modes.
+
+## IPv6 identity association
+
+`idassoc6` and legacy `track6` use the same assignment fields in OPNsense.
+`ipv6_track_interface` selects the upstream assignment; `ipv6_prefix_id`
+selects the delegated subnet, and `ipv6_interface_id` configures the interface
+identifier. `ipv6_identity_association_id` and `ipv6_prefix_range` expose the
+association and prefix-range settings. `ipv6_allow_manual_dhcpv6` retains the
+legacy manual DHCPv6/RA override flag; it does not manage DHCP/RA services.
+
+The association ID and prefix range are decimal **strings** because OPNsense
+stores empty/default values distinctly from explicit numbers, including zero.
+Empty strings explicitly clear these settings. Hexadecimal prefix/interface IDs
+retain their stored spelling. Omitted or unknown optional values preserve the
+existing appliance settings during an update. Switching modes retains inactive
+delegation fields; it does not implicitly migrate legacy settings or alter the
+upstream DHCPv6 client's prefix request. Unsupported/partial delegation API
+responses are rejected before writing.
+
+For read-only adoption, configure the existing assignment name, import it, then
+review its state and explicitly declare the fields you intend to own. A no-change
+plan verifies read/import coverage but does not validate activation or packet
+behavior. Test intentional changes on a disposable interface before managing a
+production interface. The upstream appliance still validates parent eligibility
+and the delegated subnet's range.
 
 ## Retained on destroy
 
@@ -49,6 +73,18 @@ resource "opnsense_interface_assignment" "pxe" {
   ipv4_prefix_length = 24
   ipv4_gateway       = ""
   ipv6_mode          = "none"
+}
+
+# Existing downstream interface using a delegated IPv6 prefix. Import first;
+# replace these values with the intended configuration only after reviewing state.
+resource "opnsense_interface_assignment" "delegated" {
+  name                         = "opt4"
+  ipv6_mode                    = "idassoc6"
+  ipv6_track_interface         = "wan"
+  ipv6_prefix_id               = "0x10"
+  ipv6_interface_id            = "0x1"
+  ipv6_identity_association_id = "0"
+  ipv6_prefix_range            = ""
 }
 ```
 
@@ -79,9 +115,15 @@ resource "opnsense_interface_assignment" "pxe" {
 - `ipv4_mode` (String) IPv4 mode: `none`, `staticv4`, or `dhcp`.
 - `ipv4_prefix_length` (Number) Static IPv4 prefix length (0-32). Valid only with `ipv4_mode = "staticv4"`.
 - `ipv6_address` (String) Static IPv6 address without a prefix. Valid only with `ipv6_mode = "staticv6"`.
+- `ipv6_allow_manual_dhcpv6` (Boolean) Allow manual DHCPv6/router-advertisement configuration for legacy track-interface mode. Preserves the appliance's dhcpd6track6allowoverride field; does not manage DHCP or RA services.
 - `ipv6_gateway` (String) Existing OPNsense IPv6 gateway name. Valid only with `ipv6_mode = "staticv6"`.
-- `ipv6_mode` (String) IPv6 mode: `none`, `staticv6`, `dhcp6`, `linklocal`, or `slaac`.
+- `ipv6_identity_association_id` (String) Prefix-delegation identity association ID, as a nonnegative decimal string or empty for the appliance default. Empty and explicit zero are distinct saved values.
+- `ipv6_interface_id` (String) IPv6 interface identifier in hexadecimal (for example `0x1`), or empty for the appliance default.
+- `ipv6_mode` (String) IPv6 mode: `none`, `staticv6`, `dhcp6`, `linklocal`, `slaac`, `idassoc6`, or `track6`.
+- `ipv6_prefix_id` (String) Delegated subnet prefix ID, in the appliance's hexadecimal encoding (for example `0x10`). Empty retains the appliance's default representation; omission preserves the saved value.
 - `ipv6_prefix_length` (Number) Static IPv6 prefix length (0-128). Valid only with `ipv6_mode = "staticv6"`.
+- `ipv6_prefix_range` (String) Identity-association prefix range, as a positive decimal string or empty for the appliance default. Strings preserve the distinction between an unset value and a number.
+- `ipv6_track_interface` (String) Upstream assignment for `idassoc6` or legacy `track6`, such as `wan`. Omission preserves the existing parent; these modes require a nonempty parent distinct from this assignment.
 
 ### Read-Only
 
