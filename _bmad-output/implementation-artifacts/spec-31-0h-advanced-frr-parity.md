@@ -116,3 +116,7 @@ Only this implementation/review run may be marked done. Parent31.0h remains open
 ### Parent post-review verification
 
 Focused container race suites passed (quagga7.189s, actual Core3.68s); all new read/capability/CSV/old-schema/clear/recovery matrix tests ran and passed. Full make check passed6/6, none skipped (84464ms). Parent deterministic generation and whitespace/privacy audit passed. Bounded independent source recheck confirmed original read/capability/interface and live-binding findings resolved; no new defect in that scope. Live acceptance is recorded separately, never inferred from these offline results.
+
+### Actual acceptance repair
+
+The first isolated matrix reached advanced creation but failed its public-lookup assertion because Terraform's synthetic flatmap `%` property counts the resource-only password. This is retained as a failed run, not appliance PASS. Terraform deletion independently reported zero in all7namespaces; exact settings/generated FRR/effective and rendered PF/routes restoration passed. The smallest test-only repair ignores only top-level synthetic `%` and password while comparing every actual public key in both directions, including explicit empty values and set counts/members. Focused negative controls prove real missing/extra/changed fields still fail. The whole frozen matrix must rerun after this repair.

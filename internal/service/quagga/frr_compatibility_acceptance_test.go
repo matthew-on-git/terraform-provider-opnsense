@@ -1090,10 +1090,8 @@ func frrAdvancedLiveCheck(t *testing.T, s *terraform.State) error {
 	if owner.Primary.Attributes["password"] != "acceptance-only-input" || owner.Primary.Attributes["weight"] != "0" || owner.Primary.Attributes["attribute_unchanged"] != "as-path" {
 		return fmt.Errorf("advanced configured state did not converge")
 	}
-	for key, value := range owner.Primary.Attributes {
-		if key != "password" && lookup.Primary.Attributes[key] != value {
-			return fmt.Errorf("advanced public lookup differs for %s", key)
-		}
+	if err := frrCompareAdvancedPublicAttributes(owner.Primary.Attributes, lookup.Primary.Attributes); err != nil {
+		return err
 	}
 	observation := frrObserve(t)
 	config := observation.Config.Stdout
@@ -1180,5 +1178,59 @@ func TestFRRVersionTokensRejectPrefixes(t *testing.T) {
 	}
 	if frrVersionToken("OPNsense 26.7.8_2 (amd64)", "OPNsense") != "26.7.8_2" || frrVersionToken("OPNsense 26.7.8_2-amd64", "OPNsense") != "26.7.8_2" {
 		t.Fatal("exact core token not parsed")
+	}
+}
+
+// The top-level flatmap % is synthetic: the resource has one more schema
+// property (password) than the deliberately password-free lookup. All real
+// public values, including set membership/counts and explicit empty strings,
+// must still agree in both directions.
+func frrCompareAdvancedPublicAttributes(owner, lookup map[string]string) error {
+	for _, pair := range [][2]map[string]string{{owner, lookup}, {lookup, owner}} {
+		for key, value := range pair[0] {
+			if key == "%" || key == "password" {
+				continue
+			}
+			if got, exists := pair[1][key]; !exists || got != value {
+				return fmt.Errorf("advanced public lookup differs for %s", key)
+			}
+		}
+	}
+	return nil
+}
+
+func TestFRRAdvancedPublicFlatmapComparison(t *testing.T) {
+	owner := map[string]string{"%": "36", "password": "configured-test-input", "id": "stable", "weight": "0", "multihop": "false", "attribute_unchanged": "", "capabilities.#": "1", "capabilities.123": "dynamic"}
+	lookup := map[string]string{"%": "35", "id": "stable", "weight": "0", "multihop": "false", "attribute_unchanged": "", "capabilities.#": "1", "capabilities.123": "dynamic"}
+	if err := frrCompareAdvancedPublicAttributes(owner, lookup); err != nil {
+		t.Fatal("synthetic schema counts caused false mismatch", err)
+	}
+	for key := range lookup {
+		if key == "%" {
+			continue
+		}
+		t.Run(key, func(t *testing.T) {
+			changed := map[string]string{}
+			for k, v := range lookup {
+				changed[k] = v
+			}
+			changed[key] = "different"
+			if frrCompareAdvancedPublicAttributes(owner, changed) == nil {
+				t.Fatal("real public mismatch was ignored", key)
+			}
+		})
+	}
+	missing := map[string]string{}
+	for key, value := range lookup {
+		if key != "attribute_unchanged" {
+			missing[key] = value
+		}
+	}
+	if frrCompareAdvancedPublicAttributes(owner, missing) == nil {
+		t.Fatal("missing explicit empty public value was ignored")
+	}
+	lookup["unexpected_public_field"] = "value"
+	if frrCompareAdvancedPublicAttributes(owner, lookup) == nil {
+		t.Fatal("lookup-only public value was ignored")
 	}
 }
