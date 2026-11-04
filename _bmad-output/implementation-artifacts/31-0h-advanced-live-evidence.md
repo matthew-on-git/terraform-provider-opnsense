@@ -45,9 +45,9 @@ firmware acceptance.
 
 ## Restoration and cleanup evidence
 
-On each failed attempt, actual Terraform deletion reported zero objects in all
+On the first three failed attempts, actual Terraform deletion reported zero objects in all
 seven FRR namespaces before rollback. Exact API settings, generated FRR,
-effective/rendered PF and routing restoration passed. Independent full-config
+effective/rendered PF and routing restoration passed. For those attempts, independent full-config
 fallback restoration also matched all six captured predicates, including the
 configuration hash. The owned disposable guest/disk and collector, tunnel, oracle listeners were then retired; independent checks found no owned listener or acceptance container remaining. These cleanup results do not turn a failed matrix into PASS.
 
