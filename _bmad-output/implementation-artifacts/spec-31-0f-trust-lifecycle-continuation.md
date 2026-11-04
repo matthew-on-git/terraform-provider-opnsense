@@ -360,8 +360,26 @@ Released `Store.php` copies parsed X.509 Unix dates directly; CA/certificate
 imports do not exclude expired or pre-1970 certificates. The stricter editor
 reader therefore must accept negative signed-int64 timestamps in numeric and
 string form. Null, malformed and overflow values remain rejected. The real
-RSA2048 certificate control uses 1965–1966 validity and verifies signature,
+RSA2048 certificate control uses 1969 validity and verifies signature,
 CA/cert resource refresh and authoritative lookups with zero writes. The live
 matrix now imports a genuine pre-epoch CA/certificate and checks exact signed
 timestamps in both resources and both lookups. Earlier proof remains bound to
 `35799c0`; it is not retroactively evidence for this executable correction.
+
+
+The first signed-date live attempt at `1661ccd` failed the exact-date assertion:
+OpenSSL correctly encoded 1965/1966, but the appliance PHP parser exposed
+2065/2066 (`2997993600`/`3029529600`). A direct read-only PHP parse reproduced
+this upstream year-pivot behavior. The failed attempt is retained separately;
+owned cleanup reached zero and all four original hashes restored exactly. It is
+not full acceptance or Terraform-destroy proof. A genuine 1969 certificate was
+independently parsed by that same appliance as `-31536000`/`-86400` before retry.
+The fixture now uses that unambiguous pre-epoch interval; negative-date assertions
+and malformed-value rejection remain strict. This is a fixture correction, not
+provider-side date rewriting or assertion relaxation.
+
+Exact dependency source confirms the observation:
+[PHP8.5.12 UTCTIME conversion](https://github.com/php/php-src/blob/php-8.5.12/ext/openssl/openssl_backend_common.c#L177)
+adds100 for two-digit years below68; the
+[validity parser](https://github.com/php/php-src/blob/php-8.5.12/ext/openssl/openssl.c#L1083)
+uses that helper. The provider preserves authoritative appliance observations.

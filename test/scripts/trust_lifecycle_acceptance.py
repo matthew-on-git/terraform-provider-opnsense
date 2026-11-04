@@ -541,6 +541,7 @@ def main():
         os.environ["CHECKPOINT_DISABLE"] = "1"
         # A real parseable pre-epoch certificate is a supported legacy import;
         # its signed Unix validity observations must survive resource/lookup reads.
+        # 1969 avoids PHP's two-digit-year pivot (65/66 become2065/2066).
         (directory / "fixture-index").write_text("")
         (directory / "fixture-serial").write_text("01\n")
         (directory / "fixture.cnf").write_text(
@@ -559,7 +560,7 @@ def main():
         run_private(
             ["openssl", "ca", "-selfsign", "-batch", "-config", "fixture.cnf",
              "-keyfile", "import.key", "-in", "import.csr", "-out", "import.crt",
-             "-startdate", "19650101000000Z", "-enddate", "19660101000000Z",
+             "-startdate", "19690101000000Z", "-enddate", "19691231000000Z",
              "-notext"], directory, "fixture-sign",
         )
         cert_pem = (directory / "import.crt").read_text()
@@ -600,8 +601,8 @@ def main():
             "data.opnsense_trust_ca.legacy", "data.opnsense_trust_cert.legacy",
         ):
             require(
-                int(observed[address]["valid_from"]) == -157766400
-                and int(observed[address]["valid_to"]) == -126230400,
+                int(observed[address]["valid_from"]) == -31536000
+                and int(observed[address]["valid_to"]) == -86400,
                 "legacy certificate signed timestamps not preserved",
             )
         local_key = observed["opnsense_trust_cert.local"].get("generated_private_key")

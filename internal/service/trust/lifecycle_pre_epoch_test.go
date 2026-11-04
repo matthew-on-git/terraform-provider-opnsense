@@ -32,8 +32,8 @@ func TestTrustLifecyclePreEpochValidityReads(t *testing.T) {
 	template := &x509.Certificate{
 		SerialNumber:          big.NewInt(1),
 		Subject:               pkix.Name{CommonName: "example.test", Country: []string{"US"}},
-		NotBefore:             time.Date(1965, time.January, 1, 0, 0, 0, 0, time.UTC),
-		NotAfter:              time.Date(1966, time.January, 1, 0, 0, 0, 0, time.UTC),
+		NotBefore:             time.Date(1969, time.January, 1, 0, 0, 0, 0, time.UTC),
+		NotAfter:              time.Date(1969, time.December, 31, 0, 0, 0, 0, time.UTC),
 		BasicConstraintsValid: true,
 		IsCA:                  true,
 		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature,
