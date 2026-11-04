@@ -1,7 +1,8 @@
 # Advanced FRR acceptance checkpoint
 
-Status: **in progress - the complete17-step Go matrix passed, but the guarded
-public runner was interrupted during its final digest gate**. This is a
+Status: **in progress - the latest whole-run retry failed Step16/17 on real
+firmware discovery; the earlier complete Go PASS still lacks its final guarded
+runner gate**. This is a
 resumable validation checkpoint, not end-to-end guarded-runner success, a release
 or completed parent Story31.0h. Historical failures below remain failures; the
 latest attempt and exact orchestration boundary are recorded at the end. Candidate implementation is in
@@ -279,3 +280,56 @@ permission to relax provider/API discovery deadlines, skip post-run gates or
 resume at Step17. Preserve all failed and intermediate recovery receipts.
 Legacy appliance/OpenTofu execution and the numeric-clear interface remain
 separate open parent-story requirements. No merge or release is claimed.
+
+## Ninth attempt - recurrent metadata stall at Step16
+
+The newly attested isolated retry tested head
+`4b994b599ceac1387871626793b3a75246ba0451` with unchanged source digest
+`2e26cb01403f0f3927d77313412ac9d39331493294b4e798e1c2fb642feeff44`.
+Actual versions remained core26.7.8_2/os-frr2.0_4/bgpd10.7.1; all four authority
+files matched the released pin. Three serial real firmware-info calls passed
+in2.943s,2.828s and2.830s, process observations showed no stalled metadata queue,
+and the same DevRail container passed endpoint/TLS/oracle smoke. The first
+full-activation PF-order mismatch was retained; a second exact six-predicate
+fallback selfcheck passed against the actual post-activation baseline.
+
+The entire matrix started from the beginning under a2100-second public-runner
+allowance, without changing the provider's30-second discovery deadline or any
+acceptance assertion. Actual legacy-provider schema-v0 import/upgrade,19 public
+advanced fields, numeric-policy current-prefix withdrawal, restored-positive
+observations and drift repair reached their checks. **Step16/17 failed its
+pre-apply plan on actual firmware-info discovery.** The firewall-disable apply
+and final restored-positive step did not execute. The Go test failed in1387.64s;
+the wrapper ended normally with failure, not an outer orchestration timeout.
+There is no complete Go or guarded-runner PASS for this attempt.
+
+Read-only diagnostics retained a runnable `pkg update -q` process at99.1%CPU.
+It consumed39.129CPU-seconds over a39-second sample while its message counters
+remained unchanged; other package processes waited in kernel file locking.
+Configd recorded120-second firmware tiers/remote timeouts. Installed source
+confirms firmware info synchronously invokes those metadata refresh paths.
+A retained established repository HTTPS socket does not prove network/TLS
+health or identify the loop. The exact package/library/repository/network
+trigger remains unknown; healthy readiness calls did not prove nonrecurrence.
+No metadata bypass, package workaround, extra firmware polling or guessed
+provider repair was used.
+
+Actual Terraform destruction failed with nine firmware-discovery timeouts.
+Five namespaces were nonempty before raw rollback: neighbor7, peer-group2,
+route-map2, prefix-list2 and redistribution1; AS-path/community-list were zero.
+Subsequent raw final cleanup reported zero in all seven namespaces, and exact
+test-level settings/generated-FRR/effective-and-rendered-PF/routes restoration
+passed. Independent full-config fallback also passed all six predicates,
+including the original configuration hash. **Raw cleanup and restoration are
+not successful Terraform deletion.** Frozen source, baseline files and runtime
+helpers remained unchanged; the reservation changed only to its owned retired
+state after cleanup. Parent independently verified the disposable guest/disk,
+collector, tunnel/oracle listeners and acceptance container absent.
+
+Keep PR83 draft and the same queue entry in progress. Retain this failed receipt
+separately from matrix08's Go-only PASS and interrupted final gate. A new attempt
+requires a newly attested target, enough time for the whole runner plus fallback
+and disposal, and a source-backed investigation of recurrent metadata stalls;
+do not resurrect retired targets, weaken discovery, skip final gates or treat
+another readiness check as a proven cure. Legacy appliance/OpenTofu execution
+and numeric-clear interface design remain separate open parent requirements.
