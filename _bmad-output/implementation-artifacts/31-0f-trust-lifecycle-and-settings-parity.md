@@ -198,3 +198,36 @@ Expected executable SHA256:
 `66bbfa18dccf14768d733a120e4a7a211efcb6943e8102adf1b6f9e104d4122b`.
 This binds the final public executable bytes to the actual tested candidate
 without publishing private guest identity, raw state or keys.
+
+### Repaired merge-candidate proof — 2026-11-04
+
+Candidate `35799c04ea213613d07e9cc987a8a7a9763edf60` passed a fresh complete
+guarded matrix on authentic OPNsense26.7.8_2: **26 apply/no-change pairs**,
+including all19 settings cases, real certificate-lookup CSR equality, OpenSSL
+one-time-key/certificate matching, and reissue preserving UUID/key while changing
+the certificate. Independent access-log counts were1 for reissue,1 for the
+same action with a new token, then0 for an unchanged token.
+
+Terraform destroyed all9 owned objects; immediate and final counts were0, with
+settings unchanged by destruction. Original configuration/settings/routes/runtime
+hashes restored exactly. The full wrapper exited0 after its final source/runtime
+digest assertions and success marker. The exact owned guest, disk, marker and
+listeners were retired and their absence independently read back. This is not
+just passing inner steps or fallback recovery.
+
+Executed whole-tree SHA256:
+`fef4ec6366728aac69b8546c869ab5832c3cd34790431870af5e8a26298c776d`.
+Reproducible executable SHA256 (752 files):
+`5c2be5cb1176c49d05559d01c5b0521bccc29e9a409ee9c98f4feb41eccfb9d4`.
+The evidence-only publication is not retroactively called the executed whole
+tree. [Current sanitized proof](31-0f-live-proof.json) and its pinned historical
+reference retain that distinction. All6 local gates,16 offline guard methods,
+Trust/coverage race suites and3 real Core create-recovery controls pass. The
+old production snapshot fails all3 controls; repaired creation emits warnings
+after acknowledged identity instead of tainting and automatically recreating.
+
+Four independent review layers produced13 individually triaged findings; the
+follow-up bounded production-diff review found no concrete blocker. The CA PEM
+normalization claim was rejected on actual released-source evidence, not masked
+by retaining stale observations. Keyless CA remains explicitly unsupported,
+older-firmware/OpenTofu execution is unverified and the parent story stays open.

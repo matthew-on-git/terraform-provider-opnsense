@@ -2,10 +2,10 @@
 title: 'Story 31.0f: Remaining Trust lifecycle and read parity'
 type: 'feature'
 created: '2026-11-03'
-status: 'in-review'
+status: 'done'
 baseline_revision: '4bd107fc769586d5904919c8e69562897a87e84d'
 review_loop_iteration: 0
-followup_review_recommended: true
+followup_review_recommended: false
 context:
   - 'AGENTS.md'
   - 'DEVELOPMENT.md'
@@ -13,16 +13,17 @@ context:
 warnings: [oversized]
 deferred:
   - summary: >-
-      Full Trust action/settings disposable lifecycle and exact restoration proof remain unavailable.
+      Historical unavailable-live-proof gate is resolved by the recorded fresh guarded matrix.
     evidence: |-
-      A newly reserved identity/version/endpoint-bound runtime could not be established before implementation. No appliance mutation was attempted. The explicit overnight contract permits source implementation and a draft PR with this external proof gate open; future proof must execute the frozen matrix and retain actual restore/zero-leftover receipts, not reuse historical guests or fabricate attestations.
+      Initially no attested target was available. That historical blocker was subsequently resolved; candidate35799c0 passed the full fresh26.7.8_2 guarded run with26apply/no-change pairs, final digest gates, Terraform deletion, exact restoration and independent retirement. Historical failed receipts remain retained.
     location: >-
       test/scripts/run-story-31-0f-acceptance.sh
+    resolved: true
     severity: medium
   - summary: >-
-      Released OPNsense 26.7.8 rejects certificate-only CA import and keyless metadata updates.
+      Keyless CA import/update remains unsupported by the provider despite the upstream patched-package correction.
     evidence: |-
-      CaController.php at 96978001a8343669154e4492172ce0a07dac7e4b unconditionally requires exactly one private-key PEM section after checking certificate input. This is upstream behavior predating the continuation. A released upstream correction and disposable proof are needed; no fake key or XML workaround is permitted.
+      Original26.7.8 source required exactly one private-key section. Authentic26.7.8_2 corrects that condition, but this bounded provider increment still conservatively requires a matching key. Enabling keyless support requires a separate provider implementation/proof increment; no fake key or XML workaround is permitted.
     location: >-
       _bmad-output/implementation-artifacts/31-0f-trust-source-contract.md
     severity: medium
@@ -318,3 +319,36 @@ checkpoints exposing cryptographic_writes from access-log cursors; snapshot,
 identity, exact restoration and all prior gates remain required. Original live
 receipts remain historical and are not retroactively attributed to this repaired
 source. Fresh identity-bound proof must be recorded separately.
+
+### Repaired merge-candidate proof — 2026-11-04
+
+Candidate `35799c04ea213613d07e9cc987a8a7a9763edf60` passed a fresh complete
+guarded matrix on authentic OPNsense26.7.8_2: **26 apply/no-change pairs**,
+including all19 settings cases, real certificate-lookup CSR equality, OpenSSL
+one-time-key/certificate matching, and reissue preserving UUID/key while changing
+the certificate. Independent access-log counts were1 for reissue,1 for the
+same action with a new token, then0 for an unchanged token.
+
+Terraform destroyed all9 owned objects; immediate and final counts were0, with
+settings unchanged by destruction. Original configuration/settings/routes/runtime
+hashes restored exactly. The full wrapper exited0 after its final source/runtime
+digest assertions and success marker. The exact owned guest, disk, marker and
+listeners were retired and their absence independently read back. This is not
+just passing inner steps or fallback recovery.
+
+Executed whole-tree SHA256:
+`fef4ec6366728aac69b8546c869ab5832c3cd34790431870af5e8a26298c776d`.
+Reproducible executable SHA256 (752 files):
+`5c2be5cb1176c49d05559d01c5b0521bccc29e9a409ee9c98f4feb41eccfb9d4`.
+The evidence-only publication is not retroactively called the executed whole
+tree. [Current sanitized proof](31-0f-live-proof.json) and its pinned historical
+reference retain that distinction. All6 local gates,16 offline guard methods,
+Trust/coverage race suites and3 real Core create-recovery controls pass. The
+old production snapshot fails all3 controls; repaired creation emits warnings
+after acknowledged identity instead of tainting and automatically recreating.
+
+Four independent review layers produced13 individually triaged findings; the
+follow-up bounded production-diff review found no concrete blocker. The CA PEM
+normalization claim was rejected on actual released-source evidence, not masked
+by retaining stale observations. Keyless CA remains explicitly unsupported,
+older-firmware/OpenTofu execution is unverified and the parent story stays open.

@@ -1,10 +1,10 @@
 {
-  "schema": "trust-live-proof-v1",
+  "schema": "trust-live-proof-v2",
   "tested_firmware_package": "26.7.8_2",
-  "tested_base_revision": "cec52d80454cbcbee23cc4604d383d63f2f1770e",
-  "tested_working_tree_sha256": "eb971828b62183878c72f247aacb1138b2715c6a800605404ee13b3c72128e46",
-  "executable_sha256": "66bbfa18dccf14768d733a120e4a7a211efcb6943e8102adf1b6f9e104d4122b",
-  "executable_files": 749,
+  "tested_base_revision": "35799c04ea213613d07e9cc987a8a7a9763edf60",
+  "tested_working_tree_sha256": "fef4ec6366728aac69b8546c869ab5832c3cd34790431870af5e8a26298c776d",
+  "executable_sha256": "5c2be5cb1176c49d05559d01c5b0521bccc29e9a409ee9c98f4feb41eccfb9d4",
+  "executable_files": 752,
   "executable_inventory": "Sorted Git tracked/unignored files that end in .go, equal go.mod/go.sum, or start test/scripts/; hash relative-path NUL bytes NUL.",
   "toolchain_image": "ghcr.io/devrail-dev/dev-toolchain:1.12.24",
   "toolchain_image_sha256": "5adebcb6d1f62c7fb8e5218a4739e3d7379d035927231e0441de00a76d8b4506",
@@ -14,7 +14,10 @@
     "executed": true,
     "skipped": false,
     "exit_code": 0,
-    "apply_no_change_pairs": 24,
+    "guarded_runner_exit_code": 0,
+    "final_source_digest_equal": true,
+    "final_runtime_digest_equal": true,
+    "apply_no_change_pairs": 26,
     "settings_apply_cases": 19,
     "ca_actions": [
       "root",
@@ -32,7 +35,13 @@
       "reissue"
     ],
     "one_time_key_retained": true,
+    "one_time_key_parse_and_certificate_match": true,
+    "one_time_key_not_persisted_on_appliance": true,
     "metadata_material_stable": true,
+    "certificate_lookup_csr_equal": true,
+    "reissue_changes_certificate_preserves_uuid_and_key": true,
+    "same_action_new_token_cryptographic_writes": 1,
+    "unchanged_token_cryptographic_writes": 0,
     "uuid_adoption": true,
     "all_five_boolean_true_false_restore": true,
     "cipher_select_empty_clear_restore": true,
@@ -51,42 +60,43 @@
   "exact_restoration": {
     "verified": true,
     "baseline_and_restored_sha256": {
-      "config_sha256": "c8755a39c9cd6825425890eb40fec33d52d8ac1400d5a4d611768a5c34221812",
-      "settings_sha256": "3448e0adfe59ced7b8df04627ad0612400b88211d7a114975beafe81e3f197f4",
-      "routes_sha256": "89500181a3c404c2f12fbc9d8da557f4ed60f1abb8efeb818b0bc1e760d03147",
+      "config_sha256": "56b98e1209c6a7219762714d71ded3930d1c213b499f416a35c5cbd2ddac8f5f",
+      "settings_sha256": "e7f5bfe12d656d381afd1c834247819c29edceddd993666de8ca5dd7c70f125c",
+      "routes_sha256": "4d395aa6a9532f62127e95556d04217aee45c56ac74119e400e5c4b51aaec257",
       "runtime_sha256": "943032f6abc60693ff20afc0c26c044d3077713c202339286f67d9bf39910923"
     }
   },
   "owned_disposable_retired": true,
   "owned_disk_marker_and_listeners_removed": true,
-  "preserved_failures": [
-    "Original exact base-version gate rejected authentic patched package",
-    "Bodyless JSON-marked oracle GET rejected before mutation",
-    "Fixture lookup read before managed update; cleanup and corrected exact symlink-mode restoration verified",
-    "Constraints enabled without nonempty constraint; firmware rejected correctly and exact restoration passed",
-    "Owned oracle listener unavailable before post-review guard; no mutation",
-    "Owned SSH forward unavailable; real guard refused before mutation"
-  ],
+  "independent_retirement_readback": true,
+  "historical_proof": "https://github.com/matthew-on-git/terraform-provider-opnsense/blob/6cc47ab27bdcfc28745cd3d5a4b0fe085df27b6c/_bmad-output/implementation-artifacts/31-0f-live-proof.json",
+  "prior_failed_receipts_retained": true,
   "verification": {
-    "offline_guard_methods": 14,
+    "offline_guard_methods": 16,
     "make_check": {
       "passed": 6,
       "failed": 0,
       "skipped": 0,
-      "duration_ms": 60747
+      "duration_ms": 93395
     },
+    "trust_race_seconds": 18.165,
+    "coverageaudit_race_seconds": 1.318,
+    "confirmed_create_core_cases": 3,
+    "old_production_counterexamples_failed": 3,
     "review_layers": [
       "blind",
       "edge",
       "verification_gap",
-      "intent_alignment"
-    ]
+      "acceptance_auditor"
+    ],
+    "integration_findings_triaged": 13,
+    "bounded_production_repair_review": "No concrete blockers"
   },
   "boundaries": [
     "Raw state/configuration/credentials/target topology remain private",
-    "Whole-tree digest identifies the executed pre-evidence tree; final executable equality is reproducible independently",
-    "Keyless CA provider support remains deferred despite the upstream patched-package correction",
+    "Whole-tree digest identifies executed pre-evidence tree; final executable equality is reproducible independently",
+    "Keyless CA provider support remains deferred despite upstream patched-package correction",
     "Older firmware and OpenTofu execution are not claimed",
-    "Draft PR is not merged or released; parent story remains open"
+    "Readiness, merge and release are separate; parent Trust capability scope remains open"
   ]
 }
