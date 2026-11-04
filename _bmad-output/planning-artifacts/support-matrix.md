@@ -13,13 +13,13 @@ inputs:
 
 # Provider Support Matrix
 
-This matrix is the current source of truth for release positioning. This 2026-11-03 snapshot reconciles registered implementation, generated documentation, merged changes and published releases through v0.10.1. Pending changes and appliance evidence are separate gates; historical digest-bound evidence is not re-attested by this documentation refresh.
+This matrix is the current source of truth for release positioning. This 2026-11-03 snapshot reconciles registered implementation, generated documentation, merged changes and published releases through v0.11.0. Pending changes and appliance evidence are separate gates; historical digest-bound evidence is not re-attested by this documentation refresh.
 
 ## Summary
 
 | Area | Count | Status |
 |---|---:|---|
-| Resources | 112 | Released inventory through v0.10.1, including gateway-group, generic-option and DDNS owners |
+| Resources | 112 | Released inventory through v0.11.0, including gateway-group, generic-option and DDNS owners |
 | Data sources | 98 | Registered, including standalone gateway-group, generic-option and DDNS lookups |
 | Resource docs | 112 | Matches registered resources |
 | Data source docs | 98 | Generated |
@@ -39,15 +39,16 @@ Data-source parity is tracked in [data-source-parity-plan.md](data-source-parity
 | Gateway groups | v0.9.0 | [PR #72](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/72) published the typed owner and UUID lookup. The recorded 16-step Core lifecycle, five recovery/private-replay cases, independent saved-field observations and exact restoration passed on 26.7.7; see `31-0m-gateway-group-live-evidence.md`. Populated first-tier clearing remains rejected before save. Older cores, OpenTofu lifecycle and actual multi-WAN failover are not proven. |
 | Kea generic DHCPv4 options | v0.10.0 | [PR #73](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/73) published the eight-field owner and UUID lookup. The disabled-appliance 14-step Core lifecycle and 17 independent observations cover preservation, tracked in-use HTTP500 rejection, deletion and exact restoration; see `31-0n-kea-option-live-evidence.md`. Ordered parent linkage remains Story 31.0p; stored force is not packet-proven. |
 | Kea DDNS general settings | v0.10.0 | [PR #73](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/73) published the four-field singleton and lookup with fixed `ddns` import, omission-preserving partial writes and durable recovery. Final 14-step disabled-appliance Core proof, state-only Delete and exact restoration are recorded in `31-0o-kea-ddns-live-evidence.md`. Normal planning refresh can recover/activate before Delete. Manual files, active DNS delivery, older cores and OpenTofu lifecycle are not proven. |
+| IPv6 identity association / legacy track-interface assignments | v0.11.0 | [PR #77](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77) adds adoption/updates of existing `idassoc6`/`track6` assignments and six delegation fields. Independent source/race/fixture review passed; live import/no-change-plan evidence remains contributor-reported, not independent activation/packet proof. See the detailed scope below. |
 | NAT port-forward category persistence | v0.10.1 | [PR #75](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/75) resolves UUIDs to names for persisted writes while retaining UUID state; adds category-read permission. Regression, race and protocol/fixture coverage pass; no independent live-appliance validation was performed for this patch. |
 
-Published tags v0.9.0, v0.10.0 and v0.10.1 resolve to their respective merge commits; GitHub release assets and Terraform Registry versions were checked. The current registration/documentation inventory is 112 resources, 98 data sources and one ephemeral resource, with 16 resource-matching data-source gaps.
+Published tags v0.9.0, v0.10.0, v0.10.1 and v0.11.0 resolve to their respective merge commits; GitHub release assets and Terraform Registry versions were checked. The current registration/documentation inventory is 112 resources, 98 data sources and one ephemeral resource, with 16 resource-matching data-source gaps.
 
-## Pending review, not released support
+## IPv6 delegation: released scope and evidence
 
-[[PR #77](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77)](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77), reviewed at `4f1ace6a1d788004140a4802f14a7c47b62a4b82`, proposes existing-assignment adoption/updates for IPv6 `idassoc6` and legacy `track6`, with six optional/computed delegation fields. All eight hosted checks pass. Source comparison, race-enabled interface tests and a counterfactual adoption test passed; the old validator rejects the same delegation fixture.
+[PR #77](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77), reviewed at `4f1ace6a1d788004140a4802f14a7c47b62a4b82`, merged as `2c6ea1eaa2079a81d6794eef02635e8caee761a6` and implements existing-assignment adoption/updates for IPv6 `idassoc6` and legacy `track6`, with six optional/computed delegation fields. All eight hosted checks pass. Source comparison, race-enabled interface tests and a counterfactual adoption test passed; the old validator rejects the same delegation fixture.
 
-The contributor reports OPNsense 26.7.8_2 / OpenTofu 1.13.2 import and a no-change refresh plan. That report was not independently reproduced and does not establish activation, packet behavior or full write/restore acceptance. Assignment creation, automatic mode migration, upstream DHCPv6-client ownership and PPPoE remain outside this PR. Its v0.11.0 heading is a pending automatic release input, not evidence of publication. Reconcile this row after merge and release verification.
+The contributor reports OPNsense 26.7.8_2 / OpenTofu 1.13.2 import and a no-change refresh plan. That report was not independently reproduced and does not establish activation, packet behavior or full write/restore acceptance. Assignment creation, automatic mode migration, upstream DHCPv6-client ownership and PPPoE remain outside this PR. v0.11.0 is published: main CI, automatic tagging and release workflow passed; the tag resolves to the PR merge commit, all 16 expected release assets are present, and Terraform Registry lists 0.11.0. This verifies publication, not new appliance activation or packet behavior.
 
 ## Supported Resources
 
@@ -134,9 +135,9 @@ Confirmed blockers and the maintenance workflow are documented publicly in [`doc
 | GoReleaser config | Ready | `.goreleaser.yml` cross-compiles, archives ZIPs, emits checksums, signs checksum artifact. |
 | Release workflow | Ready with secrets | `.github/workflows/release.yml` runs on `v*` tags; requires `GPG_PRIVATE_KEY` and `PASSPHRASE` secrets. |
 | Terraform Registry manifest | Ready | `terraform-registry-manifest.json` declares protocol `6.0`. |
-| Changelog / current release | v0.10.1 published | Release and Registry availability verified. Older entries may retain `(Unreleased)` labels despite existing tags; tags/assets/Registry are checked separately. [PR #77](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77) proposes v0.11.0 but is not yet merged. |
+| Changelog / current release | v0.11.0 published | [PR #77](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77) merged as `2c6ea1e`; its automatic v0.11.0 tag, release assets and Terraform Registry version are verified. Older entries may retain `(Unreleased)` labels despite existing tags; tags/assets/Registry are checked separately. |
 | Provider index | Reconciled | Template and generated index mirror the 112-resource / 98-data-source inventory and released Kea scope. |
-| OpenTofu distribution | Registered; installation not independently tested | Provider [PR #6248](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/6248) and signing-key [PR #6258](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/6258) are merged in opentofu/registry. The OpenTofu versions API lists v0.10.1, and its linux/amd64 download metadata advertises signing key E019411104049B47. Registry presence is not resource-specific lifecycle, activation or packet proof. |
+| OpenTofu distribution | Registered; installation not independently tested | Provider [PR #6248](https://github.com/opentofu/registry/pull/6248) and signing-key [PR #6258](https://github.com/opentofu/registry/pull/6258) are merged in opentofu/registry. The OpenTofu versions API lists v0.10.1, and its linux/amd64 download metadata advertises signing key E019411104049B47. Registry presence is not resource-specific lifecycle, activation or packet proof. |
 | Migration/import guidance | Partial | Per-resource import examples exist; broader dependency-order migration guide remains useful follow-up. |
 
 Story 31.0e proves exactly six WireGuard audit rows on disposable OPNsense 26.7.7: typed peer/server field parity and import-first daemon settings. WireGuard is core on 24.1+; server `peers` owns associations, peer `servers` is its authoritative API backreference. PSK/private keys stay resource-only Sensitive values. The daemon remained disabled, Terraform deletes left zero tagged items, and settings restored exactly. Implementation merged in [PR #63](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/63) and published in v0.7.0; see [digest-bound evidence](../implementation-artifacts/31-0e-wireguard-live-evidence.md). Stories 31.0k/31.0l remain separate stable-API validation work; the FRR2 compatibility gate is unchanged.

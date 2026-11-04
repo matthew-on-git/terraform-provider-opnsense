@@ -21,7 +21,7 @@ strategy: Ship incrementally to the registry; track remaining upstream limitatio
 - The largest remaining provider-owned gap is **data-source parity**: 16 singleton or sensitive special-case resources do not yet have matching data sources.
 - Gateway groups shipped in v0.9.0; Kea generic-option/DDNS owners shipped in v0.10.0. Remaining option parent linkage, active-traffic/DNS proof and HASync model research are separate gaps, not unimplemented resource owners.
 - **System general settings remain upstream-blocked**: action/status and setup-wizard APIs do not establish durable day-2 get/set semantics. Populated gateway-group first-tier clearing is separately upstream-limited.
-- Base assignment/IP is released for OPNsense 26.7.6+. [PR #77](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77) proposes identity-association/legacy track-interface adoption and updates for v0.11.0; it is not yet merged/released. The contributor's read/import report is distinct from independently verified write/activation proof. PPPoE remains unverified.
+- Base assignment/IP is released for OPNsense 26.7.6+. [PR #77](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77) merged identity-association/legacy track-interface adoption and updates, published in verified v0.11.0. The contributor's read/import report is distinct from independently verified write/activation proof. PPPoE remains unverified.
 - Use [support-matrix.md](support-matrix.md) for the dated release and evidence boundaries; historical planning snapshots below are not blanket support claims.
 
 ## PRD expansion applied / still required
@@ -100,7 +100,7 @@ Status: done. Cron job, Monit service/test/alert, and syslog destination resourc
 - 98 data sources are implemented, including standalone `system_info` and `unbound_settings`; 16 singleton or sensitive special-case resource-matching data sources remain.
 - Provider index, tfplugindocs output, examples, GoReleaser, signed checksum workflow, Registry manifest, and changelog exist.
 - Support matrix now lives in `support-matrix.md` and should be mirrored in Registry-facing docs.
-- v0.10.1 is published; retain automatic tagging, signature and Registry verification for subsequent releases.
+- v0.11.0 is published; retain automatic tagging, signature and Registry verification for subsequent releases.
 
 ---
 

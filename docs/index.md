@@ -116,7 +116,7 @@ The provider uses four public support states:
 | Needs research | Published or suspected endpoint evidence exists, but target-version availability or durable Terraform semantics are not confirmed. |
 | Upstream-blocked | OPNsense does not currently expose a stable usable API, or an upstream dependency must land first. |
 
-Released implementation inventory through v0.10.1 (reviewed 2026-11-03):
+Released implementation inventory through v0.11.0 (reviewed 2026-11-03):
 
 | Capability | Count |
 |------------|------:|
@@ -129,7 +129,9 @@ Released implementation inventory through v0.10.1 (reviewed 2026-11-03):
 
 | Supported today | Coming / provider-owned follow-up | Needs research | Upstream-blocked / OPNsense dependency |
 |-----------------|------------------------------------|----------------|----------------------------------------|
-| Firewall, HAProxy, ACME, DNS/Dnsmasq, DHCP/Kea, Dynamic DNS, VPN, FRR/Quagga, interface assignment/IP on OPNsense `26.7.6+` plus LAGG and other interface types, system tunables and gateway groups, Kea generic DHCPv4 options and DDNS general settings, auth, trust, syslog, Monit, cron, and traffic shaping resources. | Data-source parity for 16 singleton or sensitive special-case resources; remaining audited field/policy parity. [PR #77](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77) proposes IPv6 identity-association/legacy track-interface assignment support for v0.11.0, but remains pending review/merge and publication. | Kea ordered parent-option linkage; HASync configuration `syncitems` model shape; HASync status/actions; PPPoE semantics for future interface settings. | System general settings: action/status plus setup-wizard evidence does not establish durable target-release get/set support. |
+| Firewall, HAProxy, ACME, DNS/Dnsmasq, DHCP/Kea, Dynamic DNS, VPN, FRR/Quagga, interface assignment/IP on OPNsense `26.7.6+` plus LAGG and other interface types, system tunables and gateway groups, Kea generic DHCPv4 options and DDNS general settings, auth, trust, syslog, Monit, cron, and traffic shaping resources. | Data-source parity for 16 singleton or sensitive special-case resources; remaining audited field/policy parity. | Kea ordered parent-option linkage; HASync configuration `syncitems` model shape; HASync status/actions; PPPoE semantics for future interface settings. | System general settings: action/status plus setup-wizard evidence does not establish durable target-release get/set support. |
+
+IPv6 identity-association (`idassoc6`) and legacy track-interface (`track6`) adoption/updates are published in v0.11.0 after [PR #77](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77). Six optional/computed delegation fields preserve omitted values and unowned settings. Contributor-reported OPNsense 26.7.8_2 / OpenTofu 1.13.2 import and no-change refresh coverage was not independently reproduced and does not establish activation, packet behavior or full write/restore acceptance. Assignment creation, automatic mode migration and upstream DHCPv6-client ownership are not included.
 
 OPNsense core and plugin versions are separate compatibility gates. Released FRR 2.0 compatibility covers the verified installed-plugin/model and migration/lifecycle subgate; advanced BGP field/policy parity remains a separate follow-up, not a blanket compatibility claim for every plugin release. Gateway-group ownership is published in 0.9.0 with release assets and Registry version verified; populated first-tier clearing remains upstream-limited. Kea option/DDNS owners are published in 0.10.0 with separate final disabled-appliance Core lifecycle/restoration evidence; ordered parent linkage, active packet/DNS behavior and OpenTofu lifecycle validation remain separate. Their historical live-test digests remain exact to the recorded checkpoints; the release/tracking-only integration revision is not advertised as a new appliance run.
 
