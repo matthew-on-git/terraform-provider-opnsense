@@ -63,15 +63,7 @@ func NewClient(cfg ClientConfig) (*Client, error) {
 	}
 
 	// Apply defaults.
-	if cfg.RetryMax == 0 {
-		cfg.RetryMax = 3
-	}
-	if cfg.RetryWaitMin == 0 {
-		cfg.RetryWaitMin = 1 * time.Second
-	}
-	if cfg.RetryWaitMax == 0 {
-		cfg.RetryWaitMax = 30 * time.Second
-	}
+	cfg = applyClientDefaults(cfg)
 
 	// Configure TLS transport.
 	transport := &http.Transport{
@@ -109,6 +101,20 @@ func NewClient(cfg ClientConfig) (*Client, error) {
 		baseURL:    baseURL,
 		readSem:    semaphore.NewWeighted(maxReads),
 	}, nil
+}
+
+// applyClientDefaults fills zero retry values with the documented defaults.
+func applyClientDefaults(cfg ClientConfig) ClientConfig {
+	if cfg.RetryMax == 0 {
+		cfg.RetryMax = 3
+	}
+	if cfg.RetryWaitMin == 0 {
+		cfg.RetryWaitMin = 1 * time.Second
+	}
+	if cfg.RetryWaitMax == 0 {
+		cfg.RetryWaitMax = 30 * time.Second
+	}
+	return cfg
 }
 
 // BaseURL returns the configured OPNsense appliance base URL.

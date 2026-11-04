@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
+	"time"
 )
 
 func TestNewClient_RequiresBaseURL(t *testing.T) {
@@ -51,6 +52,81 @@ func TestNewClient_NormalizesBaseURL(t *testing.T) {
 	}
 	if client.BaseURL() != "https://example.com" {
 		t.Errorf("expected base URL without trailing slash, got %q", client.BaseURL())
+	}
+}
+
+func TestApplyClientDefaults(t *testing.T) {
+	tests := []struct {
+		name         string
+		in           ClientConfig
+		wantRetryMax int
+		wantWaitMin  time.Duration
+		wantWaitMax  time.Duration
+	}{
+		{
+			name:         "zero values use defaults",
+			wantRetryMax: 3,
+			wantWaitMin:  time.Second,
+			wantWaitMax:  30 * time.Second,
+		},
+		{
+			name:         "explicit values are preserved",
+			in:           ClientConfig{RetryMax: 7, RetryWaitMin: 2 * time.Second, RetryWaitMax: 15 * time.Second},
+			wantRetryMax: 7,
+			wantWaitMin:  2 * time.Second,
+			wantWaitMax:  15 * time.Second,
+		},
+		{
+			name:         "partial values keep remaining defaults",
+			in:           ClientConfig{RetryMax: 9},
+			wantRetryMax: 9,
+			wantWaitMin:  time.Second,
+			wantWaitMax:  30 * time.Second,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := applyClientDefaults(tc.in)
+			if got.RetryMax != tc.wantRetryMax {
+				t.Errorf("expected RetryMax %d, got %d", tc.wantRetryMax, got.RetryMax)
+			}
+			if got.RetryWaitMin != tc.wantWaitMin {
+				t.Errorf("expected RetryWaitMin %s, got %s", tc.wantWaitMin, got.RetryWaitMin)
+			}
+			if got.RetryWaitMax != tc.wantWaitMax {
+				t.Errorf("expected RetryWaitMax %s, got %s", tc.wantWaitMax, got.RetryWaitMax)
+			}
+		})
+	}
+}
+
+func TestClient_ZeroRetryMaxUsesThreeRetries(t *testing.T) {
+	var attempts atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		attempts.Add(1)
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer server.Close()
+
+	client, err := NewClient(ClientConfig{
+		BaseURL:      server.URL,
+		APIKey:       "key",
+		APISecret:    "secret",
+		Insecure:     true,
+		RetryWaitMin: time.Millisecond,
+		RetryWaitMax: time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	resp, err := client.HTTPClient().Get(server.URL + "/api/test")
+	if err == nil {
+		_ = resp.Body.Close()
+		t.Fatal("expected error after exhausting default retries")
+	}
+	if got := attempts.Load(); got != 4 {
+		t.Fatalf("expected 4 attempts (initial + 3 default retries), got %d", got)
 	}
 }
 

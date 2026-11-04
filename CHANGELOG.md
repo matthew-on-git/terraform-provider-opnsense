@@ -2,7 +2,17 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.12.0 (Unreleased)
+## 0.13.0 (Unreleased)
+
+FEATURES:
+
+* Add provider-level `retries`, `min_backoff`, and `max_backoff` settings, with `OPNSENSE_RETRIES`, `OPNSENSE_MIN_BACKOFF`, and `OPNSENSE_MAX_BACKOFF` environment fallbacks, to tune retry behavior for slow or transiently failing OPNsense APIs. `retries` is a count; backoffs are whole seconds. Values must be between 1 and 2147483647. Omitted values preserve the existing 3 retries, 1 second minimum, and 30 second maximum.
+
+UPGRADE NOTES:
+
+* No action required. The new attributes are optional and default to the previous retry behavior.
+
+## 0.12.0 (Released)
 
 FEATURES:
 
