@@ -57,7 +57,7 @@ context: []
 - [x] `internal/provider/provider_test.go` -- cover schema presence/optionality/validators, HCL priority, env fallback, invalid env fallback, unknown fallback, and exact `ClientConfig` seconds-to-duration mapping.
 - [x] `pkg/opnsense/client_test.go` -- assert zero values still produce 3 / 1s / 30s and explicit values are preserved.
 - [x] `templates/index.md.tmpl` and `examples/provider/provider.tf` -- document attributes, environment variables, units, precedence, and defaults.
-- [x] `CHANGELOG.md` -- add `## 0.12.0 (Unreleased)` with a FEATURES entry for configurable retry settings.
+- [x] `CHANGELOG.md` -- add `## 0.13.0 (Unreleased)` with a FEATURES entry for configurable retry settings.
 - [x] Run `go generate ./...`, then `make check` -- regenerate provider docs and validate the full gate.
 
 **Acceptance Criteria:**
@@ -80,7 +80,7 @@ context: []
 ### Review fixes
 
 - Added a `Configure`-level `retries = 1` test (two HTTP attempts), a `NewClient` zero-`RetryMax` test (four total attempts), in-range validator tests at both bounds, an env whitespace case, per-variable invalid-env cases, and a canceled-context credential test.
-- Clarified docs: `retries` is a count, backoffs are seconds, valid range is `1..2147483647`, `retries = 0` is unsupported, and `Retry-After` can exceed `max_backoff`. Corrected the credential-validation endpoint to `/api/core/menu/search`, aligned the settings table, updated the README environment-variable list, dated the published `0.11.0` changelog heading, and moved the sprint tracker entry to `review`.
+- Clarified docs: `retries` is a count, backoffs are seconds, valid range is `1..2147483647`, `retries = 0` is unsupported, and `Retry-After` can exceed `max_backoff`. Corrected the credential-validation endpoint to `/api/core/menu/search`, aligned the settings table, updated the README environment-variable list, and moved the sprint tracker entry to `review`.
 - Replaced the context-less credential probe with a context-aware request so Terraform cancellation aborts configure-time retries.
 
 ## Spec Change Log
@@ -131,3 +131,8 @@ context: []
 - `go test ./internal/provider ./pkg/opnsense` -- expected: PASS.
 - `go generate ./... && git diff --exit-code` -- expected: generated docs are committed and stable.
 - `make check` -- expected: lint, format, test, security, scan, and docs all PASS.
+
+### Main integration and release correction
+
+- Integrated current main without rewriting contributor commits. Resolved the changelog conflict by preserving the published Trust v0.12.0 scope and placing retry settings under v0.13.0 (Unreleased).
+- No merge to main, tag, release, or live-appliance validation is implied by this integration.

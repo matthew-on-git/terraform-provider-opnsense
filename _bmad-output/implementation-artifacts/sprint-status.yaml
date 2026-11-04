@@ -299,7 +299,7 @@ development_status:
   31-0c-openvpn-field-and-key-parity: done # repair 2 converged; six rows promoted after digest-bound live proof and exact-tree gates
   31-0d-unbound-settings-and-forward-parity: done # PR61 merged; repair 7 exact-tree/live proof and four-layer convergence passed
   31-0e-wireguard-field-and-settings-parity: done # PR63 merged; published since v0.7.0, exact live proof recorded
-  31-0f-trust-lifecycle-and-settings-parity: backlog # P0 — audit-derived; before 31.1
+  31-0f-trust-lifecycle-and-settings-parity: in-progress # six-field settings increment; CA/cert actions and disposable proof outstanding
   31-0g-ipsec-field-parity: backlog              # P1 — audit-derived; before 31.1
   31-0h-quagga-bgp-field-parity: in-progress     # compatibility PR64/69 released by v0.8.1; advanced parity remains; operator adoption is private
   31-0i-live-interface-data-sources: backlog     # P1 — audit-derived; before 31.1
@@ -307,8 +307,8 @@ development_status:
   31-0k-gateway-group-stable-api-validation: done # stable API proof merged in PR71; implementation/lifecycle tracked by 31.0m
   31-0l-kea-option-ddns-stable-api-validation: done # stable API proof merged in PR71; owners independently lab-proved under 31.0n/o
   31-0m-gateway-group-resource: done # PR72 merged; v0.9.0 tag/assets/Registry verified; first-tier clear remains upstream-limited
-  31-0n-kea-generic-option-resource: review # local full/race and disabled-appliance Core lifecycle passed; merge/release gated; ordered linkage separate
-  31-0o-kea-ddns-settings-resource: done # reviewed owner/lookup; final digest-bound evidence required; merge/release separate
+  31-0n-kea-generic-option-resource: done # owner/lookup shipped v0.10.0; ordered linkage remains separate
+  31-0o-kea-ddns-settings-resource: done # owner/lookup shipped v0.10.0; DNS-delivery proof remains distinct
   31-0p-kea-ordered-option-linkage: backlog # existing parent owners lack links; ordered stable read API research gate
   31-1-complete-provider-positioning-docs: backlog
   31-2-existing-provider-migration-guide: backlog

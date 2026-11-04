@@ -21,8 +21,8 @@ func TestDataSources_schemaIDs(t *testing.T) {
 	t.Parallel()
 
 	constructors := DataSources()
-	if len(constructors) != 1 {
-		t.Fatalf("expected 1 trust data source, got %d", len(constructors))
+	if len(constructors) != 2 {
+		t.Fatalf("expected 2 trust data sources, got %d", len(constructors))
 	}
 	assertRequiredID(t, constructors[0]())
 }

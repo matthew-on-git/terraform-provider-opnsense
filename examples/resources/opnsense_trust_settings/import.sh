@@ -1,0 +1,1 @@
+terraform import opnsense_trust_settings.policy trust_settings
