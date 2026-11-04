@@ -81,6 +81,16 @@ func TestMatrixClassificationExamples(t *testing.T) {
 		t.Fatalf("surface count = %d, want 94", len(audit.Surfaces))
 	}
 
+	if audit.LocalInventory.ResourceCount != 113 || audit.LocalInventory.DataSourceCount != 99 || len(audit.LocalInventory.ResourceOnly) != 16 {
+		t.Fatal("Trust settings increment inventory must be 113/99 with 16 lookup gaps")
+	}
+	for _, kind := range []string{"resource", "data-source"} {
+		surface := findSurface(t, audit, kind, "trust_settings")
+		if surface.Classification != "missing-buildable" || surface.FollowUp == "" {
+			t.Fatal("settings increment must not claim full Trust audit parity")
+		}
+	}
+
 	route := findSurface(t, audit, "resource", "route")
 	if route.Classification != "covered-different-name" || strings.Join(route.LocalEquivalents, ",") != "system_route" {
 		t.Fatalf("route mapping = %q %v", route.Classification, route.LocalEquivalents)

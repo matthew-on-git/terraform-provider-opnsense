@@ -10,10 +10,10 @@
     "provider_config_count": 1
   },
   "local_inventory": {
-    "resource_count": 112,
-    "data_source_count": 98,
-    "resource_doc_count": 112,
-    "data_source_doc_count": 98,
+    "resource_count": 113,
+    "data_source_count": 99,
+    "resource_doc_count": 113,
+    "data_source_doc_count": 99,
     "ephemeral_resource_count": 1,
     "ephemeral_resource_doc_count": 1,
     "resource_only_data_source_gaps": [
@@ -1361,7 +1361,9 @@
       "name": "trust_settings",
       "domain": "Trust",
       "classification": "missing-buildable",
-      "local_equivalents": [],
+      "local_equivalents": [
+        "trust_settings"
+      ],
       "baseline_fields": [
         "cipher_string",
         "enable_config_constraints",
@@ -1373,14 +1375,17 @@
       ],
       "field_evidence": {
         "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "global cipher, OpenSSL legacy/constraint, CRL fetch/install, and intermediate-store settings have no local singleton",
-        "local_only": "none material",
-        "lifecycle": "import-first singleton; update/reconfigure; destroy removes Terraform state without deleting upstream settings",
+        "baseline_only": "No missing audited six-field owner/lookup; five additional upstream TLS fields remain deliberately unaudited and unmanaged.",
+        "local_only": "Import-first six-field singleton implementation; HTTP-backed framework/protocol tests, not appliance or release evidence.",
+        "lifecycle": "Fixed trust_settings import; targeted update/read/reconfigure, durable saved/uncertain recovery without repeated set, state-only Delete. Disposable lifecycle not executed; full Trust action parity remains outstanding.",
         "sensitive_write_only": "none"
       },
       "source_refs": [
         "https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/resources/trust_settings.md",
-        "internal/provider/provider.go"
+        "internal/provider/provider.go",
+        "internal/service/trust/settings_resource.go",
+        "internal/service/trust/settings_protocol_test.go",
+        "_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md"
       ],
       "follow_up": "_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md"
     },
@@ -2862,7 +2867,9 @@
       "name": "trust_settings",
       "domain": "Trust",
       "classification": "missing-buildable",
-      "local_equivalents": [],
+      "local_equivalents": [
+        "trust_settings"
+      ],
       "baseline_fields": [
         "cipher_string",
         "enable_config_constraints",
@@ -2874,14 +2881,17 @@
       ],
       "field_evidence": {
         "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "global cipher, OpenSSL legacy/constraint, CRL fetch/install, and intermediate-store settings have no local singleton",
-        "local_only": "none material",
-        "lifecycle": "read-only API lookup; operational interface rows read live state rather than durable configuration",
+        "baseline_only": "No missing audited six-field owner/lookup; five additional upstream TLS fields remain deliberately unaudited and unmanaged.",
+        "local_only": "Read-only six-field lookup with authoritative values, strict Boolean/selected-choice decoding, fixed computed identity and drift observations; HTTP-backed protocol evidence only.",
+        "lifecycle": "GET-only lookup; no import, update, delete, mutation, activation or recovery ownership. Disposable appliance read acceptance and broader Trust lifecycle follow-up remain outstanding.",
         "sensitive_write_only": "none"
       },
       "source_refs": [
         "https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/trust_settings.md",
-        "internal/provider/provider.go"
+        "internal/provider/provider.go",
+        "internal/service/trust/settings_data_source.go",
+        "internal/service/trust/settings_protocol_test.go",
+        "_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md"
       ],
       "follow_up": "_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md"
     },
