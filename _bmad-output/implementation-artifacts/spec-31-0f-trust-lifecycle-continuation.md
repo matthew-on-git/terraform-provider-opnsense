@@ -341,7 +341,7 @@ Executed whole-tree SHA256:
 Reproducible executable SHA256 (752 files):
 `5c2be5cb1176c49d05559d01c5b0521bccc29e9a409ee9c98f4feb41eccfb9d4`.
 The evidence-only publication is not retroactively called the executed whole
-tree. [Current sanitized proof](31-0f-live-proof.json) and its pinned historical
+tree. [Pinned earlier sanitized proof](https://github.com/matthew-on-git/terraform-provider-opnsense/blob/17cb7b0064a3beb217e9f011be3048d6103d760b/_bmad-output/implementation-artifacts/31-0f-live-proof.json) and its pinned historical
 reference retain that distinction. All6 local gates,16 offline guard methods,
 Trust/coverage race suites and3 real Core create-recovery controls pass. The
 old production snapshot fails all3 controls; repaired creation emits warnings
@@ -383,3 +383,37 @@ Exact dependency source confirms the observation:
 adds100 for two-digit years below68; the
 [validity parser](https://github.com/php/php-src/blob/php-8.5.12/ext/openssl/openssl.c#L1083)
 uses that helper. The provider preserves authoritative appliance observations.
+
+
+### Final signed-date executable proof — 2026-11-04
+
+This supersedes the earlier merge-candidate proof for current executable bytes.
+Candidate `d87b4aa141384c3356dbff93eb2f03029a2a9941` passed the **complete**
+identity/TLS-bound guarded matrix on authentic OPNsense26.7.8_2, exit0 with final
+source/runtime digest assertions and success marker: **26 apply/no-change pairs**
+including19 settings cases. A real1969 CA/certificate retained exact signed dates
+`-31536000`/`-86400` in both imported resources and both authoritative lookups.
+Signing, CSR import, usable one-time key, stable metadata, reissue and new-token/
+unchanged-token controls passed; independent cryptographic-write counts were
+**1/1/0**. Terraform destroyed all9 owned objects, leaving0 before rollback and
+at final inspection; settings destroy changed no policy. All four original
+configuration/settings/routes/runtime hashes restored exactly. The exact owned
+guest, disk, marker, container and local/remote listeners were retired; absence
+was independently read back.
+
+Executed whole-tree SHA256:
+`d34bdd2b0c249283c369a3f63be4bdce43ec9ce7340dc42719c9bcb7e6bc95e7`.
+Executable SHA256 (753 files):
+`287556a87130595829bd216cf425e4f81cf85faf9cfeee6aef023edd60d4362d`.
+The evidence-only publication is not called the executed whole tree. Its executable
+inventory must remain equal. [Sanitized current proof](31-0f-live-proof.json)
+retains the earlier successful proof and failed signed-date receipt as distinct
+history. The1661ccd failure was fixture-year interpretation, not a passing
+acceptance run; fallback recovery does not prove Terraform deletion for it.
+
+All6 candidate gates passed with0 skipped (32,568ms),16 offline guards passed,
+and real pre-epoch protocol controls passed under the race detector. All8 hosted
+checks passed at d87b4aa. Final evidence-head gates/CI are verified separately.
+Keyless provider support, older firmware and OpenTofu execution remain outside
+this proof; the parent story remains in progress. No production appliance was
+targeted. Readiness, authorized merge and automatic release are separate events.
