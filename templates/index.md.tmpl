@@ -46,8 +46,16 @@ On configuration the provider validates credentials against
 ### Retry behavior
 
 The provider retries transient API failures for every resource and data source.
-A `Retry-After` header on a `429` or `503` response can extend a wait beyond
-`max_backoff`.
+`retries = 3` permits up to four attempts (the initial request plus three
+retries). Waits begin at `min_backoff` and double up to `max_backoff`; a
+`Retry-After` header on a `429` or `503` response can extend a wait beyond
+`max_backoff`. A `min_backoff` greater than `max_backoff` is accepted and the
+computed wait is clamped to `max_backoff`.
+
+Retries also apply to writes. If OPNsense processes a write but the response is
+lost or fails, a retry can repeat that write. The upper bounds are overflow
+guards, not recommended values; large retry/backoff settings can block Terraform
+for a very long time.
 
 ```hcl
 # Environment-variable configuration (no secrets in HCL):

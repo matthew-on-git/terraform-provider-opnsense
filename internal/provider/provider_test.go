@@ -105,13 +105,13 @@ func TestProviderSchema_RetryValidatorsRejectInvalidValues(t *testing.T) {
 	}{
 		{"retries", 0},
 		{"retries", -1},
-		{"retries", int64(maxRetrySetting) + 1},
+		{"retries", maxRetrySetting + 1},
 		{"min_backoff", 0},
 		{"min_backoff", -5},
-		{"min_backoff", int64(maxRetrySetting) + 1},
+		{"min_backoff", maxRetrySetting + 1},
 		{"max_backoff", 0},
 		{"max_backoff", -5},
-		{"max_backoff", int64(maxRetrySetting) + 1},
+		{"max_backoff", maxRetrySetting + 1},
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("%s_%d", tc.name, tc.value), func(t *testing.T) {
@@ -135,7 +135,7 @@ func TestProviderSchema_RetryValidatorsAcceptBounds(t *testing.T) {
 
 	for _, name := range []string{"retries", "min_backoff", "max_backoff"} {
 		attr := schemaResp.Schema.Attributes[name].(schema.Int64Attribute)
-		for _, value := range []int64{1, int64(maxRetrySetting)} {
+		for _, value := range []int64{1, maxRetrySetting} {
 			req := validator.Int64Request{Path: path.Root(name), ConfigValue: types.Int64Value(value)}
 			var resp validator.Int64Response
 			for _, v := range attr.Validators {
@@ -545,6 +545,31 @@ func TestValidateRequiredConfig_AllMissing(t *testing.T) {
 }
 
 // --- validateCredentials tests ---
+
+func TestValidateCredentials_CancelledContext(t *testing.T) {
+	var attempts atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		attempts.Add(1)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	client := newTestClient(t, server.URL)
+	resp := &frameworkprovider.ConfigureResponse{}
+
+	validateCredentials(ctx, client, server.URL, resp)
+
+	if !resp.Diagnostics.HasError() {
+		t.Fatal("expected cancellation error")
+	}
+	assertConfigDiagSummaryContains(t, resp, "Unable to Connect")
+	if got := attempts.Load(); got != 0 {
+		t.Errorf("expected no HTTP attempts after cancellation, got %d", got)
+	}
+}
 
 func TestValidateCredentials_Success(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

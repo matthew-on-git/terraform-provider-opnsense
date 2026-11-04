@@ -61,8 +61,8 @@ type OpnsenseProvider struct {
 	version string
 }
 
-// maxRetrySetting bounds retry counts and backoff seconds so they fit both
-// int32 APIs and time.Duration arithmetic.
+// maxRetrySetting bounds retry counts and backoff seconds to avoid int32/int
+// overflow while staying far below the time.Duration limit.
 const maxRetrySetting = 1<<31 - 1
 
 // OpnsenseProviderModel describes the provider data model.
@@ -231,7 +231,15 @@ func validateRequiredConfig(cfg resolvedConfig, diags *diag.Diagnostics) {
 
 // validateCredentials checks that the configured credentials are valid.
 func validateCredentials(ctx context.Context, client *opnsense.Client, uri string, resp *provider.ConfigureResponse) {
-	httpResp, err := client.HTTPClient().Get(client.BaseURL() + "/api/core/menu/search")
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, client.BaseURL()+"/api/core/menu/search", nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to Create OPNsense Request",
+			fmt.Sprintf("Unable to create the OPNsense credential-validation request for %s: %s", uri, err),
+		)
+		return
+	}
+	httpResp, err := client.HTTPClient().Do(req)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Connect to OPNsense",

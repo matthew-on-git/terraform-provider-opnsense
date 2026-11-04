@@ -79,9 +79,9 @@ context: []
 
 ### Review fixes
 
-- Added a `Configure`-level `retries = 1` test (two HTTP attempts), a `NewClient` zero-config default test (three attempts), in-range validator tests at both bounds, an env whitespace case, and per-variable invalid-env cases.
+- Added a `Configure`-level `retries = 1` test (two HTTP attempts), a `NewClient` zero-`RetryMax` test (four total attempts), in-range validator tests at both bounds, an env whitespace case, per-variable invalid-env cases, and a canceled-context credential test.
 - Clarified docs: `retries` is a count, backoffs are seconds, valid range is `1..2147483647`, `retries = 0` is unsupported, and `Retry-After` can exceed `max_backoff`. Corrected the credential-validation endpoint to `/api/core/menu/search`, aligned the settings table, updated the README environment-variable list, dated the published `0.11.0` changelog heading, and moved the sprint tracker entry to `review`.
-- Deferred the pre-existing context-less credential probe so Terraform cancellation does not abort configure-time retries.
+- Replaced the context-less credential probe with a context-aware request so Terraform cancellation aborts configure-time retries.
 
 ## Spec Change Log
 
@@ -112,6 +112,11 @@ context: []
 | Verification gap: no `Configure`-level retry wiring test | medium | Added `TestProvider_ConfigureUsesConfiguredRetries`; it observes two attempts with `retries = 1` | patch |
 | Verification gap: defaults not pinned through `NewClient` | medium | Added `TestClient_ZeroRetryConfigUsesDefaults`; zero config still produces three attempts | patch |
 | Verification gap: in-range validator values untested | low | Added boundary acceptance tests at both ends of the range | patch |
+| Post-PR re-review: credential probe ignores cancellation | medium | Fixed with `http.NewRequestWithContext` and `Do`; added a cancellation test and removed the deferred entry | patch |
+| Post-PR re-review: default-retry test did not pin `RetryMax = 3` | medium | Test now uses an always-500 server and asserts four attempts with short waits | patch |
+| Post-PR re-review: write retries, practical bounds, `min_backoff > max_backoff`, and total attempts undocumented | low | Expanded the Retry behavior docs to cover all four | patch |
+| Post-PR re-review: redundant `int64` conversions and inaccurate bound comment | low | Removed conversions and clarified the comment | patch |
+| Post-PR re-review: invalid env values remain silent | low | Documented that invalid env values are ignored; no warning added by design | none |
 
 ## Design Notes
 

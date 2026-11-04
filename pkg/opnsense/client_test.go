@@ -100,39 +100,33 @@ func TestApplyClientDefaults(t *testing.T) {
 	}
 }
 
-func TestClient_ZeroRetryConfigUsesDefaults(t *testing.T) {
+func TestClient_ZeroRetryMaxUsesThreeRetries(t *testing.T) {
 	var attempts atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		attempt := attempts.Add(1)
-		if attempt <= 2 {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
+		attempts.Add(1)
+		w.WriteHeader(http.StatusInternalServerError)
 	}))
 	defer server.Close()
 
 	client, err := NewClient(ClientConfig{
-		BaseURL:   server.URL,
-		APIKey:    "key",
-		APISecret: "secret",
-		Insecure:  true,
+		BaseURL:      server.URL,
+		APIKey:       "key",
+		APISecret:    "secret",
+		Insecure:     true,
+		RetryWaitMin: time.Millisecond,
+		RetryWaitMax: time.Millisecond,
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	resp, err := client.HTTPClient().Get(server.URL + "/api/test")
-	if err != nil {
-		t.Fatalf("request failed after default retries: %v", err)
+	if err == nil {
+		_ = resp.Body.Close()
+		t.Fatal("expected error after exhausting default retries")
 	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("expected status 200 after default retries, got %d", resp.StatusCode)
-	}
-	if got := attempts.Load(); got != 3 {
-		t.Errorf("expected 3 attempts from default retries, got %d", got)
+	if got := attempts.Load(); got != 4 {
+		t.Fatalf("expected 4 attempts (initial + 3 default retries), got %d", got)
 	}
 }
 
