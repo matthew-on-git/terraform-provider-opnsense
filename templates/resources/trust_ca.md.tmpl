@@ -1,0 +1,80 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Trust"
+description: |-
+  Manage a certificate authority using the OPNsense Trust API.
+---
+
+# {{.Name}} ({{.Type}})
+
+Manage a root or intermediate CA, an OCSP signing certificate, or an imported CA
+with the existing UUID-backed Trust owner. Existing configurations still create
+an internal CA when no action is specified. A parent CA is referenced by its
+`refid`, not its UUID.
+
+Creation/operation intent is distinct from the action inferred by the API editor
+on read. The editor's lifetime is a template default, not proof of actual
+certificate validity. Description-only changes must not regenerate a CA. Change `action` to request
+an operation, or change `operation_token` to deliberately repeat it; never use a
+routine description edit as a generation trigger.
+
+## Release-specific limitation
+
+The released OPNsense 26.7.8 CA controller requires one private-key PEM section
+even for certificate-only import. Keyless import and metadata updates of an
+existing keyless CA are rejected rather than generating a substitute key or
+using raw configuration writes. Import with a matching certificate and key is
+supported by the source contract; actual appliance proof remains separately gated.
+
+## Sensitive material
+
+API-returned private keys and supplied import keys are Sensitive. Sensitive does
+not mean absent from Terraform state: use protected state storage and do not
+publish raw plans, state, or debug logs. Public certificate payloads and readable
+metadata are separate from generation intent.
+
+Removing `action` or `operation_token`, or clearing them to empty values, never
+requests generation/signing/reissue. A new nonempty token requires a nonempty
+action; omitted-action defaults apply only to creation.
+
+## Uncertain operation responses
+
+An explicit update consumes its attempted action/token before sending the
+non-idempotent request. If the response is lost or ambiguous,
+`operation_status = "unknown"` retains that uncertainty with prior observations;
+refresh does not invent proof of success or automatically repeat the operation.
+Inspect the appliance securely and reconcile before deliberately changing the
+operation token. A subsequent successful metadata edit is not proof that the
+previous cryptographic operation succeeded. A failed create without a returned
+UUID cannot fabricate an identity; inspect for an orphan before retrying.
+Terraform Core can taint a failed create even when the provider retained a
+confirmed UUID/key after readback failure. Inspect that UUID securely and
+reconcile/import before accepting any replacement plan; do not blindly retry
+creation or assume automatic recovery of a response-only key.
+
+## Example Usage
+
+{{tffile "examples/resources/opnsense_trust_ca/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import the CA UUID, then inspect a no-change plan before managing it. Import does
+not recover original generation intent or prove that a CA was created with the
+API editor's current defaults.
+
+{{codefile "shell" "examples/resources/opnsense_trust_ca/import.sh"}}
+
+For no-change adoption, start with the imported object's description and omit
+creation/operation inputs (`action`, `operation_token`, lifetime and PEM inputs)
+until after reviewing authoritative returned observations. The creation example
+is not a no-change import configuration: supplying new explicit action intent
+may deliberately request a cryptographic operation.
+
+## Validation scope
+
+The remaining Trust action/settings disposable matrix is not yet executed.
+Source-backed implementation and offline tests are not appliance lifecycle,
+service-restart, or release proof. Test action transitions and exact restoration
+on an isolated disposable appliance before adopting existing PKI.

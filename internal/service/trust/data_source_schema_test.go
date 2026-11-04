@@ -21,8 +21,8 @@ func TestDataSources_schemaIDs(t *testing.T) {
 	t.Parallel()
 
 	constructors := DataSources()
-	if len(constructors) != 2 {
-		t.Fatalf("expected 2 trust data sources, got %d", len(constructors))
+	if len(constructors) != 3 {
+		t.Fatalf("expected 3 trust data sources, got %d", len(constructors))
 	}
 	assertRequiredID(t, constructors[0]())
 }
@@ -43,14 +43,14 @@ func TestCADataSource_read(t *testing.T) {
 	ds := newCADataSource()
 	configureDataSource(t, ds, client)
 	schema := dataSourceSchema(t, ds)
-	req := datasource.ReadRequest{Config: modelConfig(t, schema, &CAResourceModel{ID: types.StringValue(id)})}
+	req := datasource.ReadRequest{Config: modelConfig(t, schema, &trustReadModel{ID: types.StringValue(id)})}
 	resp := datasource.ReadResponse{State: tfsdk.State{Schema: schema}}
 
 	ds.Read(context.Background(), req, &resp)
 	if resp.Diagnostics.HasError() {
 		t.Fatalf("read diagnostics: %v", resp.Diagnostics)
 	}
-	var state CAResourceModel
+	var state trustReadModel
 	if diags := resp.State.Get(context.Background(), &state); diags.HasError() {
 		t.Fatalf("state diagnostics: %v", diags)
 	}

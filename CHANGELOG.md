@@ -2,7 +2,17 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.12.0 (Unreleased)
+## 0.13.0 (Unreleased)
+
+FEATURES:
+
+* Extend the existing Trust CA/certificate owners with released action-specific lifecycle contracts and a certificate UUID lookup. Preserve creation intent separately from volatile editor metadata, prevent description-only regeneration, and retain sensitive one-time keys returned by successful local-only creation. Explicit updates consume attempted action/token and retain unknown outcomes instead of replaying cryptographic operations after response loss.
+
+UPGRADE NOTES:
+
+* Existing resource names, UUID imports and configured certificate/private-key PEM input text remain compatible. New readable payloads are separate outputs; private material is Sensitive but remains in Terraform state. OPNsense 26.7.8 rejects certificate-only CA imports because of its private-key validation path; no substitute key or XML workaround is used. Full disposable action/settings acceptance remains unexecuted and the Trust parent story remains open. Merging this new versioned heading enables automatic publication after successful main CI.
+
+## 0.12.0 (November 4, 2026)
 
 FEATURES:
 

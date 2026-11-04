@@ -11,9 +11,9 @@
   },
   "local_inventory": {
     "resource_count": 113,
-    "data_source_count": 99,
+    "data_source_count": 100,
     "resource_doc_count": 113,
-    "data_source_doc_count": 99,
+    "data_source_doc_count": 100,
     "ephemeral_resource_count": 1,
     "ephemeral_resource_doc_count": 1,
     "resource_only_data_source_gaps": [
@@ -30,7 +30,6 @@
       "quagga_ospf_general",
       "quagga_rip",
       "quagga_static",
-      "trust_cert",
       "unbound_dnsbl",
       "unbound_general"
     ],
@@ -1287,15 +1286,16 @@
         "valid_to"
       ],
       "field_evidence": {
-        "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "existing/intermediate/OCSP actions, subject fields, digest/key type, import material, serial, and OCSP URI are absent locally",
-        "local_only": "none material",
-        "lifecycle": "UUID-backed API create/read/update/delete with the domain reconfigure/apply action where required",
-        "sensitive_write_only": "private key fields are sensitive; local import fields are write-only and deliberately not refreshed"
+        "shared": "Released26.7.8 Trust source-backed action/read continuation. Configured operation intent is distinct from inferred editor actions and lifetime template defaults.",
+        "baseline_only": "Full disposable action/settings matrix remains unexecuted. Certificate-only CA import and metadata updates are blocked by the released controller key-section defect; no XML or fabricated key workaround.",
+        "local_only": "Separate returned public/sensitive observations preserve configured PEM and operation intent; explicit operation token distinguishes repeat operations from description updates.",
+        "lifecycle": "Single-attempt UUID-backed create/update/delete; ordinary description changes do not regenerate/sign/reissue. Successful add identity and available one-time key are retained before read-back.",
+        "sensitive_write_only": "All supplied and returned private-key material is Sensitive. Configured PEM inputs retain text; response-only generated keys are retained in resource state, never synthesized by lookup or retransmitted."
       },
       "source_refs": [
         "https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/resources/trust_ca.md",
-        "docs/resources/trust_ca.md"
+        "docs/resources/trust_ca.md",
+        "_bmad-output/implementation-artifacts/31-0f-trust-source-contract.md"
       ],
       "follow_up": "_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md"
     },
@@ -1344,15 +1344,16 @@
         "valid_to"
       ],
       "field_evidence": {
-        "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "internal/external/CSR/import/reissue actions, SANs, subject fields, EKU, digest/key type, lifetime, and operational metadata are absent locally",
-        "local_only": "none material",
-        "lifecycle": "UUID-backed API create/read/update/delete with the domain reconfigure/apply action where required",
-        "sensitive_write_only": "private key fields are sensitive; local import fields are write-only and deliberately not refreshed"
+        "shared": "Released26.7.8 Trust source-backed action/read continuation. Configured operation intent is distinct from inferred editor actions and lifetime template defaults.",
+        "baseline_only": "Full disposable action/settings matrix remains unexecuted. Certificate-only CA import and metadata updates are blocked by the released controller key-section defect; no XML or fabricated key workaround.",
+        "local_only": "Separate returned public/sensitive observations preserve configured PEM and operation intent; explicit operation token distinguishes repeat operations from description updates.",
+        "lifecycle": "Single-attempt UUID-backed create/update/delete; ordinary description changes do not regenerate/sign/reissue. Successful add identity and available one-time key are retained before read-back.",
+        "sensitive_write_only": "All supplied and returned private-key material is Sensitive. Configured PEM inputs retain text; response-only generated keys are retained in resource state, never synthesized by lookup or retransmitted."
       },
       "source_refs": [
         "https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/resources/trust_cert.md",
-        "docs/resources/trust_cert.md"
+        "docs/resources/trust_cert.md",
+        "_bmad-output/implementation-artifacts/31-0f-trust-source-contract.md"
       ],
       "follow_up": "_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md"
     },
@@ -2795,15 +2796,16 @@
         "valid_to"
       ],
       "field_evidence": {
-        "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "existing/intermediate/OCSP actions, subject fields, digest/key type, import material, serial, and OCSP URI are absent locally",
-        "local_only": "none material",
-        "lifecycle": "read-only API lookup; operational interface rows read live state rather than durable configuration",
-        "sensitive_write_only": "private key fields are sensitive; local import fields are write-only and deliberately not refreshed"
+        "shared": "Released26.7.8 Trust source-backed action/read continuation. Configured operation intent is distinct from inferred editor actions and lifetime template defaults.",
+        "baseline_only": "Full disposable action/settings matrix remains unexecuted. Certificate-only CA import and metadata updates are blocked by the released controller key-section defect; no XML or fabricated key workaround.",
+        "local_only": "Separate returned public/sensitive observations preserve configured PEM and operation intent; explicit operation token distinguishes repeat operations from description updates.",
+        "lifecycle": "Read-only UUID lookup; no mutation, activation or recovery. One-time local keys cannot be recovered by GET.",
+        "sensitive_write_only": "All supplied and returned private-key material is Sensitive. Configured PEM inputs retain text; response-only generated keys are retained in resource state, never synthesized by lookup or retransmitted."
       },
       "source_refs": [
         "https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/trust_ca.md",
-        "docs/data-sources/trust_ca.md"
+        "docs/data-sources/trust_ca.md",
+        "_bmad-output/implementation-artifacts/31-0f-trust-source-contract.md"
       ],
       "follow_up": "_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md"
     },
@@ -2812,7 +2814,9 @@
       "name": "trust_cert",
       "domain": "Trust",
       "classification": "missing-buildable",
-      "local_equivalents": [],
+      "local_equivalents": [
+        "trust_cert"
+      ],
       "baseline_fields": [
         "action",
         "altnames_dns",
@@ -2850,15 +2854,16 @@
         "valid_to"
       ],
       "field_evidence": {
-        "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "internal/external/CSR/import/reissue actions, SANs, subject fields, EKU, digest/key type, lifetime, and operational metadata are absent locally",
-        "local_only": "none material",
-        "lifecycle": "read-only API lookup; operational interface rows read live state rather than durable configuration",
-        "sensitive_write_only": "private key fields are sensitive; local import fields are write-only and deliberately not refreshed"
+        "shared": "Released26.7.8 Trust source-backed action/read continuation. Configured operation intent is distinct from inferred editor actions and lifetime template defaults.",
+        "baseline_only": "Full disposable action/settings matrix remains unexecuted. Certificate-only CA import and metadata updates are blocked by the released controller key-section defect; no XML or fabricated key workaround.",
+        "local_only": "Separate returned public/sensitive observations preserve configured PEM and operation intent; explicit operation token distinguishes repeat operations from description updates.",
+        "lifecycle": "Read-only UUID lookup; no mutation, activation or recovery. One-time local keys cannot be recovered by GET.",
+        "sensitive_write_only": "All supplied and returned private-key material is Sensitive. Configured PEM inputs retain text; response-only generated keys are retained in resource state, never synthesized by lookup or retransmitted."
       },
       "source_refs": [
         "https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/trust_cert.md",
-        "docs/resources/trust_cert.md"
+        "docs/data-sources/trust_cert.md",
+        "_bmad-output/implementation-artifacts/31-0f-trust-source-contract.md"
       ],
       "follow_up": "_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md"
     },

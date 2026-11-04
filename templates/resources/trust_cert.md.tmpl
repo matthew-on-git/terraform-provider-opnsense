@@ -1,0 +1,82 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Trust"
+description: |-
+  Manage certificates and certificate requests using the OPNsense Trust API.
+---
+
+# {{.Name}} ({{.Type}})
+
+The existing certificate owner supports action-specific certificate import,
+internal generation, external CSR creation, signing/importing CSR results,
+reissue, and manual updates. Omitted action retains legacy certificate import
+behavior for creation. The issuing CA is referenced by `refid`, not UUID.
+
+Configured certificate and private-key PEM inputs preserve their text; returned
+API payloads are separate outputs. Read-time action is inferred by OPNsense and
+is not original creation provenance. Ordinary description changes do not repeat
+generation/sign/reissue. Reissue does not restart services consuming the
+certificate. Change `action` to request a transition, or change `operation_token` to repeat
+the configured action deliberately. Generation/import input changes must be
+paired with explicit operation intent; description-only changes use a safe
+manual update. Review the plan before requesting an operation.
+
+SAN fields use the released model's newline-delimited representation.
+`cert_type` selects supported certificate purposes; RFC 3280 purpose is derived
+metadata, not an arbitrary EKU write field. Editor lifetime is not authoritative
+certificate validity.
+
+## One-time local keys
+
+Internal generation with local-only key storage returns the private key only in
+the add response. The provider retains that Sensitive output across refreshes,
+but lookup and import cannot recover it. It is never sent back to the firewall.
+Generation through an update cannot deliver this response-only key and is
+rejected when local-only storage is requested. A lost add response may lose the
+key irretrievably; replaying creation is not recovery. Back up returned keys
+securely. Sensitive values remain in Terraform state.
+
+Removing `action` or `operation_token`, or clearing them to empty values, never
+requests generation/signing/reissue. A new nonempty token requires a nonempty
+action; omitted-action defaults apply only to creation.
+
+## Uncertain operation responses
+
+An explicit update consumes its attempted action/token before sending the
+non-idempotent request. If the response is lost or ambiguous,
+`operation_status = "unknown"` retains that uncertainty with prior observations;
+refresh does not invent proof of success or automatically repeat the operation.
+Inspect the appliance securely and reconcile before deliberately changing the
+operation token. A subsequent successful metadata edit is not proof that the
+previous cryptographic operation succeeded. A failed create without a returned
+UUID cannot fabricate an identity; inspect for an orphan before retrying.
+Terraform Core can taint a failed create even when the provider retained a
+confirmed UUID/key after readback failure. Inspect that UUID securely and
+reconcile/import before accepting any replacement plan; do not blindly retry
+creation or assume automatic recovery of a response-only key.
+
+## Example Usage
+
+{{tffile "examples/resources/opnsense_trust_cert/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Use the certificate UUID. Import observes current public/sensitive API state,
+not original generation inputs or nonpersisted keys. Inspect a no-change plan
+and supply deliberate future action intent before managing imported objects.
+
+{{codefile "shell" "examples/resources/opnsense_trust_cert/import.sh"}}
+
+For no-change adoption, start with the imported object's description and omit
+creation/operation inputs (`action`, `operation_token`, lifetime and PEM inputs)
+until after reviewing authoritative returned observations. The creation example
+is not a no-change import configuration: supplying new explicit action intent
+may deliberately request a cryptographic operation.
+
+## Validation scope
+
+Offline source/model/protocol coverage is distinct from the unexecuted full
+Trust disposable action/settings acceptance matrix. No service activation,
+older-firmware, OpenTofu, or live-appliance claim is implied.
