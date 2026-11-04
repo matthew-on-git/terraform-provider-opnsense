@@ -13,3 +13,7 @@
 ## Deferred from: v0.3.0 release follow-up (2026-06-18)
 
 - GitHub Actions emitted Node.js 20 deprecation warnings for upstream actions during the successful `v0.3.0` release workflow. The repository already uses current major action pins (`actions/checkout@v4`, `actions/setup-go@v5`, `crazy-max/ghaction-import-gpg@v6`, and `goreleaser/goreleaser-action@v6`), so treat this as ecosystem maintenance unless a future workflow starts failing.
+
+## Deferred from: code review of spec-31-0j-provider-retry-settings.md (2026-11-03)
+
+- `validateCredentials` performs its credential probe with `client.HTTPClient().Get(...)`, so Terraform cancellation is not honored while the retry loop waits. This predates configurable retry settings but larger `retries`/`max_backoff` values can lengthen the blocking Configure path. Consider a context-aware request so cancellation aborts the probe and its retries.

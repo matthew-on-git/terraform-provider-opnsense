@@ -9,13 +9,18 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -56,21 +61,31 @@ type OpnsenseProvider struct {
 	version string
 }
 
+// maxRetrySetting bounds retry counts and backoff seconds so they fit both
+// int32 APIs and time.Duration arithmetic.
+const maxRetrySetting = 1<<31 - 1
+
 // OpnsenseProviderModel describes the provider data model.
 type OpnsenseProviderModel struct {
-	URI       types.String `tfsdk:"uri"`
-	APIKey    types.String `tfsdk:"api_key"`
-	APISecret types.String `tfsdk:"api_secret"`
-	Insecure  types.Bool   `tfsdk:"insecure"`
+	URI        types.String `tfsdk:"uri"`
+	APIKey     types.String `tfsdk:"api_key"`
+	APISecret  types.String `tfsdk:"api_secret"`
+	Insecure   types.Bool   `tfsdk:"insecure"`
+	Retries    types.Int64  `tfsdk:"retries"`
+	MinBackoff types.Int64  `tfsdk:"min_backoff"`
+	MaxBackoff types.Int64  `tfsdk:"max_backoff"`
 }
 
 // resolvedConfig holds the resolved provider configuration after
 // applying environment variable fallbacks.
 type resolvedConfig struct {
-	uri       string
-	apiKey    string
-	apiSecret string
-	insecure  bool
+	uri        string
+	apiKey     string
+	apiSecret  string
+	insecure   bool
+	retries    int
+	minBackoff time.Duration
+	maxBackoff time.Duration
 }
 
 // Metadata sets the provider type name and version.
@@ -102,6 +117,21 @@ func (p *OpnsenseProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Optional:            true,
 				MarkdownDescription: "Whether to disable TLS certificate verification. Required for self-signed certificates. Defaults to `false`. Can also be set with the `OPNSENSE_ALLOW_INSECURE` environment variable.",
 			},
+			"retries": schema.Int64Attribute{
+				Optional:            true,
+				MarkdownDescription: "Maximum number of retries for transient OPNsense API failures. Defaults to `3`. Can also be set with the `OPNSENSE_RETRIES` environment variable.",
+				Validators:          []validator.Int64{int64validator.Between(1, maxRetrySetting)},
+			},
+			"min_backoff": schema.Int64Attribute{
+				Optional:            true,
+				MarkdownDescription: "Minimum wait in seconds between retries. Defaults to `1`. Can also be set with the `OPNSENSE_MIN_BACKOFF` environment variable.",
+				Validators:          []validator.Int64{int64validator.Between(1, maxRetrySetting)},
+			},
+			"max_backoff": schema.Int64Attribute{
+				Optional:            true,
+				MarkdownDescription: "Maximum wait in seconds between retries. Defaults to `30`. Can also be set with the `OPNSENSE_MAX_BACKOFF` environment variable.",
+				Validators:          []validator.Int64{int64validator.Between(1, maxRetrySetting)},
+			},
 		},
 	}
 }
@@ -124,12 +154,7 @@ func (p *OpnsenseProvider) Configure(ctx context.Context, req provider.Configure
 	}
 
 	// Create the OPNsense API client.
-	client, err := opnsense.NewClient(opnsense.ClientConfig{
-		BaseURL:   cfg.uri,
-		APIKey:    cfg.apiKey,
-		APISecret: cfg.apiSecret,
-		Insecure:  cfg.insecure,
-	})
+	client, err := opnsense.NewClient(cfg.toClientConfig())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create OPNsense API Client",
@@ -154,10 +179,27 @@ func (p *OpnsenseProvider) Configure(ctx context.Context, req provider.Configure
 // with environment variable fallback. HCL values take priority.
 func resolveProviderConfig(data OpnsenseProviderModel) resolvedConfig {
 	return resolvedConfig{
-		uri:       envOrValue(data.URI, "OPNSENSE_URI"),
-		apiKey:    envOrValue(data.APIKey, "OPNSENSE_API_KEY"),
-		apiSecret: envOrValue(data.APISecret, "OPNSENSE_API_SECRET"),
-		insecure:  envOrBoolValue(data.Insecure, "OPNSENSE_ALLOW_INSECURE"),
+		uri:        envOrValue(data.URI, "OPNSENSE_URI"),
+		apiKey:     envOrValue(data.APIKey, "OPNSENSE_API_KEY"),
+		apiSecret:  envOrValue(data.APISecret, "OPNSENSE_API_SECRET"),
+		insecure:   envOrBoolValue(data.Insecure, "OPNSENSE_ALLOW_INSECURE"),
+		retries:    int(envOrPositiveInt64Value(data.Retries, "OPNSENSE_RETRIES")),
+		minBackoff: secondsToDuration(envOrPositiveInt64Value(data.MinBackoff, "OPNSENSE_MIN_BACKOFF")),
+		maxBackoff: secondsToDuration(envOrPositiveInt64Value(data.MaxBackoff, "OPNSENSE_MAX_BACKOFF")),
+	}
+}
+
+// toClientConfig maps resolved provider configuration into the API client
+// configuration. Zero retry values preserve the client's documented defaults.
+func (c resolvedConfig) toClientConfig() opnsense.ClientConfig {
+	return opnsense.ClientConfig{
+		BaseURL:      c.uri,
+		APIKey:       c.apiKey,
+		APISecret:    c.apiSecret,
+		Insecure:     c.insecure,
+		RetryMax:     c.retries,
+		RetryWaitMin: c.minBackoff,
+		RetryWaitMax: c.maxBackoff,
 	}
 }
 
@@ -232,6 +274,26 @@ func envOrBoolValue(val types.Bool, envVar string) bool {
 	}
 	env := os.Getenv(envVar)
 	return env == "true" || env == "1"
+}
+
+// envOrPositiveInt64Value returns the HCL value if set, otherwise falls back to
+// a positive environment value. Unset, unparsable, or out-of-range environment
+// values return 0 so the client defaults apply.
+func envOrPositiveInt64Value(val types.Int64, envVar string) int64 {
+	if !val.IsNull() && !val.IsUnknown() {
+		return val.ValueInt64()
+	}
+	parsed, err := strconv.ParseInt(strings.TrimSpace(os.Getenv(envVar)), 10, 64)
+	if err != nil || parsed < 1 || parsed > maxRetrySetting {
+		return 0
+	}
+	return parsed
+}
+
+// secondsToDuration converts a validated seconds value to a duration. Zero
+// values return zero so the client applies its documented defaults.
+func secondsToDuration(seconds int64) time.Duration {
+	return time.Duration(seconds) * time.Second
 }
 
 // Resources returns the list of resource types supported by this provider.

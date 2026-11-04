@@ -26,16 +26,28 @@ TLS.
 Credentials and connection settings can be supplied two ways, with **HCL taking
 priority over environment variables**:
 
-| Setting        | HCL argument  | Environment variable      |
-|----------------|---------------|---------------------------|
-| Base URL       | `uri`         | `OPNSENSE_URI`            |
-| API key        | `api_key`     | `OPNSENSE_API_KEY`        |
-| API secret     | `api_secret`  | `OPNSENSE_API_SECRET`     |
-| Skip TLS verify| `insecure`    | `OPNSENSE_ALLOW_INSECURE` |
+| Setting         | HCL argument  | Environment variable      |
+|-----------------|---------------|---------------------------|
+| Base URL        | `uri`         | `OPNSENSE_URI`            |
+| API key         | `api_key`     | `OPNSENSE_API_KEY`        |
+| API secret      | `api_secret`  | `OPNSENSE_API_SECRET`     |
+| Skip TLS verify | `insecure`    | `OPNSENSE_ALLOW_INSECURE` |
+| Retries         | `retries`     | `OPNSENSE_RETRIES`        |
+| Min backoff     | `min_backoff` | `OPNSENSE_MIN_BACKOFF`    |
+| Max backoff     | `max_backoff` | `OPNSENSE_MAX_BACKOFF`    |
 
-`api_key` and `api_secret` are marked sensitive. On configuration the provider
-validates credentials against `/api/core/firmware/status` and reports a clear
-diagnostic if authentication fails.
+`retries` is a retry count; `min_backoff` and `max_backoff` are whole seconds.
+They default to `3`, `1`, and `30` respectively and must be between `1` and
+`2147483647` (`retries = 0` is not supported). Invalid environment values are
+ignored so the defaults apply. `api_key` and `api_secret` are marked sensitive.
+On configuration the provider validates credentials against
+`/api/core/menu/search` and reports a clear diagnostic if authentication fails.
+
+### Retry behavior
+
+The provider retries transient API failures for every resource and data source.
+A `Retry-After` header on a `429` or `503` response can extend a wait beyond
+`max_backoff`.
 
 ```hcl
 # Environment-variable configuration (no secrets in HCL):
