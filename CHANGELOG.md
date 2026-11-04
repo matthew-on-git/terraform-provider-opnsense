@@ -2,7 +2,17 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.13.0 (Unreleased)
+## 0.14.0 (Unreleased)
+
+FEATURES:
+
+* Extend the existing Trust CA/certificate owners with released action-specific lifecycle contracts and a certificate UUID lookup. Preserve creation intent separately from volatile editor metadata, prevent description-only regeneration, and retain sensitive one-time keys returned by successful local-only creation. Explicit updates consume attempted action/token and retain unknown outcomes instead of replaying cryptographic operations after response loss.
+
+UPGRADE NOTES:
+
+* Existing resource names, UUID imports and configured certificate/private-key PEM input text remain compatible. New readable payloads are separate outputs; private material is Sensitive but remains in Terraform state. The provider conservatively rejects certificate-only CA import/update before writes, including on the patched 26.7.8_2 package where the upstream keyless condition was fixed. Keyless-CA provider support remains deferred; no substitute key or XML workaround is used. The recorded disposable 26.7.8_2 action/settings matrix passed; older-firmware and OpenTofu execution remain unverified and the Trust parent story remains open. Merging this new versioned heading enables automatic publication after successful main CI.
+
+## 0.13.0 (Released)
 
 FEATURES:
 

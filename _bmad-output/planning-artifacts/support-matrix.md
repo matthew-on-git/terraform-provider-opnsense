@@ -13,19 +13,19 @@ inputs:
 
 # Provider Support Matrix
 
-This matrix is the current source of truth for release positioning. This 2026-11-03 snapshot reconciles registered implementation, generated documentation, merged changes and published releases through v0.11.0. Pending changes and appliance evidence are separate gates; historical digest-bound evidence is not re-attested by this documentation refresh.
+This matrix is the current source of truth for release positioning. This 2026-11-03 snapshot reconciles registered implementation, generated documentation, merged changes and published releases through v0.12.0; the Trust continuation remains a draft, with a non-skipped 26.7.8_2 live matrix now passed and broader capability/compatibility gates still open. Pending changes and appliance evidence are separate gates; historical digest-bound evidence is not re-attested by this documentation refresh.
 
 ## Summary
 
 | Area | Count | Status |
 |---|---:|---|
-| Resources | 112 | Released inventory through v0.11.0, including gateway-group, generic-option and DDNS owners |
-| Data sources | 98 | Registered, including standalone gateway-group, generic-option and DDNS lookups |
-| Resource docs | 112 | Matches registered resources |
-| Data source docs | 98 | Generated |
+| Resources | 113 | Released inventory through v0.12.0, including Trust settings |
+| Data sources | 100 | Source-tree inventory: 99 published in v0.12.0 plus the pending Trust certificate lookup |
+| Resource docs | 113 | Matches registered resources |
+| Data source docs | 100 | Generated |
 | Ephemeral resources / docs | 1 / 1 | Terraform 1.10+ OpenVPN key generator passed final protocol/non-persistence proof; published in v0.7.0; no blanket OpenTofu ephemeral-lifecycle claim |
 | Remaining field/surface gaps | 5 audit-derived P0/P1 story groups (Stories 31.0f-31.0j), with separate research/upstream blockers | Coming, needs research, or upstream-blocked |
-| Remaining resource-matching data-source gaps | 16 | Coming |
+| Remaining resource-matching data-source gaps | 15 | Coming |
 
 Data-source parity is tracked in [data-source-parity-plan.md](data-source-parity-plan.md). Remaining resource-gap verification is tracked in [resource-gap-verification.md](resource-gap-verification.md).
 
@@ -42,7 +42,7 @@ Data-source parity is tracked in [data-source-parity-plan.md](data-source-parity
 | IPv6 identity association / legacy track-interface assignments | v0.11.0 | [PR #77](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77) adds adoption/updates of existing `idassoc6`/`track6` assignments and six delegation fields. Independent source/race/fixture review passed; live import/no-change-plan evidence remains contributor-reported, not independent activation/packet proof. See the detailed scope below. |
 | NAT port-forward category persistence | v0.10.1 | [PR #75](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/75) resolves UUIDs to names for persisted writes while retaining UUID state; adds category-read permission. Regression, race and protocol/fixture coverage pass; no independent live-appliance validation was performed for this patch. |
 
-Published tags v0.9.0, v0.10.0, v0.10.1 and v0.11.0 resolve to their respective merge commits; GitHub release assets and Terraform Registry versions were checked. The current registration/documentation inventory is 112 resources, 98 data sources and one ephemeral resource, with 16 resource-matching data-source gaps.
+Published tags v0.9.0, v0.10.0, v0.10.1 and v0.11.0 resolve to their respective merge commits; GitHub release assets and Terraform Registry versions were checked. Published v0.12.0 adds the six-field Trust settings owner and lookup (113 resources/99 data sources). Its tag matches PR79 merge `4bd107fc769586d5904919c8e69562897a87e84d`, all16expected release assets are present, and Terraform Registry lists0.12.0; OpenTofu Registry did not list it at the checked checkpoint. The current continuation source tree adds Trust certificate lookup (113resources/100data sources,15resource-matching gaps); it is not yet published, and the complete Trust action/settings/adoption/destroy/restoration matrix passed on authentic 26.7.8_2; see the [digest-bound sanitized proof](../implementation-artifacts/31-0f-live-proof.json). Keyless provider support and broader firmware/OpenTofu proof remain open.
 
 ## IPv6 delegation: released scope and evidence
 
@@ -104,7 +104,7 @@ The contributor reports OPNsense 26.7.8_2 / OpenTofu 1.13.2 import and a no-chan
 
 | Domain | Work |
 |---|---|
-| Data-source parity | Add read-only data sources for the 16 supported singleton/sensitive special-case resources that do not yet have same-name data-source counterparts. |
+| Data-source parity | Add read-only data sources for the 15 remaining singleton/sensitive special-case resources that do not yet have same-name data-source counterparts. |
 | Documentation | Fill missing resource templates for generated docs, expand composition examples, and keep the provider index support matrix current. |
 | Release hardening | Keep release workflow, Registry manifest, changelog, and provider docs verified for subsequent patch/minor releases. |
 | Audited field/surface parity | Complete Stories 31.0f–31.0j for trust, IPsec, Quagga/BGP, live interface state, and provider retry controls before positioning/migration/adoption work. |

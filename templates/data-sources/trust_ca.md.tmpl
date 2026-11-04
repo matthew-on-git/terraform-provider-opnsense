@@ -2,12 +2,20 @@
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
 subcategory: "Trust"
 description: |-
-  Look up an existing trust CA on OPNsense.
+  Read an existing Trust certificate authority by UUID.
 ---
 
 # {{.Name}} ({{.Type}})
 
-Look up an existing trust CA on OPNsense by UUID without importing it into Terraform management.
+Read a Trust CA by UUID without importing it into Terraform management. Returned
+public certificate/subject/validity fields reflect API observations. Returned
+private material is Sensitive but stored in Terraform state; protect state and
+API read permissions accordingly.
+
+The API editor infers action and supplies generation template defaults.
+Neither is original creation provenance; editor lifetime must not be treated as
+actual certificate validity. This lookup does not generate, import, update,
+activate or delete an object.
 
 ## Example Usage
 
