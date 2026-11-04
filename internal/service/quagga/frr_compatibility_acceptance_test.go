@@ -603,13 +603,8 @@ func frrLiveCheck(t *testing.T, s *terraform.State, marker string, firewall bool
 		if managed == nil || lookup == nil {
 			return fmt.Errorf("resource/data-source fixture missing")
 		}
-		for key, value := range managed.Primary.Attributes {
-			if strings.HasPrefix(key, "linked_routemap_out.") || strings.HasPrefix(key, "match_prefix.") {
-				continue
-			}
-			if lookup.Primary.Attributes[key] != value {
-				return fmt.Errorf("resource/data-source disagree on %s", key)
-			}
+		if err := frrCompareAdvancedPublicAttributes(managed.Primary.Attributes, lookup.Primary.Attributes, "linked_routemap_out.", "match_prefix."); err != nil {
+			return err
 		}
 		if err := frrCheckImportedPolicy(t, marker, name)([]*terraform.InstanceState{lookup.Primary}); err != nil {
 			return err
@@ -1185,10 +1180,25 @@ func TestFRRVersionTokensRejectPrefixes(t *testing.T) {
 // property (password) than the deliberately password-free lookup. All real
 // public values, including set membership/counts and explicit empty strings,
 // must still agree in both directions.
-func frrCompareAdvancedPublicAttributes(owner, lookup map[string]string) error {
+func frrCompareAdvancedPublicAttributes(owner, lookup map[string]string, ignoredPrefixes ...string) error {
+	if _, exists := lookup["password"]; exists {
+		return fmt.Errorf("lookup exposed authentication")
+	}
+	ignored := func(key string) bool {
+		if key == "%" || key == "password" {
+			return true
+		}
+		for _, prefix := range ignoredPrefixes {
+			if strings.HasPrefix(key, prefix) {
+				return true
+			}
+		}
+		return false
+	}
+
 	for _, pair := range [][2]map[string]string{{owner, lookup}, {lookup, owner}} {
 		for key, value := range pair[0] {
-			if key == "%" || key == "password" {
+			if ignored(key) {
 				continue
 			}
 			if got, exists := pair[1][key]; !exists || got != value {
@@ -1232,5 +1242,42 @@ func TestFRRAdvancedPublicFlatmapComparison(t *testing.T) {
 	lookup["unexpected_public_field"] = "value"
 	if frrCompareAdvancedPublicAttributes(owner, lookup) == nil {
 		t.Fatal("lookup-only public value was ignored")
+	}
+}
+
+func TestFRRGenericPeerPublicFlatmapComparison(t *testing.T) {
+	owner := map[string]string{"%": "36", "password": "", "id": "peer", "weight": "0", "description": "", "family.#": "1", "family.123": "ipv4", "peer_group": "group", "linked_routemap_out.#": "2", "linked_routemap_out.1": "sibling-a", "linked_routemap_out.2": "sibling-b", "match_prefix.#": "2", "match_prefix.1": "prefix-a"}
+	lookup := map[string]string{"%": "35", "id": "peer", "weight": "0", "description": "", "family.#": "1", "family.123": "ipv4", "peer_group": "group", "linked_routemap_out.#": "1", "linked_routemap_out.3": "canonical", "match_prefix.#": "1", "match_prefix.2": "canonical-prefix"}
+	compare := func(values map[string]string) error {
+		return frrCompareAdvancedPublicAttributes(owner, values, "linked_routemap_out.", "match_prefix.")
+	}
+	if err := compare(lookup); err != nil {
+		t.Fatal("generic peer metadata/canonical relation false mismatch", err)
+	}
+	for _, key := range []string{"id", "weight", "description", "family.#", "family.123", "peer_group"} {
+		t.Run(key, func(t *testing.T) {
+			changed := map[string]string{}
+			for k, v := range lookup {
+				changed[k] = v
+			}
+			changed[key] = "different"
+			if compare(changed) == nil {
+				t.Fatal("generic peer real field mismatch ignored", key)
+			}
+		})
+	}
+	delete(lookup, "description")
+	if compare(lookup) == nil {
+		t.Fatal("generic peer missing empty real field ignored")
+	}
+	lookup["description"] = ""
+	lookup["unexpected_public_field"] = "value"
+	if compare(lookup) == nil {
+		t.Fatal("generic peer lookup-only real field ignored")
+	}
+	delete(lookup, "unexpected_public_field")
+	lookup["password"] = ""
+	if compare(lookup) == nil {
+		t.Fatal("generic peer password exposure ignored")
 	}
 }
