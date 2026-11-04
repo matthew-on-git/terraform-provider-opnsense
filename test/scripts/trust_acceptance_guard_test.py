@@ -732,6 +732,11 @@ if name=='terraform' and sys.argv[1]=='apply':
                 "returned_certificate": "CERTIFICATE-signed"
             },
         }
+        for address in (
+            "opnsense_trust_ca.imported", "opnsense_trust_cert.imported",
+            "data.opnsense_trust_ca.legacy", "data.opnsense_trust_cert.legacy",
+        ):
+            observed[address] = {"valid_from": "-157766400", "valid_to": "-126230400"}
         variants = (
             {},
             *(

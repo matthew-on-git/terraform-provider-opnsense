@@ -235,6 +235,8 @@ provider "opnsense" {}
 data "opnsense_trust_cert" "observed" { id = opnsense_trust_cert.internal.id }
 data "opnsense_trust_cert" "csr_holder" { id = opnsense_trust_cert.external.id }
 data "opnsense_trust_ca" "observed" { id = opnsense_trust_ca.root.id }
+data "opnsense_trust_ca" "legacy" { id = opnsense_trust_ca.imported.id }
+data "opnsense_trust_cert" "legacy" { id = opnsense_trust_cert.imported.id }
 data "opnsense_trust_settings" "observed" {
   depends_on = [opnsense_trust_settings.observed]
 }
@@ -537,27 +539,28 @@ def main():
         os.environ["TF_CLI_CONFIG_FILE"] = str(cli)
         os.environ["TF_IN_AUTOMATION"] = "1"
         os.environ["CHECKPOINT_DISABLE"] = "1"
+        # A real parseable pre-epoch certificate is a supported legacy import;
+        # its signed Unix validity observations must survive resource/lookup reads.
+        (directory / "fixture-index").write_text("")
+        (directory / "fixture-serial").write_text("01\n")
+        (directory / "fixture.cnf").write_text(
+            "[ca]\ndefault_ca=fixture\n[fixture]\n"
+            "database=fixture-index\nserial=fixture-serial\nnew_certs_dir=.\n"
+            "default_md=sha256\npolicy=subject_policy\nx509_extensions=ca_ext\n"
+            "[subject_policy]\ncommonName=supplied\n"
+            "[ca_ext]\nbasicConstraints=critical,CA:TRUE\n"
+            "keyUsage=critical,keyCertSign,cRLSign,digitalSignature\n"
+        )
         run_private(
-            [
-                "openssl",
-                "req",
-                "-x509",
-                "-newkey",
-                "rsa:2048",
-                "-nodes",
-                "-keyout",
-                "import.key",
-                "-out",
-                "import.crt",
-                "-days",
-                "2",
-                "-subj",
-                "/CN=import.example.invalid",
-                "-addext",
-                "basicConstraints=critical,CA:TRUE",
-            ],
-            directory,
-            "fixture",
+            ["openssl", "req", "-new", "-newkey", "rsa:2048", "-nodes",
+             "-keyout", "import.key", "-out", "import.csr", "-subj",
+             "/CN=import.example.invalid"], directory, "fixture-request",
+        )
+        run_private(
+            ["openssl", "ca", "-selfsign", "-batch", "-config", "fixture.cnf",
+             "-keyfile", "import.key", "-in", "import.csr", "-out", "import.crt",
+             "-startdate", "19650101000000Z", "-enddate", "19660101000000Z",
+             "-notext"], directory, "fixture-sign",
         )
         cert_pem = (directory / "import.crt").read_text()
         key_pem = (directory / "import.key").read_text()
@@ -592,6 +595,15 @@ def main():
 
         apply("initial-actions")
         observed = state_values(directory)
+        for address in (
+            "opnsense_trust_ca.imported", "opnsense_trust_cert.imported",
+            "data.opnsense_trust_ca.legacy", "data.opnsense_trust_cert.legacy",
+        ):
+            require(
+                int(observed[address]["valid_from"]) == -157766400
+                and int(observed[address]["valid_to"]) == -126230400,
+                "legacy certificate signed timestamps not preserved",
+            )
         local_key = observed["opnsense_trust_cert.local"].get("generated_private_key")
         verify_private_key(
             directory,

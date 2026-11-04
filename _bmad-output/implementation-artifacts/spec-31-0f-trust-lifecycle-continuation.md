@@ -312,7 +312,7 @@ review repairs without another confirmation.
 - [medium][patch] Blind8 live reissue checked only post-action existence. Assert changed certificate, same UUID/key and exactly one independently logged cryptographic write.
 - [medium][patch] Blind9 one-time key marker did not prove usability. Parse it with OpenSSL and compare public keys against the returned certificate; assert no persisted appliance key.
 - [medium][patch] Blind10 live matrix omitted repeat-token semantics. Exercise same action/new token exactly once, then unchanged token with zero cryptographic writes.
-- [medium][patch] Acceptance auditor: string validity timestamps bypassed numeric validation. Validate both JSON numeric and string representations; reject malformed/negative/null timestamps.
+- [medium][patch] Acceptance auditor: string validity timestamps bypassed numeric validation. Validate both JSON numeric and string representations; reject malformed/null timestamps while preserving the full signed-int64 Unix range. A final source recheck corrected an unintended nonnegative bound; parseable pre-1970 legacy certificates are accepted upstream.
 
 The stronger live runner needs new before-operation/verify-operation oracle
 checkpoints exposing cryptographic_writes from access-log cursors; snapshot,
@@ -352,3 +352,16 @@ follow-up bounded production-diff review found no concrete blocker. The CA PEM
 normalization claim was rejected on actual released-source evidence, not masked
 by retaining stale observations. Keyless CA remains explicitly unsupported,
 older-firmware/OpenTofu execution is unverified and the parent story stays open.
+
+
+### Signed validity compatibility correction
+
+Released `Store.php` copies parsed X.509 Unix dates directly; CA/certificate
+imports do not exclude expired or pre-1970 certificates. The stricter editor
+reader therefore must accept negative signed-int64 timestamps in numeric and
+string form. Null, malformed and overflow values remain rejected. The real
+RSA2048 certificate control uses 1965–1966 validity and verifies signature,
+CA/cert resource refresh and authoritative lookups with zero writes. The live
+matrix now imports a genuine pre-epoch CA/certificate and checks exact signed
+timestamps in both resources and both lookups. Earlier proof remains bound to
+`35799c0`; it is not retroactively evidence for this executable correction.

@@ -103,8 +103,8 @@ func trustRecord(ctx context.Context, c *opnsense.Client, kind, id string) (map[
 				timestamp = number.String()
 			}
 			if timestamp != "" {
-				n, err := strconv.ParseInt(timestamp, 10, 64)
-				if err != nil || n < 0 {
+				_, err := strconv.ParseInt(timestamp, 10, 64)
+				if err != nil {
 					return nil, errors.New("invalid Trust validity timestamp")
 				}
 			}
