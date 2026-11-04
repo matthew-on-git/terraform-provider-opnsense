@@ -83,28 +83,32 @@ The provider uses four public support states:
 | Needs research | Published or suspected endpoint evidence exists, but target-version availability or durable Terraform semantics are not confirmed. |
 | Upstream-blocked | OPNsense does not currently expose a stable usable API, or an upstream dependency must land first. |
 
-Current implementation inventory (including unreleased surfaces):
+Released implementation inventory through v0.11.0 (reviewed 2026-11-03):
 
 | Capability | Count |
 |------------|------:|
-| Resources | 111 |
-| Data sources | 97 |
-| Resource docs | 111 |
-| Data source docs | 97 |
+| Resources | 112 |
+| Data sources | 98 |
+| Resource docs | 112 |
+| Data source docs | 98 |
 | Ephemeral resources / docs | 1 / 1 |
 | Remaining data-source gaps | 16 |
 
 | Supported today | Coming / provider-owned follow-up | Needs research | Upstream-blocked / OPNsense dependency |
 |-----------------|------------------------------------|----------------|----------------------------------------|
-| Firewall, HAProxy, ACME, DNS/Dnsmasq, DHCP/Kea, Dynamic DNS, VPN, FRR/Quagga, interface assignment/IP on OPNsense `26.7.6+` plus LAGG and other interface types, system tunables, auth, trust, syslog, Monit, cron, and traffic shaping resources. | Data-source parity for singleton or sensitive special-case resources; generic Kea option owner/lookup passed a disabled-appliance Core lifecycle and is unreleased for 0.10.0, with ordered parent linkage separate; DDNS general-settings owner and read-only lookup are implemented and unreleased for 0.10.0, with omission-preserving partial writes, durable save recovery and zero-API state-only Delete (normal planning refresh may recover/activate first); reviewed Core/protocol recovery and lifecycle tests pass; final digest-bound evidence gates publication. | Kea ordered parent-option linkage; HASync configuration `syncitems` model shape; HASync status/actions; PPPoE semantics for future interface settings. | System general settings: action/status plus setup-wizard evidence does not establish durable target-release get/set support. |
+| Firewall, HAProxy, ACME, DNS/Dnsmasq, DHCP/Kea, Dynamic DNS, VPN, FRR/Quagga, interface assignment/IP on OPNsense `26.7.6+` plus LAGG and other interface types, system tunables and gateway groups, Kea generic DHCPv4 options and DDNS general settings, auth, trust, syslog, Monit, cron, and traffic shaping resources. | Data-source parity for 16 singleton or sensitive special-case resources; remaining audited field/policy parity. | Kea ordered parent-option linkage; HASync configuration `syncitems` model shape; HASync status/actions; PPPoE semantics for future interface settings. | System general settings: action/status plus setup-wizard evidence does not establish durable target-release get/set support. |
 
-OPNsense core and plugin versions are separate compatibility gates. Released FRR 2.0 compatibility covers the verified installed-plugin/model and migration/lifecycle subgate; advanced BGP field/policy parity remains a separate follow-up, not a blanket compatibility claim for every plugin release. Gateway-group ownership is published in 0.9.0 with release assets and Registry version verified; populated first-tier clearing remains upstream-limited. The unreleased Kea option/DDNS owners target 0.10.0 and have separate lifecycle evidence; API probes alone do not establish their support. Their historical live-test digests remain exact to the recorded checkpoints; the release/tracking-only integration revision is not advertised as a new appliance run.
+IPv6 identity-association (`idassoc6`) and legacy track-interface (`track6`) adoption/updates are published in v0.11.0 after [PR #77](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77). Six optional/computed delegation fields preserve omitted values and unowned settings. Contributor-reported OPNsense 26.7.8_2 / OpenTofu 1.13.2 import and no-change refresh coverage was not independently reproduced and does not establish activation, packet behavior or full write/restore acceptance. Assignment creation, automatic mode migration and upstream DHCPv6-client ownership are not included.
+
+OPNsense core and plugin versions are separate compatibility gates. Released FRR 2.0 compatibility covers the verified installed-plugin/model and migration/lifecycle subgate; advanced BGP field/policy parity remains a separate follow-up, not a blanket compatibility claim for every plugin release. Gateway-group ownership is published in 0.9.0 with release assets and Registry version verified; populated first-tier clearing remains upstream-limited. Kea option/DDNS owners are published in 0.10.0 with separate final disabled-appliance Core lifecycle/restoration evidence; ordered parent linkage, active packet/DNS behavior and OpenTofu lifecycle validation remain separate. Their historical live-test digests remain exact to the recorded checkpoints; the release/tracking-only integration revision is not advertised as a new appliance run.
 
 The full current Supported / Coming / Needs research / Upstream-blocked matrix is maintained in
 the repository at
 [`_bmad-output/planning-artifacts/support-matrix.md`](https://github.com/matthew-on-git/terraform-provider-opnsense/blob/main/_bmad-output/planning-artifacts/support-matrix.md).
 Confirmed upstream blockers and the release-review workflow are documented in
 [`docs/upstream-blocked.md`](https://github.com/matthew-on-git/terraform-provider-opnsense/blob/main/docs/upstream-blocked.md).
+
+OpenTofu provider and signing-key registrations are merged; its versions API lists v0.10.1 and download metadata includes the release-signing key. This establishes registry availability, not independently tested OpenTofu installation or resource lifecycle parity.
 
 ## Import and Migration Guidance
 
