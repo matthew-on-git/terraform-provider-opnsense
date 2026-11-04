@@ -244,8 +244,14 @@ func frrRawSelection(raw json.RawMessage) (string, error) {
 			return "", fmt.Errorf("malformed raw selected flag")
 		}
 		if flag == "1" {
-			if strings.TrimSpace(id) == "" {
-				return "", fmt.Errorf("empty raw selected member")
+			// Released core BaseListField::getNodeOptions emits an exact
+			// empty-key selected "None" placeholder for unset optional fields.
+			// Like decodeFRRSelection, do not treat that placeholder as a UUID.
+			if id == "" {
+				continue
+			}
+			if strings.TrimSpace(id) != id {
+				return "", fmt.Errorf("malformed raw selected member")
 			}
 			values = append(values, id)
 		}
@@ -1564,9 +1570,6 @@ func TestFRRFreshCanonicalSelectionCardinality(t *testing.T) {
 			}
 		})
 	}
-	if _, err := frrRawSelection(json.RawMessage(`{"":{"selected":"1"},"a":{"selected":"1"}}`)); err == nil {
-		t.Fatal("empty selected UUID accepted")
-	}
 }
 
 // This HTTP fixture checks observation wiring only, never live acceptance.
@@ -1675,5 +1678,44 @@ func TestFRRImportedPrefixSelectionCardinality(t *testing.T) {
 				t.Fatal("unexpected authoritative prefix-group read count")
 			}
 		})
+	}
+}
+
+func TestFRRRawSelectionNonePlaceholder(t *testing.T) {
+	for _, tc := range []struct {
+		name, raw, want string
+		wantError       bool
+	}{
+		{name: "placeholder only", raw: `{"":{"value":"None","selected":1}}`},
+		{name: "placeholder and real UUID", raw: `{"":{"selected":"1"},"a":{"selected":1}}`, want: "a"},
+		{name: "malformed placeholder flag", raw: `{"":{"selected":2}}`, wantError: true},
+		{name: "whitespace ID", raw: `{" ":{"selected":1}}`, wantError: true},
+		{name: "padded ID", raw: `{" a ":{"selected":1}}`, wantError: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := frrRawSelection(json.RawMessage(tc.raw))
+			if (err != nil) != tc.wantError || got != tc.want {
+				t.Fatalf("selection = %q, error = %v; want %q, error %t", got, err, tc.want, tc.wantError)
+			}
+		})
+	}
+	raw := map[string]json.RawMessage{"linkedRoutemapOut": json.RawMessage(`{"":{"value":"None","selected":1}}`)}
+	if err := frrCanonicalReferences(map[string]string{"linked_routemap_out.#": "0"}, raw); err != nil {
+		t.Fatal("fresh empty set rejected None placeholder", err)
+	}
+	if err := frrCanonicalReferences(map[string]string{"linked_routemap_out.#": "1", "linked_routemap_out.0": "a"}, raw); err == nil {
+		t.Fatal("fresh nonempty set accepted raw None")
+	}
+	owner := &terraform.InstanceState{ID: "owner", Attributes: map[string]string{"id": "owner", "linked_routemap_out.#": "1", "linked_routemap_out.0": "a"}}
+	var memberReads int
+	err := frrManagedPolicyReference(owner, "owner", "m", func(kind, _ string) (map[string]json.RawMessage, error) {
+		if kind == "peergroup" {
+			return map[string]json.RawMessage{"name": json.RawMessage(`"m_pg"`), "linkedRoutemapOut": raw["linkedRoutemapOut"]}, nil
+		}
+		memberReads++
+		return map[string]json.RawMessage{"name": json.RawMessage(`"m_rm"`)}, nil
+	})
+	if err == nil || memberReads != 0 {
+		t.Fatal("required managed relation accepted raw None or attempted member lookup")
 	}
 }

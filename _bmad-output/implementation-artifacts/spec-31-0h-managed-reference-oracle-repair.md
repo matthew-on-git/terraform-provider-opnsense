@@ -136,3 +136,18 @@ Review: all12 findings individually triaged above. Four grouped repairs applied:
 Verification observed before final parent checks: pinned DevRail Go1.26.10 linux/arm64; full affected race suitePASS6.340s and non-racePASS2.271s; package lint0issues. After review patches, targeted race controlsPASS1.040s and whitespacePASS. Parent owns full repository gate, deterministic generation, privacy audit, exact-source commit and new whole17-step run. No merged/released/legacy-firmware/OpenTofu or production claim.
 
 Parent final verification: all affected quagga tests and race controls executed and passed6.458s, including every managed/fresh/cardinality/HTTP/mixed/null/lexical row. Full make checkPASS6/6, none skipped84841ms. Staged deterministic generation produced zero unstaged diff; whitespace and added-line privacy audit passed. Independent bounded source recheck confirmed both medium defects repaired, strict fresh versus managed semantics and actual caller coverage retained, and no residual defect in that scope. Full live matrix remains pending.
+
+
+## Spec Change Log
+
+### Executed matrix05 repair — released None option
+
+The first repaired whole run failed Step1/17 because the shared test decoder incorrectly treated the upstream exact empty option key as a selected UUID. Released core stable/26.7 BaseListField::getNodeOptions adds that key as the legitimate optional unset None placeholder; production decodeFRRSelection already excludes it. The same test-only defect caused BGP networks restoration to fail before applying its captured payload. Exact independent full-config fallback restored all6 predicates; all7 Terraform namespaces were zero and frozen source unchanged. Keep this attempt failed.
+
+Clarification outside immutable intent: exact empty option key is a non-member placeholder, not an empty member UUID. Decode it as no selection while retaining flag validation. Whitespace-only nonempty keys remain malformed. Add matrix rows: None-only decodes empty; None plus actual UUID returns only the UUID; required managed selection rejects None-only; fresh canonical empty set matches None-only, nonempty set does not. This follows the pinned released API and existing production decoder, not the failed test's output.
+
+KEEP all managed/fresh distinction, both-sided authoritative group reads, exact canonical comparison for actual members, missing/stale/wrong-group rejection, cardinality/mixed/null guards, independent current-prefix/default/identity gates and complete17-step/restoration requirements. Same implementation child re-engaged with narrow test-only patch; focused and full parent verification plus independent bounded source recheck precede another complete frozen run. No production implementation changes.
+
+Source-backed None-placeholder patch targeted race controlsPASS1.047s; no provider code changed. This marks only the bounded repair run done, not full live acceptance. Parent full gate and exact-source rerun remain mandatory.
+
+Final parent None-patch checks: focused race1.036s including every None/managed/fresh/cardinality/mixed/public/lexical rowPASS; full make checkPASS6/6none skipped83633ms; deterministic staged generation zero unstaged diff; whitespace/privacyPASS. Independent bounded recheck found no residual defect. Whole matrix still pending.

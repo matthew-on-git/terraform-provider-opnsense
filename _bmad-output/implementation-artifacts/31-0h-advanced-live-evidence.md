@@ -104,3 +104,25 @@ Step12 or count prior partial observations as completed steps. All numeric-polic
 current-prefix withdrawal/restored-positive, identity, authentication, actual
 Terraform deletion, exact restoration and zero-leftover requirements remain.
 Parent Story31.0h and the separately unverified platform/interface rows stay open.
+
+
+## Fifth failed attempt — optional None placeholder
+
+Attempt `matrix05` tested head `e1de88f0d4c530cbe39a2f4937d000985cef5093`
+with frozen source digest
+`acda084d6f1ad7496ece492803e561be0b26b1fa586839b5902b82c13103de76`.
+It failed Step1/17 after the advanced-field checks because the shared test decoder
+incorrectly rejected the released API's exact empty-key optional None choice.
+That same defect interrupted captured BGP settings restoration at `networks`;
+the test-level exact-restoration gate consequently failed. Actual Terraform
+deletion still reported zero in all7namespaces. The independent full-config
+fallback then passed all6exact predicates with frozen source unchanged. This is
+another retained failed attempt, not appliance acceptance.
+
+Released core BaseListField optional selectors and the existing production
+decoder establish that exact empty key as a non-member placeholder. The narrow
+test-only correction skips only that key after validating its selected flag;
+whitespace/padded member IDs remain invalid. Focused controls retain required
+managed nonempty selection, strict fresh canonical equality, cardinality and
+all authoritative group/current-prefix/lifecycle checks. Independent bounded
+source recheck passed. Full corrected17-step execution remains pending.
