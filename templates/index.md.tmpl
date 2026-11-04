@@ -26,16 +26,36 @@ TLS.
 Credentials and connection settings can be supplied two ways, with **HCL taking
 priority over environment variables**:
 
-| Setting        | HCL argument  | Environment variable      |
-|----------------|---------------|---------------------------|
-| Base URL       | `uri`         | `OPNSENSE_URI`            |
-| API key        | `api_key`     | `OPNSENSE_API_KEY`        |
-| API secret     | `api_secret`  | `OPNSENSE_API_SECRET`     |
-| Skip TLS verify| `insecure`    | `OPNSENSE_ALLOW_INSECURE` |
+| Setting         | HCL argument  | Environment variable      |
+|-----------------|---------------|---------------------------|
+| Base URL        | `uri`         | `OPNSENSE_URI`            |
+| API key         | `api_key`     | `OPNSENSE_API_KEY`        |
+| API secret      | `api_secret`  | `OPNSENSE_API_SECRET`     |
+| Skip TLS verify | `insecure`    | `OPNSENSE_ALLOW_INSECURE` |
+| Retries         | `retries`     | `OPNSENSE_RETRIES`        |
+| Min backoff     | `min_backoff` | `OPNSENSE_MIN_BACKOFF`    |
+| Max backoff     | `max_backoff` | `OPNSENSE_MAX_BACKOFF`    |
 
-`api_key` and `api_secret` are marked sensitive. On configuration the provider
-validates credentials against `/api/core/firmware/status` and reports a clear
-diagnostic if authentication fails.
+`retries` is a retry count; `min_backoff` and `max_backoff` are whole seconds.
+They default to `3`, `1`, and `30` respectively and must be between `1` and
+`2147483647` (`retries = 0` is not supported). Invalid environment values are
+ignored so the defaults apply. `api_key` and `api_secret` are marked sensitive.
+On configuration the provider validates credentials against
+`/api/core/menu/search` and reports a clear diagnostic if authentication fails.
+
+### Retry behavior
+
+The provider retries transient API failures for every resource and data source.
+`retries = 3` permits up to four attempts (the initial request plus three
+retries). Waits begin at `min_backoff` and double up to `max_backoff`; a
+`Retry-After` header on a `429` or `503` response can extend a wait beyond
+`max_backoff`. A `min_backoff` greater than `max_backoff` is accepted and the
+computed wait is clamped to `max_backoff`.
+
+Retries also apply to writes. If OPNsense processes a write but the response is
+lost or fails, a retry can repeat that write. The upper bounds are overflow
+guards, not recommended values; large retry/backoff settings can block Terraform
+for a very long time.
 
 ```hcl
 # Environment-variable configuration (no secrets in HCL):
@@ -83,20 +103,23 @@ The provider uses four public support states:
 | Needs research | Published or suspected endpoint evidence exists, but target-version availability or durable Terraform semantics are not confirmed. |
 | Upstream-blocked | OPNsense does not currently expose a stable usable API, or an upstream dependency must land first. |
 
-Released implementation inventory through v0.11.0 (reviewed 2026-11-03):
+Published v0.12.0 includes 113 resources and 99 data sources. The current
+continuation adds a certificate lookup (100 data sources; 15 remaining gaps),
+with CA/certificate lifecycle changes pending review and full Trust live proof.
+The following inventory describes this source tree, not a claim of publication:
 
 | Capability | Count |
 |------------|------:|
-| Resources | 112 |
-| Data sources | 98 |
-| Resource docs | 112 |
-| Data source docs | 98 |
+| Resources | 113 |
+| Data sources | 100 |
+| Resource docs | 113 |
+| Data source docs | 100 |
 | Ephemeral resources / docs | 1 / 1 |
-| Remaining data-source gaps | 16 |
+| Remaining data-source gaps | 15 |
 
 | Supported today | Coming / provider-owned follow-up | Needs research | Upstream-blocked / OPNsense dependency |
 |-----------------|------------------------------------|----------------|----------------------------------------|
-| Firewall, HAProxy, ACME, DNS/Dnsmasq, DHCP/Kea, Dynamic DNS, VPN, FRR/Quagga, interface assignment/IP on OPNsense `26.7.6+` plus LAGG and other interface types, system tunables and gateway groups, Kea generic DHCPv4 options and DDNS general settings, auth, trust, syslog, Monit, cron, and traffic shaping resources. | Data-source parity for 16 singleton or sensitive special-case resources; remaining audited field/policy parity. | Kea ordered parent-option linkage; HASync configuration `syncitems` model shape; HASync status/actions; PPPoE semantics for future interface settings. | System general settings: action/status plus setup-wizard evidence does not establish durable target-release get/set support. |
+| Firewall, HAProxy, ACME, DNS/Dnsmasq, DHCP/Kea, Dynamic DNS, VPN, FRR/Quagga, interface assignment/IP on OPNsense `26.7.6+` plus LAGG and other interface types, system tunables and gateway groups, Kea generic DHCPv4 options and DDNS general settings, auth, trust, syslog, Monit, cron, and traffic shaping resources. | Data-source parity for 15 singleton or sensitive special-case resources; remaining audited field/policy parity. | Kea ordered parent-option linkage; HASync configuration `syncitems` model shape; HASync status/actions; PPPoE semantics for future interface settings. | System general settings: action/status plus setup-wizard evidence does not establish durable target-release get/set support. |
 
 IPv6 identity-association (`idassoc6`) and legacy track-interface (`track6`) adoption/updates are published in v0.11.0 after [PR #77](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77). Six optional/computed delegation fields preserve omitted values and unowned settings. Contributor-reported OPNsense 26.7.8_2 / OpenTofu 1.13.2 import and no-change refresh coverage was not independently reproduced and does not establish activation, packet behavior or full write/restore acceptance. Assignment creation, automatic mode migration and upstream DHCPv6-client ownership are not included.
 

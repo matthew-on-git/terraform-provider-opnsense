@@ -2,7 +2,7 @@
 
 Pinned baseline: `browningluke/opnsense` v0.26.0 at `33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba` (47 resources, 45 data sources, 1 ephemeral resource, and provider retry configuration).
 
-Current local inventory: **113 resources and 99 data sources**, with 113/99 generated docs. There are **16 resource-only same-name data-source gaps** and the data-only surfaces are `system_info`, `unbound_settings`.
+Current local inventory: **113 resources and 100 data sources**, with 113/100 generated docs. There are **15 resource-only same-name data-source gaps** and the data-only surfaces are `system_info`, `unbound_settings`.
 
 ## Ownership Direction
 
@@ -445,24 +445,24 @@ Use one provider per appliance and object domain in steady state. Never configur
 
 - **Domain / local mapping:** Trust / `trust_ca`
 - **Baseline fields:** action, caref, city, common_name, country, crt, crt_payload, description, digest, email, id, key_type, lifetime, name, ocsp_uri, organization, organizational_unit, prv, prv_payload, ref_id, serial, state, valid_from, valid_to
-- **Shared semantics:** same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema
-- **Baseline-only:** existing/intermediate/OCSP actions, subject fields, digest/key type, import material, serial, and OCSP URI are absent locally
-- **Local-only:** none material
-- **Lifecycle:** UUID-backed API create/read/update/delete with the domain reconfigure/apply action where required
-- **Sensitive/write-only:** private key fields are sensitive; local import fields are write-only and deliberately not refreshed
-- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/resources/trust_ca.md; docs/resources/trust_ca.md
+- **Shared semantics:** Released26.7.8 Trust source-backed action/read continuation. Configured operation intent is distinct from inferred editor actions and lifetime template defaults.
+- **Baseline-only:** Full non-skipped 26.7.8_2 action/settings/adoption/destroy/restoration matrix passed; see 31-0f-live-proof.json. Keyless CA import/update remains a provider implementation gate despite the patched controller correction; no XML or fabricated key workaround.
+- **Local-only:** Separate returned public/sensitive observations preserve configured PEM and operation intent; explicit operation token distinguishes repeat operations from description updates.
+- **Lifecycle:** Single-attempt UUID-backed create/update/delete; ordinary description changes do not regenerate/sign/reissue. Successful add identity and available one-time key are retained before read-back.
+- **Sensitive/write-only:** All supplied and returned private-key material is Sensitive. Configured PEM inputs retain text; response-only generated keys are retained in resource state, never synthesized by lookup or retransmitted.
+- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/resources/trust_ca.md; docs/resources/trust_ca.md; _bmad-output/implementation-artifacts/31-0f-trust-source-contract.md
 - **Follow-up:** `_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md`
 
 #### `resource:trust_cert` — missing-buildable
 
 - **Domain / local mapping:** Trust / `trust_cert`
 - **Baseline fields:** action, altnames_dns, altnames_email, altnames_ip, altnames_uri, caref, cert_type, city, common_name, country, crt, crt_payload, csr, csr_payload, description, digest, email, id, in_use, is_user, key_type, lifetime, name, ocsp_uri, organization, organizational_unit, private_key_location, prv, prv_payload, ref_id, rfc3280_purpose, state, valid_from, valid_to
-- **Shared semantics:** same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema
-- **Baseline-only:** internal/external/CSR/import/reissue actions, SANs, subject fields, EKU, digest/key type, lifetime, and operational metadata are absent locally
-- **Local-only:** none material
-- **Lifecycle:** UUID-backed API create/read/update/delete with the domain reconfigure/apply action where required
-- **Sensitive/write-only:** private key fields are sensitive; local import fields are write-only and deliberately not refreshed
-- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/resources/trust_cert.md; docs/resources/trust_cert.md
+- **Shared semantics:** Released26.7.8 Trust source-backed action/read continuation. Configured operation intent is distinct from inferred editor actions and lifetime template defaults.
+- **Baseline-only:** Full non-skipped 26.7.8_2 action/settings/adoption/destroy/restoration matrix passed; see 31-0f-live-proof.json. Keyless CA import/update remains a provider implementation gate despite the patched controller correction; no XML or fabricated key workaround.
+- **Local-only:** Separate returned public/sensitive observations preserve configured PEM and operation intent; explicit operation token distinguishes repeat operations from description updates.
+- **Lifecycle:** Single-attempt UUID-backed create/update/delete; ordinary description changes do not regenerate/sign/reissue. Successful add identity and available one-time key are retained before read-back.
+- **Sensitive/write-only:** All supplied and returned private-key material is Sensitive. Configured PEM inputs retain text; response-only generated keys are retained in resource state, never synthesized by lookup or retransmitted.
+- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/resources/trust_cert.md; docs/resources/trust_cert.md; _bmad-output/implementation-artifacts/31-0f-trust-source-contract.md
 - **Follow-up:** `_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md`
 
 #### `resource:trust_settings` — missing-buildable
@@ -472,7 +472,7 @@ Use one provider per appliance and object domain in steady state. Never configur
 - **Shared semantics:** same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema
 - **Baseline-only:** No missing audited six-field owner/lookup; five additional upstream TLS fields remain deliberately unaudited and unmanaged.
 - **Local-only:** Import-first six-field singleton implementation; HTTP-backed framework/protocol tests, not appliance or release evidence.
-- **Lifecycle:** Fixed trust_settings import; targeted update/read/reconfigure, durable saved/uncertain recovery without repeated set, state-only Delete. Disposable lifecycle not executed; full Trust action parity remains outstanding.
+- **Lifecycle:** Fixed trust_settings import; targeted update/read/reconfigure, durable saved/uncertain recovery without repeated set, state-only Delete. Non-skipped 26.7.8_2 settings lifecycle, all six settings and state-only deletion passed with exact restoration; see 31-0f-live-proof.json. Broader firmware/OpenTofu and keyless provider gates remain open.
 - **Sensitive/write-only:** none
 - **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/resources/trust_settings.md; internal/provider/provider.go; internal/service/trust/settings_resource.go; internal/service/trust/settings_protocol_test.go; _bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md
 - **Follow-up:** `_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md`
@@ -951,24 +951,24 @@ Use one provider per appliance and object domain in steady state. Never configur
 
 - **Domain / local mapping:** Trust / `trust_ca`
 - **Baseline fields:** action, caref, city, common_name, country, crt, crt_payload, description, digest, email, id, key_type, lifetime, name, ocsp_uri, organization, organizational_unit, prv, prv_payload, ref_id, serial, state, valid_from, valid_to
-- **Shared semantics:** same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema
-- **Baseline-only:** existing/intermediate/OCSP actions, subject fields, digest/key type, import material, serial, and OCSP URI are absent locally
-- **Local-only:** none material
-- **Lifecycle:** read-only API lookup; operational interface rows read live state rather than durable configuration
-- **Sensitive/write-only:** private key fields are sensitive; local import fields are write-only and deliberately not refreshed
-- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/trust_ca.md; docs/data-sources/trust_ca.md
+- **Shared semantics:** Released26.7.8 Trust source-backed action/read continuation. Configured operation intent is distinct from inferred editor actions and lifetime template defaults.
+- **Baseline-only:** Full non-skipped 26.7.8_2 action/settings/adoption/destroy/restoration matrix passed; see 31-0f-live-proof.json. Keyless CA import/update remains a provider implementation gate despite the patched controller correction; no XML or fabricated key workaround.
+- **Local-only:** Separate returned public/sensitive observations preserve configured PEM and operation intent; explicit operation token distinguishes repeat operations from description updates.
+- **Lifecycle:** Read-only UUID lookup; no mutation, activation or recovery. One-time local keys cannot be recovered by GET.
+- **Sensitive/write-only:** All supplied and returned private-key material is Sensitive. Configured PEM inputs retain text; response-only generated keys are retained in resource state, never synthesized by lookup or retransmitted.
+- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/trust_ca.md; docs/data-sources/trust_ca.md; _bmad-output/implementation-artifacts/31-0f-trust-source-contract.md
 - **Follow-up:** `_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md`
 
 #### `data-source:trust_cert` — missing-buildable
 
-- **Domain / local mapping:** Trust / none
+- **Domain / local mapping:** Trust / `trust_cert`
 - **Baseline fields:** action, altnames_dns, altnames_email, altnames_ip, altnames_uri, caref, cert_type, city, common_name, country, crt, crt_payload, csr, csr_payload, description, digest, email, id, in_use, is_user, key_type, lifetime, name, ocsp_uri, organization, organizational_unit, private_key_location, prv, prv_payload, ref_id, rfc3280_purpose, state, valid_from, valid_to
-- **Shared semantics:** same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema
-- **Baseline-only:** internal/external/CSR/import/reissue actions, SANs, subject fields, EKU, digest/key type, lifetime, and operational metadata are absent locally
-- **Local-only:** none material
-- **Lifecycle:** read-only API lookup; operational interface rows read live state rather than durable configuration
-- **Sensitive/write-only:** private key fields are sensitive; local import fields are write-only and deliberately not refreshed
-- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/trust_cert.md; docs/resources/trust_cert.md
+- **Shared semantics:** Released26.7.8 Trust source-backed action/read continuation. Configured operation intent is distinct from inferred editor actions and lifetime template defaults.
+- **Baseline-only:** Full non-skipped 26.7.8_2 action/settings/adoption/destroy/restoration matrix passed; see 31-0f-live-proof.json. Keyless CA import/update remains a provider implementation gate despite the patched controller correction; no XML or fabricated key workaround.
+- **Local-only:** Separate returned public/sensitive observations preserve configured PEM and operation intent; explicit operation token distinguishes repeat operations from description updates.
+- **Lifecycle:** Read-only UUID lookup; no mutation, activation or recovery. One-time local keys cannot be recovered by GET.
+- **Sensitive/write-only:** All supplied and returned private-key material is Sensitive. Configured PEM inputs retain text; response-only generated keys are retained in resource state, never synthesized by lookup or retransmitted.
+- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/trust_cert.md; docs/data-sources/trust_cert.md; _bmad-output/implementation-artifacts/31-0f-trust-source-contract.md
 - **Follow-up:** `_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md`
 
 #### `data-source:trust_settings` — missing-buildable
@@ -978,7 +978,7 @@ Use one provider per appliance and object domain in steady state. Never configur
 - **Shared semantics:** same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema
 - **Baseline-only:** No missing audited six-field owner/lookup; five additional upstream TLS fields remain deliberately unaudited and unmanaged.
 - **Local-only:** Read-only six-field lookup with authoritative values, strict Boolean/selected-choice decoding, fixed computed identity and drift observations; HTTP-backed protocol evidence only.
-- **Lifecycle:** GET-only lookup; no import, update, delete, mutation, activation or recovery ownership. Disposable appliance read acceptance and broader Trust lifecycle follow-up remain outstanding.
+- **Lifecycle:** GET-only lookup; no import, update, delete, mutation, activation or recovery ownership. Non-skipped 26.7.8_2 lookup/read comparison passed alongside the complete supported Trust matrix; see 31-0f-live-proof.json. Broader firmware/OpenTofu and keyless provider gates remain open.
 - **Sensitive/write-only:** none
 - **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/trust_settings.md; internal/provider/provider.go; internal/service/trust/settings_data_source.go; internal/service/trust/settings_protocol_test.go; _bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md
 - **Follow-up:** `_bmad-output/implementation-artifacts/31-0f-trust-lifecycle-and-settings-parity.md`
@@ -1097,6 +1097,6 @@ Use one provider per appliance and object domain in steady state. Never configur
 
 ## Local Inventory Exceptions
 
-Resource-only same-name data-source gaps (16): `dnsmasq_settings`, `interface_assignment`, `ipsec_key_pair`, `ipsec_psk`, `kea_ctrl_agent`, `kea_dhcpv4_settings`, `kea_dhcpv6_settings`, `quagga_bgp_global`, `quagga_general`, `quagga_ospf6_general`, `quagga_ospf_general`, `quagga_rip`, `quagga_static`, `trust_cert`, `unbound_dnsbl`, `unbound_general`.
+Resource-only same-name data-source gaps (15): `dnsmasq_settings`, `interface_assignment`, `ipsec_key_pair`, `ipsec_psk`, `kea_ctrl_agent`, `kea_dhcpv4_settings`, `kea_dhcpv6_settings`, `quagga_bgp_global`, `quagga_general`, `quagga_ospf6_general`, `quagga_ospf_general`, `quagga_rip`, `quagga_static`, `unbound_dnsbl`, `unbound_general`.
 
 Data-only: `system_info`, `unbound_settings`.

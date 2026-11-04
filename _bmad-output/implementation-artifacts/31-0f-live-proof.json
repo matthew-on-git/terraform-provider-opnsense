@@ -1,0 +1,119 @@
+{
+  "schema": "trust-live-proof-v2",
+  "tested_firmware_package": "26.7.8_2",
+  "tested_base_revision": "d87b4aa141384c3356dbff93eb2f03029a2a9941",
+  "tested_working_tree_sha256": "d34bdd2b0c249283c369a3f63be4bdce43ec9ce7340dc42719c9bcb7e6bc95e7",
+  "executable_sha256": "287556a87130595829bd216cf425e4f81cf85faf9cfeee6aef023edd60d4362d",
+  "executable_files": 753,
+  "executable_inventory": "Sorted Git tracked/unignored files that end in .go, equal go.mod/go.sum, or start test/scripts/; hash relative-path NUL bytes NUL.",
+  "toolchain_image": "ghcr.io/devrail-dev/dev-toolchain:1.12.24",
+  "toolchain_image_sha256": "5adebcb6d1f62c7fb8e5218a4739e3d7379d035927231e0441de00a76d8b4506",
+  "terraform_version": "1.16.5",
+  "terraform_platform": "linux_arm64",
+  "live_matrix": {
+    "executed": true,
+    "skipped": false,
+    "exit_code": 0,
+    "guarded_runner_exit_code": 0,
+    "final_source_digest_equal": true,
+    "final_runtime_digest_equal": true,
+    "apply_no_change_pairs": 26,
+    "settings_apply_cases": 19,
+    "ca_actions": [
+      "root",
+      "intermediate",
+      "ocsp",
+      "matching_key_import"
+    ],
+    "cert_actions": [
+      "internal_firewall",
+      "internal_local",
+      "external_csr",
+      "import",
+      "sign_csr",
+      "import_signed_into_holder",
+      "reissue"
+    ],
+    "one_time_key_retained": true,
+    "one_time_key_parse_and_certificate_match": true,
+    "one_time_key_not_persisted_on_appliance": true,
+    "metadata_material_stable": true,
+    "certificate_lookup_csr_equal": true,
+    "reissue_changes_certificate_preserves_uuid_and_key": true,
+    "same_action_new_token_cryptographic_writes": 1,
+    "unchanged_token_cryptographic_writes": 0,
+    "uuid_adoption": true,
+    "all_five_boolean_true_false_restore": true,
+    "cipher_select_empty_clear_restore": true,
+    "omission_no_change": true,
+    "terraform_destroy": true,
+    "owned_before_destroy": 9,
+    "owned_after_destroy": 0,
+    "settings_destroy_equal": true,
+    "legacy_pre_epoch_ca_cert_resource_and_lookup_dates": {
+      "valid_from": -31536000,
+      "valid_to": -86400,
+      "verified": true
+    }
+  },
+  "adoption_request_instrumentation": {
+    "request_count": 7,
+    "adoption_reads": 4,
+    "cryptographic_writes": 0,
+    "config_equal": true
+  },
+  "exact_restoration": {
+    "verified": true,
+    "baseline_and_restored_sha256": {
+      "config_sha256": "f31e0298e6793759a5eb335ec6113da4707c097c90f7455dbe018d95c37b95c9",
+      "settings_sha256": "d641c6a212d89e364fdf0be41327a99a5e98cd0629458273b8e62ac6bddb9907",
+      "routes_sha256": "5d8e264c5a0752bbee5fb8e6e5b31ada1b76b49b5ab51a4fc5351f0f2f8ca5da",
+      "runtime_sha256": "943032f6abc60693ff20afc0c26c044d3077713c202339286f67d9bf39910923"
+    }
+  },
+  "owned_disposable_retired": true,
+  "owned_disk_marker_and_listeners_removed": true,
+  "independent_retirement_readback": true,
+  "historical_proof": "https://github.com/matthew-on-git/terraform-provider-opnsense/blob/17cb7b0064a3beb217e9f011be3048d6103d760b/_bmad-output/implementation-artifacts/31-0f-live-proof.json",
+  "prior_failed_receipts_retained": true,
+  "verification": {
+    "offline_guard_methods": 16,
+    "make_check": {
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "duration_ms": 32568
+    },
+    "trust_race_seconds": 18.258,
+    "coverageaudit_race_seconds": 1.297,
+    "confirmed_create_core_cases": 3,
+    "old_production_counterexamples_failed": 3,
+    "review_layers": [
+      "blind",
+      "edge",
+      "verification_gap",
+      "acceptance_auditor"
+    ],
+    "integration_findings_triaged": 13,
+    "bounded_production_repair_review": "No concrete blockers",
+    "pre_epoch_race_seconds": 1.153,
+    "confirmed_create_core_evidence_revision": "35799c04ea213613d07e9cc987a8a7a9763edf60",
+    "trust_coverage_race_evidence_revision": "1661ccd35afacdbe1b62bc1ca14e9b2d5de0d917"
+  },
+  "boundaries": [
+    "Raw state/configuration/credentials/target topology remain private",
+    "Whole-tree digest identifies executed pre-evidence tree; evidence-only publication does not change executable inventory",
+    "Keyless CA provider support remains deferred despite upstream patched-package correction",
+    "Older firmware and OpenTofu execution are not claimed",
+    "Readiness, merge and release are separate; parent Trust capability scope remains open"
+  ],
+  "prior_signed_date_attempt": {
+    "revision": "1661ccd35afacdbe1b62bc1ca14e9b2d5de0d917",
+    "passed": false,
+    "cause": "PHP UTCTIME year pivot maps1965/1966 to2065/2066; exact fixture-date assertion failed",
+    "exact_fallback_restored": true,
+    "owned_after_cleanup": 0,
+    "terraform_destroy_proven": false,
+    "receipt_retained_separately": true
+  }
+}

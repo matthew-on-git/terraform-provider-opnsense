@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Trust"
+description: |-
+  Read an existing Trust certificate by UUID.
+---
+
+# {{.Name}} ({{.Type}})
+
+Read public certificate/CSR metadata and API-returned sensitive material by UUID
+without importing the object into Terraform management. This lookup performs no
+writes and does not own generation, signing, reissue, activation or recovery.
+
+Read-time action and generation template defaults are not original creation
+provenance. A local-only one-time key is unavailable to lookup. Private material
+returned by the API is Sensitive and stored in state; absent values are not
+synthesized. Use appropriately restricted API credentials and protected state.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_trust_cert/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
