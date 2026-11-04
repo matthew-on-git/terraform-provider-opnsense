@@ -202,6 +202,10 @@ func configuredIPsecRequest(ctx context.Context, config tfsdk.Config, legacy any
 type ipsecSelection []string
 
 func (s *ipsecSelection) UnmarshalJSON(data []byte) error {
+	return s.unmarshal(data, false)
+}
+
+func (s *ipsecSelection) unmarshal(data []byte, allowEmptyOption bool) error {
 	data = []byte(strings.TrimSpace(string(data)))
 	if string(data) == "null" {
 		return fmt.Errorf("null IPsec selection")
@@ -216,6 +220,9 @@ func (s *ipsecSelection) UnmarshalJSON(data []byte) error {
 	}
 	var scalar string
 	if json.Unmarshal(data, &scalar) == nil {
+		if err := (ipsecAdvancedField{selection: true}).validate(scalar); err != nil {
+			return err
+		}
 		*s = opnsense.CSVToSlice(scalar)
 		sort.Strings(*s)
 		return nil
@@ -230,9 +237,10 @@ func (s *ipsecSelection) UnmarshalJSON(data []byte) error {
 	for key, option := range options {
 		switch option.Selected.String() {
 		case "1":
-			if key != "" {
-				selected = append(selected, key)
+			if (key == "" && !allowEmptyOption) || strings.TrimSpace(key) != key || strings.Contains(key, ",") {
+				return fmt.Errorf("invalid IPsec selected member")
 			}
+			selected = append(selected, key)
 		case "0":
 		default:
 			return fmt.Errorf("invalid IPsec selection flag")
@@ -247,7 +255,7 @@ type ipsecEnum string
 
 func (s *ipsecEnum) UnmarshalJSON(data []byte) error {
 	var selection ipsecSelection
-	if err := json.Unmarshal(data, &selection); err != nil {
+	if err := selection.unmarshal(data, true); err != nil {
 		return err
 	}
 	if len(selection) > 1 {
@@ -287,6 +295,13 @@ func decodeIPsecResponse(data []byte, target any, fields []ipsecAdvancedField) e
 			return fmt.Errorf("missing advanced IPsec field %s", field.name)
 		}
 		if field.selection {
+			var selected ipsecSelection
+			if err := json.Unmarshal(value, &selected); err != nil {
+				return fmt.Errorf("invalid %s: %w", field.name, err)
+			}
+			if err := field.validate(strings.Join(selected, ",")); err != nil {
+				return fmt.Errorf("invalid %s: %w", field.name, err)
+			}
 			continue
 		}
 		var text string

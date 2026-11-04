@@ -4,6 +4,7 @@
 package ipsec_test
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -135,14 +136,8 @@ func ipsecAcceptancePreflight(t *testing.T) (*opnsense.Client, *ipsecLeaseGuard)
 	if err != nil {
 		t.Fatal(err)
 	}
-	var version struct {
-		Product struct {
-			Name    string `json:"product_name"`
-			Version string `json:"product_version"`
-		} `json:"product"`
-	}
-	if json.Unmarshal(firmware, &version) != nil || version.Product.Name != "OPNsense" || version.Product.Version != "26.7.8" {
-		t.Fatal("acceptance requires the pinned released OPNsense 26.7.8 target")
+	if err = validateIPsecAcceptanceFirmware(firmware); err != nil {
+		t.Fatal(err)
 	}
 	for _, owner := range []string{"connection", "child"} {
 		body, readErr := ipsecAcceptanceRead(context.Background(), client, "/api/ipsec/connections/search_"+owner)
@@ -158,8 +153,25 @@ func ipsecAcceptancePreflight(t *testing.T) (*opnsense.Client, *ipsecLeaseGuard)
 		}
 	}
 	guard := &ipsecLeaseGuard{receipt: receipt, now: time.Now, owned: map[string]string{}}
+	if err = guard.initializeOwnershipJournal(os.Getenv("OPNSENSE_IPSEC_OWNERSHIP_JOURNAL")); err != nil {
+		t.Fatal(err)
+	}
 	installIPsecGuard(client, guard)
 	return client, guard
+}
+
+// Exact package attestation is independent of the base source-equivalence pin.
+func validateIPsecAcceptanceFirmware(raw []byte) error {
+	var version struct {
+		Product struct {
+			Name    string `json:"product_name"`
+			Version string `json:"product_version"`
+		} `json:"product"`
+	}
+	if json.Unmarshal(raw, &version) != nil || version.Product.Name != "OPNsense" || version.Product.Version != "26.7.8_2" {
+		return fmt.Errorf("acceptance requires the attested released OPNsense 26.7.8_2 package")
+	}
+	return nil
 }
 
 func ipsecAbsent(client *opnsense.Client, owner, id string) error {
@@ -170,11 +182,7 @@ func ipsecAbsent(client *opnsense.Client, owner, id string) error {
 	if err != nil {
 		return err
 	}
-	if strings.TrimSpace(string(raw)) == "[]" {
-		return nil
-	}
-	var wrapped map[string]json.RawMessage
-	if json.Unmarshal(raw, &wrapped) == nil && strings.TrimSpace(string(wrapped[owner])) == "[]" {
+	if ipsecRawAbsent(raw, owner) {
 		return nil
 	}
 	return fmt.Errorf("owned %s deletion is not independently proven", owner)
@@ -200,6 +208,8 @@ func TestAccIPsecAdvancedDisposable(t *testing.T) {
 	})
 	var connectionID, childID string
 	var beforeOmission map[string]map[string]string
+	var transferJournal []byte
+	var transferJournalTime time.Time
 	capture := func(state *terraform.State) error {
 		if item := state.RootModule().Resources["opnsense_ipsec_connection.advanced"]; item != nil {
 			connectionID = item.Primary.ID
@@ -210,7 +220,18 @@ func TestAccIPsecAdvancedDisposable(t *testing.T) {
 		if connectionID == "" || childID == "" {
 			return fmt.Errorf("owned identities missing")
 		}
+		if err := verifyIPsecAcceptanceLookups(state, false); err != nil {
+			return err
+		}
 		return verifyIPsecAcceptanceFields(client, connectionID, childID, false)
+	}
+	check := func(cleared bool) resource.TestCheckFunc {
+		return func(state *terraform.State) error {
+			if err := verifyIPsecAcceptanceLookups(state, cleared); err != nil {
+				return err
+			}
+			return verifyIPsecAcceptanceFields(client, connectionID, childID, cleared)
+		}
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){"opnsense": providerserver.NewProtocol6WithError(&guardedIPsecProvider{Provider: provider.New("isolated-acceptance")(), guard: guard})},
@@ -221,9 +242,46 @@ func TestAccIPsecAdvancedDisposable(t *testing.T) {
 			return ipsecAbsent(client, "connection", connectionID)
 		},
 		Steps: []resource.TestStep{
-			{Config: ipsecAcceptanceConfig(true, false), Check: resource.ComposeAggregateTestCheckFunc(capture, resource.TestCheckResourceAttr("opnsense_ipsec_connection.advanced", "enabled", "false"), resource.TestCheckResourceAttr("opnsense_ipsec_child.advanced", "enabled", "false"), resource.TestCheckResourceAttr("opnsense_ipsec_connection.advanced", "ike_lifetime", "30"), resource.TestCheckResourceAttr("opnsense_ipsec_child.advanced", "start_action", "trap|start"))},
-			{ResourceName: "opnsense_ipsec_connection.advanced", ImportState: true, ImportStateVerify: true},
-			{ResourceName: "opnsense_ipsec_child.advanced", ImportState: true, ImportStateVerify: true},
+			{Config: strings.ReplaceAll(strings.ReplaceAll(ipsecAcceptanceConfig(true, false), "\"advanced\"", "\"seed\""), ".advanced.id", ".seed.id"), Check: func(state *terraform.State) error {
+				connectionID = state.RootModule().Resources["opnsense_ipsec_connection.seed"].Primary.ID
+				childID = state.RootModule().Resources["opnsense_ipsec_child.seed"].Primary.ID
+				t.Setenv("TF_VAR_ipsec_connection_import_id", connectionID)
+				t.Setenv("TF_VAR_ipsec_child_import_id", childID)
+				if err := verifyIPsecAcceptanceLookupsAt(state, "seed", false); err != nil {
+					return err
+				}
+				return verifyIPsecAcceptanceFields(client, connectionID, childID, false)
+			}},
+			// Import both owners into fresh addresses in one Core apply. Sequential
+			// ImportState steps normally use disposable state, not the next apply's state.
+			{PreConfig: func() {
+				var err error
+				transferJournal, err = os.ReadFile(guard.journalPath)
+				if err != nil {
+					t.Fatal("cannot read ownership journal before import")
+				}
+				info, err := os.Stat(guard.journalPath)
+				if err != nil {
+					t.Fatal("cannot stat ownership journal before import")
+				}
+				transferJournalTime = info.ModTime()
+			}, Config: ipsecAcceptanceImportConfig(), Check: func(state *terraform.State) error {
+				if state.RootModule().Resources["opnsense_ipsec_connection.advanced"].Primary.ID != connectionID || state.RootModule().Resources["opnsense_ipsec_child.advanced"].Primary.ID != childID {
+					return fmt.Errorf("import transfer changed owned UUIDs")
+				}
+				if state.RootModule().Resources["opnsense_ipsec_connection.seed"] != nil || state.RootModule().Resources["opnsense_ipsec_child.seed"] != nil {
+					return fmt.Errorf("import transfer retained seed owners")
+				}
+				journal, err := os.ReadFile(guard.journalPath)
+				if err != nil || !bytes.Equal(transferJournal, journal) {
+					return fmt.Errorf("import changed ownership journal")
+				}
+				info, err := os.Stat(guard.journalPath)
+				if err != nil || !info.ModTime().Equal(transferJournalTime) {
+					return fmt.Errorf("import dispatched a journaled mutation")
+				}
+				return capture(state)
+			}},
 			{Config: ipsecAcceptanceConfig(true, false), PlanOnly: true, ExpectNonEmptyPlan: false},
 			{PreConfig: func() {
 				var readErr error
@@ -231,7 +289,7 @@ func TestAccIPsecAdvancedDisposable(t *testing.T) {
 				if readErr != nil {
 					t.Fatal(readErr)
 				}
-			}, Config: ipsecAcceptanceOmittedConfig(), Check: func(_ *terraform.State) error {
+			}, Config: ipsecAcceptanceOmittedConfig(), Check: func(state *terraform.State) error {
 				after, readErr := ipsecSavedAdvancedSnapshot(client, connectionID, childID)
 				if readErr != nil {
 					return readErr
@@ -241,7 +299,7 @@ func TestAccIPsecAdvancedDisposable(t *testing.T) {
 						return fmt.Errorf("omitted imported %s policy changed", owner)
 					}
 				}
-				return nil
+				return check(false)(state)
 			}},
 			{Config: ipsecAcceptanceOmittedConfig(), PlanOnly: true, ExpectNonEmptyPlan: false},
 			{PreConfig: func() {
@@ -250,17 +308,15 @@ func TestAccIPsecAdvancedDisposable(t *testing.T) {
 					t.Fatal("owned connection drift injection failed")
 				}
 			}, Config: ipsecAcceptanceConfig(true, false), PlanOnly: true, ExpectNonEmptyPlan: true},
-			{Config: ipsecAcceptanceConfig(true, false), Check: resource.TestCheckResourceAttr("opnsense_ipsec_connection.advanced", "dpd_timeout", "120")},
+			{Config: ipsecAcceptanceConfig(true, false), Check: check(false)},
 			{PreConfig: func() {
 				payload := map[string]string{"reqid": "124"}
 				if err := opnsense.Update(context.Background(), client, opnsense.ReqOpts{UpdateEndpoint: "/api/ipsec/connections/set_child", Monad: "child", ReconfigureEndpoint: "/api/ipsec/service/reconfigure"}, &payload, childID); err != nil {
 					t.Fatal("owned child drift injection failed")
 				}
 			}, Config: ipsecAcceptanceConfig(true, false), PlanOnly: true, ExpectNonEmptyPlan: true},
-			{Config: ipsecAcceptanceConfig(true, false), Check: resource.TestCheckResourceAttr("opnsense_ipsec_child.advanced", "request_id", "123")},
-			{Config: ipsecAcceptanceConfig(true, true), Check: resource.ComposeAggregateTestCheckFunc(resource.TestCheckResourceAttr("opnsense_ipsec_connection.advanced", "dpd_timeout", ""), resource.TestCheckResourceAttr("opnsense_ipsec_child.advanced", "request_id", ""), resource.TestCheckResourceAttr("opnsense_ipsec_child.advanced", "install_policies", "false"), resource.TestCheckResourceAttr("opnsense_ipsec_child.advanced", "rekey_time", "0"), func(_ *terraform.State) error {
-				return verifyIPsecAcceptanceFields(client, connectionID, childID, true)
-			})},
+			{Config: ipsecAcceptanceConfig(true, false), Check: check(false)},
+			{Config: ipsecAcceptanceConfig(true, true), Check: check(true)},
 			{Config: ipsecAcceptanceConfig(false, true), Check: func(_ *terraform.State) error { return ipsecAbsent(client, "child", childID) }},
 		},
 	})
@@ -269,12 +325,13 @@ func TestAccIPsecAdvancedDisposable(t *testing.T) {
 
 func ipsecAcceptanceConfig(child, clearValues bool) string {
 	timeout, request, rekey := "120", "123", "3600"
-	policies := "true"
+	policies, enabledFlags := "true", "true"
 	if clearValues {
 		timeout = ""
 		request = ""
 		rekey = "0"
 		policies = "false"
+		enabledFlags = "false"
 	}
 	config := fmt.Sprintf(`
 resource "opnsense_ipsec_connection" "advanced" {
@@ -282,7 +339,8 @@ resource "opnsense_ipsec_connection" "advanced" {
  description = "tf-disposable-advanced-ipsec"
  remote_addrs = "203.0.113.1"
  proposals = "default"
- aggressive = false
+ version = "1"
+ aggressive = %s
  dpd_delay = "0"
  dpd_timeout = %q
  ike_lifetime = "30"
@@ -299,7 +357,7 @@ resource "opnsense_ipsec_connection" "advanced" {
  udp_encapsulation = true
 }
 data "opnsense_ipsec_connection" "advanced" { id = opnsense_ipsec_connection.advanced.id }
-`, timeout)
+`, enabledFlags, timeout)
 	if child {
 		config += fmt.Sprintf(`
 resource "opnsense_ipsec_child" "advanced" {
@@ -314,18 +372,18 @@ resource "opnsense_ipsec_child" "advanced" {
  dpd_action = "clear"
  install_policies = %s
  request_id = %q
- sha256_96 = false
+ sha256_96 = %s
  rekey_time = %q
 }
 data "opnsense_ipsec_child" "advanced" { id = opnsense_ipsec_child.advanced.id }
-`, policies, request, rekey)
+`, policies, request, enabledFlags, rekey)
 	}
 	return config
 }
 
 func TestIPsecDisposableIsolationGuard(t *testing.T) {
 	now := time.Date(2026, 11, 3, 12, 0, 0, 0, time.UTC)
-	good := ipsecIsolationReceipt{TargetURI: "https://firewall.example.test", GuestID: "reserved-guest", ReservationID: "reservation-receipt", ReservedBy: "acceptance-operator", Purpose: "ipsec-disposable-acceptance", CreatedAt: now.Add(-time.Minute), ExpiresAt: now.Add(time.Hour), Isolated: true, NewlyCreated: true, Disposable: true, NoProductionConnectivity: true, AllowServiceReconfigure: true, IdentityEndpoint: "/api/diagnostics/system/system_information", IdentitySHA256: strings.Repeat("a", 64)}
+	good := ipsecIsolationReceipt{TargetURI: "https://firewall.example.test", GuestID: "reserved-guest", ReservationID: "reservation-receipt", ReservedBy: "acceptance-operator", Purpose: "ipsec-disposable-acceptance", CreatedAt: now.Add(-time.Minute), ExpiresAt: now.Add(time.Hour), Isolated: true, NewlyCreated: true, Disposable: true, NoProductionConnectivity: true, AllowServiceReconfigure: true, IdentityEndpoint: "/api/diagnostics/system/systemInformation", IdentitySHA256: strings.Repeat("a", 64)}
 	if err := validateIPsecIsolation(good, good.TargetURI, now); err != nil {
 		t.Fatal(err)
 	}
@@ -342,17 +400,24 @@ func TestIPsecDisposableIsolationGuard(t *testing.T) {
 }
 
 // Independent raw saved-field observations, not provider model round trips.
-func verifyIPsecAcceptanceFields(client *opnsense.Client, connectionID, childID string, cleared bool) error {
+func expectedIPsecAcceptanceFields(cleared bool) map[string]map[string]string {
 	expected := map[string]map[string]string{
-		"connection": {"enabled": "0", "aggressive": "0", "dpd_delay": "0", "dpd_timeout": "120", "over_time": "30", "pools": "", "keyingtries": "0", "local_addrs": "192.0.2.1", "local_port": "", "mobike": "0", "reauth_time": "", "rekey_time": "3600", "remote_port": "4500", "send_cert": "never", "send_certreq": "0", "encap": "1"},
-		"child":      {"enabled": "0", "close_action": "none", "dpd_action": "clear", "policies": "1", "reqid": "123", "sha256_96": "0", "rekey_time": "3600"},
+		"connection": {"enabled": "0", "aggressive": "1", "dpd_delay": "0", "dpd_timeout": "120", "over_time": "30", "pools": "", "keyingtries": "0", "local_addrs": "192.0.2.1", "local_port": "", "mobike": "0", "reauth_time": "", "rekey_time": "3600", "remote_port": "4500", "send_cert": "never", "send_certreq": "0", "encap": "1"},
+		"child":      {"enabled": "0", "close_action": "none", "dpd_action": "clear", "policies": "1", "reqid": "123", "sha256_96": "1", "rekey_time": "3600"},
 	}
 	if cleared {
+		expected["connection"]["aggressive"] = "0"
+		expected["child"]["sha256_96"] = "0"
 		expected["connection"]["dpd_timeout"] = ""
 		expected["child"]["policies"] = "0"
 		expected["child"]["reqid"] = ""
 		expected["child"]["rekey_time"] = "0"
 	}
+	return expected
+}
+
+func verifyIPsecAcceptanceFields(client *opnsense.Client, connectionID, childID string, cleared bool) error {
+	expected := expectedIPsecAcceptanceFields(cleared)
 	for _, owner := range []string{"connection", "child"} {
 		id := connectionID
 		if owner == "child" {
@@ -411,6 +476,7 @@ func ipsecAcceptanceScalar(raw []byte) (string, error) {
 func ipsecAcceptanceOmittedConfig() string {
 	return `resource "opnsense_ipsec_connection" "advanced" {
  enabled=false
+ version="1"
  description="tf-disposable-advanced-ipsec-omission"
  remote_addrs="203.0.113.1"
  proposals="default"
@@ -462,4 +528,64 @@ func ipsecSavedAdvancedSnapshot(client *opnsense.Client, connectionID, childID s
 		}
 	}
 	return snapshot, nil
+}
+
+func ipsecAcceptanceImportConfig() string {
+	return ipsecAcceptanceConfig(true, false) + `
+variable "ipsec_connection_import_id" { type = string }
+variable "ipsec_child_import_id" { type = string }
+removed {
+ from = opnsense_ipsec_connection.seed
+ lifecycle { destroy = false }
+}
+removed {
+ from = opnsense_ipsec_child.seed
+ lifecycle { destroy = false }
+}
+import {
+ to = opnsense_ipsec_connection.advanced
+ id = var.ipsec_connection_import_id
+}
+import {
+ to = opnsense_ipsec_child.advanced
+ id = var.ipsec_child_import_id
+}
+`
+}
+
+func verifyIPsecAcceptanceLookups(state *terraform.State, cleared bool) error {
+	return verifyIPsecAcceptanceLookupsAt(state, "advanced", cleared)
+}
+
+func verifyIPsecAcceptanceLookupsAt(state *terraform.State, name string, cleared bool) error {
+	// Explicit independent public-name translations, not provider field metadata.
+	translated := map[string]string{"over_time": "ike_lifetime", "pools": "ip_pools", "keyingtries": "keying_tries", "local_addrs": "local_addresses", "reauth_time": "reauthentication_time", "send_cert": "send_certificate", "send_certreq": "send_certificate_request", "encap": "udp_encapsulation", "policies": "install_policies", "reqid": "request_id"}
+	flags := map[string]bool{"aggressive": true, "mobike": true, "send_certreq": true, "encap": true, "policies": true, "sha256_96": true}
+	for owner, expected := range expectedIPsecAcceptanceFields(cleared) {
+		item := state.RootModule().Resources["data.opnsense_ipsec_"+owner+"."+name]
+		if item == nil || item.Primary == nil {
+			return fmt.Errorf("%s lookup state missing", owner)
+		}
+		for wire, want := range expected {
+			if wire == "enabled" {
+				continue
+			}
+			attribute := wire
+			if public, ok := translated[wire]; ok {
+				attribute = public
+			}
+			if flags[wire] {
+				if want == "1" {
+					want = "true"
+				} else {
+					want = "false"
+				}
+			}
+			got, present := item.Primary.Attributes[attribute]
+			if !present || got != want {
+				return fmt.Errorf("%s lookup %s differs from independent expected value", owner, attribute)
+			}
+		}
+	}
+	return nil
 }

@@ -37,9 +37,10 @@ define `/api/ipsec/connections/*`; the older swanctl-controller URL is not used.
    independent identity hash, released version and empty inventory before writes.
    Infrastructure reservation truth is the operator's responsibility; the test
    cannot query an infrastructure reservation service or validate a signature.
-4. Supply only that guest's API credentials explicitly. There is no discovery,
-   credential or target fallback. `OPNSENSE_ALLOW_INSECURE=true` is optional only
-   for an attested disposable guest with a self-signed certificate.
+4. Supply only that guest's ephemeral API credentials and explicitly trusted TLS
+   certificate. The bounded runner rejects insecure TLS. There is no discovery,
+   credential or target fallback. Keep the root, receipt and recovery journal
+   private (0700 directories and 0600 data).
 
 ```json
 {
@@ -55,7 +56,7 @@ define `/api/ipsec/connections/*`; the older swanctl-controller URL is not used.
   "disposable": true,
   "no_production_connectivity": true,
   "allow_service_reconfigure": true,
-  "identity_endpoint": "/api/diagnostics/system/system_information",
+  "identity_endpoint": "/api/diagnostics/system/systemInformation",
   "identity_sha256": "<independently-established-64-hex-response-hash>"
 }
 ```
@@ -75,24 +76,36 @@ acceptance environments.
 
 ## Executable guarded path
 
-Run inside the pinned DevRail container (all toolchains stay in the container):
+Run this host-side launcher; it starts the pinned DevRail container (all toolchains stay in that container):
 
 ```sh
-TF_ACC=1 \
-OPNSENSE_IPSEC_DISPOSABLE_ACK=I_RESERVED_A_NEW_ISOLATED_GUEST \
-OPNSENSE_IPSEC_ISOLATION_RECEIPT=/private/isolation-receipt.json \
+OPNSENSE_IPSEC_GUARDED_RUNTIME=/private/runtime.json \
 OPNSENSE_URI=https://firewall.example.test \
 OPNSENSE_API_KEY="$DISPOSABLE_API_KEY" \
 OPNSENSE_API_SECRET="$DISPOSABLE_API_SECRET" \
-go test -count=1 -v ./internal/service/ipsec -run '^TestAccIPsecAdvancedDisposable$' -timeout 45m
+SSL_CERT_FILE=/private/disposable-ca.pem \
+bash test/scripts/run-story-31-0g-acceptance.sh
 ```
 
-Mount the private receipt read-only into the container and pass the explicitly
-set environment variables; do not put credential values in a command history.
-This is an executable Go acceptance test, not permission to use a shared target.
-Missing/expired/mismatched identity, reservation, isolation, firmware or nonempty
-inventory fails before mutation. Ordinary offline `go test` reports this test as
-**skipped**, not live proof.
+The runtime JSON binds owner, guest UUID, endpoint, TLS pin, immutable guard/oracle
+executables and their SHA256 hashes, the reviewed source digest, a private
+`isolation_receipt` and a durable `journal` path. Its helpers must independently
+attest live infrastructure isolation, authentic installed **26.7.8_2**, and exact
+reserved identity; they must not synthesize firmware or API responses. The
+wrapper verifies source/runtime/receipt digests and requires a non-skipped Go
+PASS, independent namespace-zero observations and matching final configuration,
+Swanctl-settings, routes and runtime hashes. See the Python runner's documented
+helper contract. A raw `go test` pass alone is not the complete guarded receipt.
+
+The default outer command budget is 40 minutes (maximum 40), with a shorter Go
+budget; normal writes stop 15 minutes before hard lease expiry. On interruption
+or timeout the external runner terminates the owned Go/Terraform process group,
+proves no live group members remain, then independently attempts recorded-owned
+cleanup, zero verification and exact restoration. It refuses restoration while
+owned processes might still mutate the appliance. Fallback recovery cannot turn
+a failed Go run into acceptance. Missing/expired/mismatched identity, reservation,
+isolation, firmware or nonempty initial inventory fails closed. Ordinary offline
+`go test` reports this dedicated test as **skipped**, not live proof.
 
 The test creates disabled connection/child objects with all advanced controls,
 uses UUID lookups, imports both, checks a no-change plan, injects owned connection
@@ -106,7 +119,12 @@ absence. A guarded underlying retry transport rechecks lease time and the indepe
 pinned identity before every mutation attempt, including provider activation and
 direct drift injection. Normal mutations stop with 15 minutes left for cleanup.
 Only recorded owned-UUID deletion and its pending reconfigure remain allowed for
-cleanup after that cutoff; identity must still match. An independent `t.Cleanup`
+cleanup after that cutoff; identity must still match, and **all** writes stop at
+hard lease expiry, including after slow identity verification or journal sync.
+The journal atomically records each add dispatch before the HTTP call and binds
+confirmed UUIDs to this reservation. Lost, truncated or otherwise unconfirmed add
+outcomes remain unresolved and block further writes and clean reconciliation;
+inventory searches never confer deletion authority. An independent `t.Cleanup`
 fallback uses the runner's guarded client and a fresh two-minute context even if
 Core refresh-before-destroy failed or was canceled. It snapshots only UUIDs
 recorded from this run's affirmative adds, deletes children before parents,
@@ -124,5 +142,23 @@ identity/reservation attestation outcome, each create/import/no-change/drift/
 clear/delete observation and independent child/parent absence, plus cleanup and
 reservation release. Keep private raw receipts outside this public repository.
 If cleanup fails, retain ownership/reservation and reconcile the recorded UUIDs;
-do not delete arbitrary objects or release the guest as clean. A live PASS is
-required before changing the parent story/audit to complete. Do not auto-merge.
+do not delete arbitrary objects or release the guest as clean. A complete guarded live PASS is required before changing lifecycle readiness.
+Merge authority is separate from the runner and its evidence; follow the current
+maintainer authorization and exact-head review/CI requirements.
+
+## Sequential merge review repairs (2026-11-04)
+
+Confirmed UUID create failures now emit warnings instead of error-tainting the
+saved resource in Core; unconfirmed creates still fail. Four actual Core controls
+fail on the old code and pass after repair: two applies and a no-change plan keep
+one add, zero saves and zero interim deletes, followed by one final cleanup
+delete. A discarded speculative refresh may repeat read-time activation recovery;
+it never replays an object write. Returned, consumed private markers are tested
+separately for zero reactivation. Deletes require source-backed affirmative
+results, and malformed selection members/domain values fail without erasing
+prior state. True/false aggressive and SHA256-96 lookup/drift controls are executed
+offline, including hard-coded-false negative controls.
+
+The revised guarded live run remains pending; offline checks are not appliance
+acceptance. The current integration targets **v0.15.0**, following published Trust
+v0.14.0 and retry-settings v0.13.0.

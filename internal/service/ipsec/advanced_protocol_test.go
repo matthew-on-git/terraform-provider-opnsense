@@ -66,6 +66,7 @@ func ipsecWire(owner string, fields map[string]string) map[string]any {
 
 type ipsecAPI struct {
 	activationReply                          *string
+	deleteReply                              *string
 	otherFields, authFields                  map[string]string
 	override                                 map[string]any
 	omit                                     string
@@ -155,6 +156,10 @@ func (a *ipsecAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	case prefix + "del_" + a.owner + "/" + ipsecID:
 		a.deletes++
+		if a.deleteReply != nil {
+			_, _ = fmt.Fprint(w, *a.deleteReply)
+			return
+		}
 		a.fields = nil
 		_, _ = fmt.Fprint(w, `{"result":"deleted"}`)
 	case "/api/ipsec/service/reconfigure":
@@ -475,8 +480,8 @@ func TestIPsecAdvancedProtocolFailureRecovery(t *testing.T) {
 				empty := ipsecNull(t, schema)
 				config := ipsecValue(t, schema, ipsecConfig(owner))
 				result := ipsecApply(t, server, owner, empty, config, ipsecPlan(t, server, owner, empty, config, config))
-				if !ipsecErrors(result.Diagnostics) {
-					t.Fatal("failure not diagnosed")
+				if len(result.Diagnostics) == 0 || ipsecErrors(result.Diagnostics) != (failure == "validation") {
+					t.Fatal("rejected add requires error; confirmed UUID recovery requires warning")
 				}
 				if strings.Contains(ipsecDiagnosticText(result.Diagnostics), "credential_payload_should_not_appear") {
 					t.Fatal("server payload leaked into diagnostics")
@@ -805,8 +810,8 @@ func TestIPsecAdvancedProtocolOmittedCreateReadFailure(t *testing.T) {
 			}
 			config := ipsecValue(t, schema, fields)
 			result := ipsecApply(t, server, owner, empty, config, ipsecPlan(t, server, owner, empty, config, config))
-			if !ipsecErrors(result.Diagnostics) || ipsecString(t, schema, result.NewState, "id") != ipsecID {
-				t.Fatal("omitted create failed to retain identity")
+			if ipsecErrors(result.Diagnostics) || len(result.Diagnostics) == 0 || ipsecString(t, schema, result.NewState, "id") != ipsecID {
+				t.Fatal("omitted confirmed create requires untainted retained identity and warning")
 			}
 			for key, value := range ipsecAttrs(t, schema, result.NewState) {
 				if !value.IsKnown() {
@@ -874,7 +879,7 @@ func TestIPsecPendingInvalidUpdateNeverActivates(t *testing.T) {
 				config := ipsecValue(t, schema, ipsecConfig(owner))
 				empty := ipsecNull(t, schema)
 				created := ipsecApply(t, server, owner, empty, config, ipsecPlan(t, server, owner, empty, config, config))
-				if !ipsecErrors(created.Diagnostics) || !ipsecPending(created.Private) {
+				if ipsecErrors(created.Diagnostics) || len(created.Diagnostics) == 0 || !ipsecPending(created.Private) {
 					t.Fatal("expected saved pending create")
 				}
 				fields := ipsecConfig(owner)
@@ -922,7 +927,7 @@ func TestIPsecStrictActivationRecoveryAndDelete(t *testing.T) {
 					} else {
 						failed = ipsecApply(t, server, owner, empty, config, ipsecPlan(t, server, owner, empty, config, config))
 					}
-					if !ipsecErrors(failed.Diagnostics) || !ipsecPending(failed.Private) || api.activations != 1 {
+					if ipsecErrors(failed.Diagnostics) != deleting || len(failed.Diagnostics) == 0 || !ipsecPending(failed.Private) || api.activations != 1 {
 						t.Fatal("non-affirmative activation accepted or marker lost")
 					}
 					fresh, _, _ := ipsecServer(t, api)
@@ -1053,7 +1058,7 @@ func TestIPsecPendingDeleteSupersedesActivation(t *testing.T) {
 					config = ipsecValue(t, schema, fields)
 					pending = ipsecApply(t, server, owner, pending.NewState, config, ipsecPlan(t, server, owner, pending.NewState, ipsecMerge(t, schema, pending.NewState, fields), config))
 				}
-				if !ipsecErrors(pending.Diagnostics) || !ipsecPending(pending.Private) {
+				if ipsecErrors(pending.Diagnostics) != updating || len(pending.Diagnostics) == 0 || !ipsecPending(pending.Private) {
 					t.Fatal("pending saved mutation missing")
 				}
 				api.failure = ""

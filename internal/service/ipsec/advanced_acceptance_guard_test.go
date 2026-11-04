@@ -14,12 +14,15 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/go-retryablehttp"
 	frameworkprovider "github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -50,7 +53,130 @@ type ipsecLeaseGuard struct {
 	owned             map[string]string
 	deleted           map[string]bool
 	cleanupActivation bool
+	pendingActivation bool
+	journalPath       string
+	unresolvedAdds    map[string]string
+	journalFailed     bool
 }
+
+// Journal contents are private operational recovery data, never test output.
+type ipsecOwnershipJournal struct {
+	TargetURI         string            `json:"target_uri"`
+	GuestID           string            `json:"guest_id"`
+	ReservationID     string            `json:"reservation_id"`
+	ReservedBy        string            `json:"reserved_by"`
+	Owned             map[string]string `json:"owned"`
+	Deleted           map[string]bool   `json:"deleted"`
+	UnresolvedAdds    map[string]string `json:"unresolved_dispatched_adds"`
+	PendingActivation bool              `json:"pending_activation"`
+	CleanupActivation bool              `json:"cleanup_activation"`
+}
+
+func (g *ipsecLeaseGuard) initializeOwnershipJournal(filename string) error {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if filename == "" || !filepath.IsAbs(filename) {
+		return fmt.Errorf("absolute private ownership journal path required")
+	}
+	// Rooted metadata operations avoid following an untrusted path outside the
+	// filesystem anchor; private-directory checks still gate every journal write.
+	filesystem, err := os.OpenRoot("/")
+	if err != nil {
+		return fmt.Errorf("ownership journal filesystem unavailable")
+	}
+	defer func() { _ = filesystem.Close() }()
+	directory := filepath.Dir(filename)
+	info, err := filesystem.Lstat(strings.TrimPrefix(filepath.Clean(directory), "/"))
+	if err != nil || !info.IsDir() || info.Mode().Perm()&0o077 != 0 {
+		return fmt.Errorf("ownership journal requires an existing private directory")
+	}
+	g.journalPath = filename
+	info, err = filesystem.Lstat(strings.TrimPrefix(filepath.Clean(filename), "/"))
+	if err == nil {
+		if !info.Mode().IsRegular() || info.Mode().Perm()&0o077 != 0 {
+			return fmt.Errorf("ownership journal must be a private regular file")
+		}
+		file, openErr := os.OpenInRoot(directory, filepath.Base(filename))
+		if openErr != nil {
+			return fmt.Errorf("ownership journal is unreadable")
+		}
+		raw, readErr := io.ReadAll(io.LimitReader(file, (1<<20)+1))
+		_ = file.Close()
+		var saved ipsecOwnershipJournal
+		if readErr != nil || len(raw) > 1<<20 || json.Unmarshal(raw, &saved) != nil {
+			return fmt.Errorf("ownership journal is unreadable or malformed")
+		}
+		if saved.TargetURI != g.receipt.TargetURI || saved.GuestID != g.receipt.GuestID || saved.ReservationID != g.receipt.ReservationID || saved.ReservedBy != g.receipt.ReservedBy {
+			return fmt.Errorf("ownership journal reservation binding mismatch")
+		}
+		g.owned, g.deleted, g.unresolvedAdds, g.pendingActivation, g.cleanupActivation = saved.Owned, saved.Deleted, saved.UnresolvedAdds, saved.PendingActivation, saved.CleanupActivation
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("ownership journal is unavailable")
+	}
+	if g.owned == nil {
+		g.owned = map[string]string{}
+	}
+	if g.unresolvedAdds == nil {
+		g.unresolvedAdds = map[string]string{}
+	}
+	return g.persistOwnershipLocked()
+}
+
+// Caller holds mu. Atomic replacement plus file/directory sync makes the record
+// durable before dispatch; a failed update permanently closes this runner's writes.
+func (g *ipsecLeaseGuard) persistOwnershipLocked() error {
+	if g.journalFailed {
+		return fmt.Errorf("ownership journal requires operator reconciliation")
+	}
+	if g.journalPath == "" {
+		return nil
+	} // Only synthetic offline guards omit a journal.
+	err := g.writeOwnershipLocked()
+	if err != nil {
+		g.journalFailed = true
+		return fmt.Errorf("ownership journal persistence failed; network mutation refused")
+	}
+	return nil
+}
+
+func (g *ipsecLeaseGuard) writeOwnershipLocked() error {
+	saved := ipsecOwnershipJournal{TargetURI: g.receipt.TargetURI, GuestID: g.receipt.GuestID, ReservationID: g.receipt.ReservationID, ReservedBy: g.receipt.ReservedBy, Owned: g.owned, Deleted: g.deleted, UnresolvedAdds: g.unresolvedAdds, PendingActivation: g.pendingActivation, CleanupActivation: g.cleanupActivation}
+	raw, err := json.Marshal(saved)
+	if err != nil {
+		return err
+	}
+	directory := filepath.Dir(g.journalPath)
+	info, err := os.Lstat(directory)
+	if err != nil || !info.IsDir() || info.Mode().Perm()&0o077 != 0 {
+		return fmt.Errorf("private journal directory unavailable")
+	}
+	file, err := os.CreateTemp(directory, ".ipsec-ownership-*")
+	if err != nil {
+		return err
+	}
+	defer func() { _ = os.Remove(file.Name()) }()
+	if _, err = file.Write(raw); err != nil {
+		_ = file.Close()
+		return err
+	}
+	if err = file.Sync(); err != nil {
+		_ = file.Close()
+		return err
+	}
+	if err = file.Close(); err != nil {
+		return err
+	}
+	if err = os.Rename(file.Name(), g.journalPath); err != nil {
+		return err
+	}
+	dir, err := os.OpenInRoot(directory, ".")
+	if err != nil {
+		return err
+	}
+	defer func() { _ = dir.Close() }()
+	return dir.Sync()
+}
+
 type ipsecGuardTransport struct {
 	guard *ipsecLeaseGuard
 	base  http.RoundTripper
@@ -113,7 +239,7 @@ func (t *ipsecGuardTransport) RoundTrip(req *http.Request) (*http.Response, erro
 	leaseActive := g.now().Before(g.receipt.ExpiresAt.Add(-ipsecCleanupReserve))
 	cleanupAllowed := (action == "del" && known) || (activation && g.cleanupActivation)
 	g.mu.Unlock()
-	if !validAction || (!leaseActive && !cleanupAllowed) {
+	if !validAction || !g.now().Before(g.receipt.ExpiresAt) || (!leaseActive && !cleanupAllowed) {
 		return nil, fmt.Errorf("lease guard refuses mutation; only owned cleanup remains permitted")
 	}
 	// Independently pinned identity is rechecked before every mutation, even cleanup.
@@ -136,18 +262,47 @@ func (t *ipsecGuardTransport) RoundTrip(req *http.Request) (*http.Response, erro
 	leaseActive = g.now().Before(g.receipt.ExpiresAt.Add(-ipsecCleanupReserve))
 	cleanupAllowed = (action == "del" && known) || (activation && g.cleanupActivation)
 	g.mu.Unlock()
-	if !leaseActive && !cleanupAllowed {
+	if !g.now().Before(g.receipt.ExpiresAt) || (!leaseActive && !cleanupAllowed) {
 		return nil, fmt.Errorf("execution lease expired during identity verification")
+	}
+	g.mu.Lock()
+	if len(g.unresolvedAdds) != 0 {
+		g.mu.Unlock()
+		return nil, fmt.Errorf("unresolved dispatched add blocks further mutation; operator reconciliation required")
+	}
+	attempt := ""
+	previousPending := g.pendingActivation
+	if action == "add" {
+		attempt = uuid.NewString()
+		if g.unresolvedAdds == nil {
+			g.unresolvedAdds = map[string]string{}
+		}
+		g.unresolvedAdds[attempt] = owner
+	}
+	g.pendingActivation = true
+	journalErr := g.persistOwnershipLocked()
+	// Disk synchronization can cross a deadline too; no POST may cross it.
+	if journalErr == nil && (!g.now().Before(g.receipt.ExpiresAt) || (!g.now().Before(g.receipt.ExpiresAt.Add(-ipsecCleanupReserve)) && !cleanupAllowed)) {
+		delete(g.unresolvedAdds, attempt)
+		g.pendingActivation = previousPending
+		journalErr = g.persistOwnershipLocked()
+		if journalErr == nil {
+			journalErr = fmt.Errorf("lease expired while recording mutation dispatch")
+		}
+	}
+	g.mu.Unlock()
+	if journalErr != nil {
+		return nil, journalErr
 	}
 	response, err = t.base.RoundTrip(req)
 	if err != nil {
 		return response, err
 	}
-	body, err := io.ReadAll(io.LimitReader(response.Body, 4<<20))
+	body, err := io.ReadAll(io.LimitReader(response.Body, (4<<20)+1))
 	_ = response.Body.Close()
 	response.Body = io.NopCloser(bytes.NewReader(body))
-	if err != nil {
-		return response, err
+	if err != nil || len(body) > 4<<20 {
+		return nil, fmt.Errorf("mutation outcome is uncertain; retain ownership journal")
 	}
 	var result struct {
 		Result string `json:"result"`
@@ -157,8 +312,16 @@ func (t *ipsecGuardTransport) RoundTrip(req *http.Request) (*http.Response, erro
 	if response.StatusCode == http.StatusOK && json.Unmarshal(body, &result) == nil {
 		g.mu.Lock()
 		defer g.mu.Unlock()
-		if action == "add" && result.Result == "saved" && result.UUID != "" {
-			g.owned[result.UUID] = owner
+		if action == "add" && result.Result == "saved" {
+			parsed, parseErr := uuid.Parse(result.UUID)
+			if parseErr == nil && parsed.String() == result.UUID && parsed != uuid.Nil {
+				g.owned[result.UUID] = owner
+				delete(g.unresolvedAdds, attempt)
+			}
+		}
+		if result.Result == "failed" {
+			delete(g.unresolvedAdds, attempt)
+			g.pendingActivation = previousPending
 		}
 		if action == "del" && known && (result.Result == "deleted" || result.Result == "saved") {
 			g.cleanupActivation = true
@@ -169,6 +332,10 @@ func (t *ipsecGuardTransport) RoundTrip(req *http.Request) (*http.Response, erro
 		}
 		if activation && result.Status == "ok" {
 			g.cleanupActivation = false
+			g.pendingActivation = false
+		}
+		if err := g.persistOwnershipLocked(); err != nil {
+			return nil, err
 		}
 	}
 	return response, nil
@@ -251,6 +418,10 @@ func TestIPsecDedicatedAcceptanceOptIn(t *testing.T) {
 // from affirmative add replies. Never discover or delete arbitrary inventory.
 func cleanupIPsecOwned(ctx context.Context, client *opnsense.Client, guard *ipsecLeaseGuard) error {
 	guard.mu.Lock()
+	if len(guard.unresolvedAdds) != 0 || guard.journalFailed {
+		guard.mu.Unlock()
+		return fmt.Errorf("unresolved dispatch or journal failure prevents cleanup; retain private journal and reservation")
+	}
 	owned := make(map[string]string, len(guard.owned))
 	for id, owner := range guard.owned {
 		owned[id] = owner
@@ -305,13 +476,22 @@ func cleanupIPsecOwned(ctx context.Context, client *opnsense.Client, guard *ipse
 			guard.mu.Lock()
 			delete(guard.owned, id)
 			delete(guard.deleted, id)
+			journalErr := guard.persistOwnershipLocked()
 			guard.mu.Unlock()
+			if journalErr != nil {
+				failures = append(failures, journalErr)
+			}
 		}
 		// A failed child cleanup must not permit parent cascading over uncertainty.
 		if owner == "child" && len(failures) > 0 {
 			break
 		}
 	}
+	guard.mu.Lock()
+	if len(guard.unresolvedAdds) != 0 || guard.journalFailed {
+		failures = append(failures, fmt.Errorf("unresolved dispatch or journal failure prevents clean reconciliation; retain private journal and reservation"))
+	}
+	guard.mu.Unlock()
 	return errors.Join(failures...)
 }
 
@@ -422,8 +602,12 @@ func TestIPsecExpiredPendingRefreshIndependentCleanup(t *testing.T) {
 	config := ipsecValue(t, schema, ipsecConfig("connection"))
 	empty := ipsecNull(t, schema)
 	pending := ipsecApply(t, base, "connection", empty, config, ipsecPlan(t, base, "connection", empty, config, config))
-	if !ipsecErrors(pending.Diagnostics) || !ipsecPending(pending.Private) {
-		t.Fatal("saved create did not leave pending activation")
+	var savedID string
+	if err := ipsecAttrs(t, schema, pending.NewState)["id"].As(&savedID); err != nil {
+		t.Fatal(err)
+	}
+	if ipsecErrors(pending.Diagnostics) || len(pending.Diagnostics) == 0 || !ipsecPending(pending.Private) || savedID != ipsecID {
+		t.Fatal("saved create did not retain an untainted UUID and pending activation warning")
 	}
 	client, err := opnsense.NewClient(opnsense.ClientConfig{BaseURL: api.URL, APIKey: "fixture-key", APISecret: "fixture-secret", RetryMax: 1})
 	if err != nil {

@@ -32,6 +32,7 @@ var childReqOpts = opnsense.ReqOpts{
 	Monad:                       "child",
 	StrictMissingObjectResponse: true,
 	StrictReconfigureResponse:   true,
+	StrictDeleteResponse:        true,
 }
 
 // childResource implements the opnsense_ipsec_child resource.
@@ -85,17 +86,20 @@ func (r *childResource) Create(ctx context.Context, req resource.CreateRequest, 
 		resp.Diagnostics.Append(resp.State.Set(context.WithoutCancel(ctx), &plan)...)
 	}
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error creating IPsec child SA",
-			fmt.Sprintf("Could not create IPsec child SA: %s", ipsecErrorMessage(err)),
-		)
+		if uuid != "" {
+			// A confirmed saved UUID must remain untainted in Terraform Core.
+			// The private marker retries activation, never the saved add.
+			resp.Diagnostics.AddWarning("Saved IPsec object requires activation", ipsecErrorMessage(err))
+		} else {
+			resp.Diagnostics.AddError("Error creating IPsec child SA", ipsecErrorMessage(err))
+		}
 		return
 	}
 
 	result, err := opnsense.Get[ipsecChildAPIResponse](ctx, r.client, childReqOpts, uuid)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error reading IPsec child SA after create",
+		resp.Diagnostics.AddWarning(
+			"Saved IPsec child SA requires refresh",
 			fmt.Sprintf("Created child SA %s but could not read it back: %s", uuid, ipsecErrorMessage(err)),
 		)
 		return

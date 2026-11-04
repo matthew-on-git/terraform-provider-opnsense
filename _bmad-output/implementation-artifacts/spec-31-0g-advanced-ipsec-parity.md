@@ -154,3 +154,58 @@ Final verification outcomes are appended below after completion. Residual gates:
 - Required final `make check` exited0: all6gates passed, none skipped,58979ms. Parent's earlier nested-container invocation failed because docker was unavailable inside that image; corrected host make with container DOCKER_RUN and read-only Git metadata, no configuration changes/suppression. Final lint8009ms/format313ms/test41549ms/security1816ms/scan6975ms/docs311ms.
 - Independent bounded recheck confirmed its cleanup interaction repaired, with no remaining concrete flaw found in that fix. Read-only source review is distinct from the executed tests.
 - Build-auto implementation/review artifact is done; owning31.0gstory remains in progress pending real lifecycle proof. No appliance resources reserved/mutated. Task-only development containers/volumes retired; isolated source worktree intentionally retained for draft PR review. No automatic merge.
+
+
+## Sequential merge review — 2026-11-04
+
+Current baseline is released v0.14.0; this increment now targets v0.15.0.
+The maintainer explicitly authorized unattended sequential validation/merging;
+this selects applying all unambiguous review patches without another approval.
+The full31-file/4,422-line diff was reviewed, rather than silently chunked.
+All four independent BMAD layers completed. The first fourth launch hit the
+native concurrency ceiling; it ran after a slot opened, before any verdicts.
+No layer failed or was skipped. All6 integration gates pass (67,996ms); this
+is not live proof or final repaired-head verification.
+
+### Review Triage Log — integration pass
+
+15 raw findings individually classified before grouping:5high,8medium,1low,
+1false. Two duplicate root causes are grouped only after these verdicts;
+12 patch groups,0 decision-needed,0 new defer,1 rejected. Existing inherited
+legacy-ownership/read-completeness and proposal-order limits remain separate.
+
+1. [high][patch] Blind1: ReqOpts omit StrictDeleteResponse; loose parser accepts ambiguous success and state can be forgotten. Require affirmative deletion for both owners, with malformed response/no-activation/state-retention controls.
+2. [medium][patch] Blind2: Selection decoder drops invalid scalar members and skips field-domain read validation. Validate scalar/mapped memberships before state replacement.
+3. [high][patch] Blind3: CleanupAllowed bypasses actual ExpiresAt. Stop every mutation at hard expiry, including after identity-read latency; execution cutoff and hard expiry are distinct.
+4. [medium][patch] Blind4: Owned UUIDs exist only in memory; failed/crashed cleanup leaves no usable promised receipt. Persist a private journal before dispatch and as confirmed outcomes change.
+5. [high][patch] Blind5: Go test global timeout does not guarantee t.Cleanup or descendant quiescence. Require an external bounded process-group runner with independent finally cleanup/restoration and reserved time.
+6. [medium][patch] Blind6: Live imports do not persist imported Core state; omission uses original created state. Persist/import both owners and test the real imported-state path.
+7. [medium][patch] Blind7: Live data sources execute but their values are not compared. Assert all advanced lookup outputs against independently observed expected values.
+8. [medium][patch] Blind8: Live ipsecAbsent matches textual [] despite existing structural helper. Reuse structural affirmative absence including wrapped/unwrapped whitespace variants.
+9. [low][patch] Blind9: Current owning-story release instructions still point to the already published0.13.0 rather than0.15.0. Correct current instructions, preserving clearly labelled historical proposals.
+10. [false][reject] Blind10: The spec explicitly calls its original build-auto implementation artifact done while the owning31.0g story and live gate remain in progress/draft. It does not claim completed parity; no contrary automated consumer was demonstrated. Editing the spec to remove the gate is not an implementation repair and is rejected by review rules.
+11. [high][patch] Edge1: Same loose-delete defect/outcome as Blind1; independently verified and grouped after verdict.
+12. [medium][patch] Edge2: Same malformed-selection read defect as Blind2; independently verified and grouped after verdict.
+13. [medium][patch] Edge3: A dispatched add with lost/malformed/no-UUID response is not owned or marked uncertain; empty-map cleanup can falsely succeed. Journal unresolved dispatched adds and fail reconciliation closed, without inventory discovery/deletion.
+14. [medium][patch] Verification gap: All aggressive/sha256_96 controls use false; hardcoded-false mapping survives. Add enabled resource/import/lookup and false-to-true drift controls; verify counterexamples.
+15. [high][patch] Acceptance auditor: Confirmed Create writes UUID then AddError; Core taints and replaces it despite private activation recovery. Warning-only confirmed-create recovery plus actual Core failed-create/retry controls must prove one add/no replacement. Unknown/unconfirmed effects remain errors.
+
+### Review Findings
+
+- [ ] [Review][Patch] Affirmative deletion and ambiguous-response controls (findings1/11).
+- [ ] [Review][Patch] Strict selection membership/domain reads (findings2/12).
+- [ ] [Review][Patch] Hard lease expiry even for cleanup (finding3).
+- [ ] [Review][Patch] Private durable ownership journal (finding4).
+- [ ] [Review][Patch] External bounded guarded runner with quiescent finally cleanup (finding5).
+- [ ] [Review][Patch] Persisted live imports before omission update (finding6).
+- [ ] [Review][Patch] All-field authoritative live lookup assertions (finding7).
+- [ ] [Review][Patch] Structural exact absence (finding8).
+- [ ] [Review][Patch] Current release references and historical boundaries (finding9).
+- [ ] [Review][Patch] Uncertain dispatched-add accounting (finding13).
+- [ ] [Review][Patch] True boolean/read/import/lookup/drift counterexamples (finding14).
+- [ ] [Review][Patch] Actual Core confirmed-create recovery without taint (finding15).
+
+### Rejected
+
+- false — finding10 conflates explicitly bounded implementation-artifact completion
+  with the separate open parent/live gate; no completed-parent claim is present.

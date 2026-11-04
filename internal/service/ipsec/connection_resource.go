@@ -32,6 +32,7 @@ var connectionReqOpts = opnsense.ReqOpts{
 	Monad:                       "connection",
 	StrictMissingObjectResponse: true,
 	StrictReconfigureResponse:   true,
+	StrictDeleteResponse:        true,
 }
 
 // connectionResource implements the opnsense_ipsec_connection resource.
@@ -85,17 +86,20 @@ func (r *connectionResource) Create(ctx context.Context, req resource.CreateRequ
 		resp.Diagnostics.Append(resp.State.Set(context.WithoutCancel(ctx), &plan)...)
 	}
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error creating IPsec connection",
-			fmt.Sprintf("Could not create IPsec connection: %s", ipsecErrorMessage(err)),
-		)
+		if uuid != "" {
+			// A confirmed saved UUID must remain untainted in Terraform Core.
+			// The private marker retries activation, never the saved add.
+			resp.Diagnostics.AddWarning("Saved IPsec object requires activation", ipsecErrorMessage(err))
+		} else {
+			resp.Diagnostics.AddError("Error creating IPsec connection", ipsecErrorMessage(err))
+		}
 		return
 	}
 
 	result, err := opnsense.Get[ipsecConnectionAPIResponse](ctx, r.client, connectionReqOpts, uuid)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error reading IPsec connection after create",
+		resp.Diagnostics.AddWarning(
+			"Saved IPsec connection requires refresh",
 			fmt.Sprintf("Created connection %s but could not read it back: %s", uuid, ipsecErrorMessage(err)),
 		)
 		return

@@ -137,3 +137,25 @@ unexecuted and the parent story/PR stay in progress/draft. Legacy omission/read
 completeness and unobservable proposal preference order remain explicit deferred
 limitations in the build-auto spec. Published0.12.0 is historical; proposed0.13.0
 is an unreleased automatic release input, to refresh after other pending merges.
+
+
+## Sequential integration checkpoint (2026-11-04)
+
+Trust #81 is merged and v0.14.0 is published; retry #84/#80 shipped in v0.13.0.
+The current advanced IPsec integration targets **v0.15.0**; earlier proposed
+0.13.0 headings above are historical, superseded inputs, not current publication.
+Main was integrated without rewriting contributor commits. Four independent BMAD
+review layers identified confirmed-create Core taint, ambiguous deletion,
+selection-read normalization and guarded-runner recovery gaps. Repairs preserve
+confirmed UUID state with warning-only create recovery, affirmative deletes,
+strict selection domains, a private durable dispatch/ownership journal and hard
+lease expiry. Real Core baseline controls fail before the repair and pass after
+it, with no duplicate add/save/interim delete. Additional enabled-flag and
+external process-quiescence controls pass. The repaired intermediate local gate
+passes6/6; final frozen-source gate and live acceptance remain pending.
+
+The canonical full-proof command is the bounded external runner in
+`docs/ipsec-advanced-acceptance.md`, not an unguarded Go timeout. A new isolated
+guest is being prepared by a single checkpointed owner; setup writes are not
+acceptance proof. Parent status remains in-progress and PR82 remains draft until
+complete live deletion/restoration/digest evidence and exact-head CI pass.
