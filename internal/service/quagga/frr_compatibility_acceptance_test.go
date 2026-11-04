@@ -461,8 +461,8 @@ func TestAccFRRCompatibility(t *testing.T) {
 	steps = append(steps, resource.TestStep{Config: reordered, Check: func(s *terraform.State) error {
 		observation := frrObserve(t)
 		generated := observation.Config.Stdout
-		if !strings.Contains(generated, "route-map "+marker+"_rm permit 30") || !strings.Contains(generated, "route-map "+marker+"_rm deny 5") || strings.Index(generated, "route-map "+marker+"_rm deny 5") >= strings.Index(generated, "route-map "+marker+"_rm permit 30") {
-			return fmt.Errorf("generated route-map sequence update missing")
+		if err := frrRenderedSequenceValues(generated, marker+"_rm"); err != nil {
+			return err
 		}
 		a, b := s.RootModule().Resources["opnsense_quagga_route_map.a"], s.RootModule().Resources["opnsense_quagga_route_map.b"]
 		if a == nil || b == nil || a.Primary.ID == b.Primary.ID || a.Primary.ID != sequenceIDs["a"] || b.Primary.ID != sequenceIDs["b"] {
@@ -485,7 +485,7 @@ func TestAccFRRCompatibility(t *testing.T) {
 			}
 			time.Sleep(time.Second)
 		}
-		t.Log("FRR_ADVANCED_SEQUENCE sequence_numeric=true generated_order=true grouped_reference=true")
+		t.Log("FRR_ADVANCED_SEQUENCE rendered_sequence_values=true effective_numeric_order=true grouped_reference=true")
 		return nil
 	}}, resource.TestStep{Config: config, Check: check})
 	steps = append(steps, resource.TestStep{Config: config, ExpectNonEmptyPlan: true, Check: func(s *terraform.State) error {
@@ -1279,5 +1279,40 @@ func TestFRRGenericPeerPublicFlatmapComparison(t *testing.T) {
 	lookup["password"] = ""
 	if compare(lookup) == nil {
 		t.Fatal("generic peer password exposure ignored")
+	}
+}
+
+// Released bgpd.conf at 5ac2959c8514b4f60e94d65439be5f629f10521f
+// uses helpers.sortDictList(..., 'name', 'id'): textual rendering may put "30"
+// before "5". FRR precedence is numeric, independently proved by the mandatory
+// active-session current-prefix withdrawal check before the sequence marker.
+func frrRenderedSequenceValues(config, name string) error {
+	counts := map[string]int{}
+	for _, line := range strings.Split(config, "\n") {
+		counts[strings.TrimSpace(line)]++
+	}
+	if counts["route-map "+name+" permit 30"] != 1 || counts["route-map "+name+" deny 5"] != 1 {
+		return fmt.Errorf("generated route-map numeric sequence values missing or duplicated")
+	}
+	return nil
+}
+
+func TestFRRRenderedSequenceValuesAllowReleasedLexicalOrder(t *testing.T) {
+	// Source: net/frr/src/opnsense/service/templates/OPNsense/Quagga/Config/bgpd.conf
+	// at the released revision above. Lexical ID order is not effective policy order.
+	lexical := "route-map fixture_rm permit 30\n match ip address prefix-list fixture_pl\nroute-map fixture_rm deny 5\n"
+	if err := frrRenderedSequenceValues(lexical, "fixture_rm"); err != nil {
+		t.Fatal("valid released lexical rendering rejected", err)
+	}
+	for _, invalid := range []string{
+		"route-map fixture_rm permit 30\n",
+		"route-map fixture_rm deny 5\n",
+		"route-map fixture_rm permit 300\nroute-map fixture_rm deny 5\n",
+		"route-map fixture_rm permit 30\nroute-map fixture_rm deny 50\n",
+		"route-map fixture_rm permit 30\nroute-map fixture_rm deny 5\nroute-map fixture_rm deny 5\n",
+	} {
+		if frrRenderedSequenceValues(invalid, "fixture_rm") == nil {
+			t.Fatal("missing, wrong or duplicated numeric sequence accepted")
+		}
 	}
 }
