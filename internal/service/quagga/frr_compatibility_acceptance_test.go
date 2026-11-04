@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"reflect"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -31,7 +32,18 @@ var (
 	frrCollectorSHA       atomic.Value
 )
 
-const frrOracleBase = "http://host.docker.internal:18445"
+func frrOracleBase() string {
+	return strings.TrimSuffix(os.Getenv("OPNSENSE_FRR_ORACLE_URI"), "/snapshot")
+}
+
+func frrRequiredBinding(t *testing.T, name string) string {
+	t.Helper()
+	value := os.Getenv(name)
+	if value == "" {
+		t.Fatal("missing required isolated runtime binding:", name)
+	}
+	return value
+}
 
 type frrObservation struct {
 	Identity             struct{ Name, UUID string } `json:"identity"`
@@ -61,7 +73,7 @@ type frrCommand struct {
 func frrObserve(t *testing.T) frrObservation {
 	t.Helper()
 	var result frrObservation
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, frrOracleBase+"/snapshot", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, frrOracleBase()+"/snapshot", nil)
 	if err != nil {
 		t.Fatal("invalid observation URI")
 	}
@@ -75,10 +87,10 @@ func frrObserve(t *testing.T) frrObservation {
 	if response.StatusCode != 200 || json.NewDecoder(response.Body).Decode(&result) != nil {
 		t.Fatal("independent observation failed")
 	}
-	if result.Identity.Name != "opnsense-acceptance-102" || result.Identity.UUID != "13921598-695f-42cc-9d09-1b06dd2d38b5" {
+	if result.Identity.Name != frrRequiredBinding(t, "OPNSENSE_DISPOSABLE_VM_NAME") || result.Identity.UUID != frrRequiredBinding(t, "OPNSENSE_DISPOSABLE_VM_UUID") {
 		t.Fatal("observation VM identity mismatch")
 	}
-	if result.Core.Status != 0 || !strings.Contains(result.Core.Stdout, "OPNsense 26.7.7") || result.Plugin.Status != 0 || strings.TrimSpace(result.Plugin.Stdout) != "2.0_1" || result.Daemon.Status != 0 || !strings.Contains(result.Daemon.Stdout, "bgpd version 10.7.1") {
+	if result.Core.Status != 0 || frrVersionToken(result.Core.Stdout, "OPNsense") != frrRequiredBinding(t, "OPNSENSE_FRR_EXPECTED_CORE") || result.Plugin.Status != 0 || strings.TrimSpace(result.Plugin.Stdout) != frrRequiredBinding(t, "OPNSENSE_FRR_EXPECTED_PLUGIN") || result.Daemon.Status != 0 || frrVersionToken(result.Daemon.Stdout, "bgpd version") != frrRequiredBinding(t, "OPNSENSE_FRR_EXPECTED_DAEMON") {
 		t.Fatal("independent core/plugin/daemon version mismatch")
 	}
 	if initial := frrCollectorSHA.Load(); initial == nil {
@@ -108,7 +120,7 @@ func frrObserve(t *testing.T) frrObservation {
 
 func frrLabOperation(t *testing.T, operation string) {
 	t.Helper()
-	uri := frrOracleBase + "/filter-reload"
+	uri := frrOracleBase() + "/filter-reload"
 	if operation != "filter-reload" {
 		t.Fatal("unsupported lab operation")
 	}
@@ -146,7 +158,7 @@ func frrLabDisabledConfigSync(t *testing.T) {
 		t.Fatal("cannot open private host handshake directory")
 	}
 	defer func() { _ = root.Close() }()
-	if root.WriteFile("disabled-config-sync.request", []byte("13921598-695f-42cc-9d09-1b06dd2d38b5"), 0o600) != nil {
+	if root.WriteFile("disabled-config-sync.request", []byte(frrRequiredBinding(t, "OPNSENSE_DISPOSABLE_VM_UUID")), 0o600) != nil {
 		t.Fatal("cannot request host-side disabled config sync")
 	}
 	deadline := time.Now().Add(30 * time.Second)
@@ -316,10 +328,10 @@ func frrPreflight(t *testing.T) {
 	if os.Getenv("OPNSENSE_URI") != "https://host.docker.internal:18444" {
 		t.Fatal("FRR acceptance requires the exact isolated container forwarding endpoint")
 	}
-	if os.Getenv("OPNSENSE_FRR_ORACLE_URI") != frrOracleBase+"/snapshot" {
+	if !regexp.MustCompile(`^http://host\.docker\.internal:[0-9]+/snapshot$`).MatchString(frrRequiredBinding(t, "OPNSENSE_FRR_ORACLE_URI")) {
 		t.Fatal("requires the fixed private host observation oracle")
 	}
-	if os.Getenv("OPNSENSE_DISPOSABLE_VM_NAME") != "opnsense-acceptance-102" || os.Getenv("OPNSENSE_DISPOSABLE_VM_UUID") != "13921598-695f-42cc-9d09-1b06dd2d38b5" || os.Getenv("OPNSENSE_FRR_IDENTITY_ATTESTATION") != "opnsense-acceptance-102:13921598-695f-42cc-9d09-1b06dd2d38b5" {
+	if !regexp.MustCompile(`^[0-9a-f-]{36}$`).MatchString(frrRequiredBinding(t, "OPNSENSE_DISPOSABLE_VM_UUID")) || frrRequiredBinding(t, "OPNSENSE_FRR_IDENTITY_ATTESTATION") != frrRequiredBinding(t, "OPNSENSE_DISPOSABLE_VM_NAME")+":"+os.Getenv("OPNSENSE_DISPOSABLE_VM_UUID") {
 		t.Fatal("requires exact disposable identity")
 	}
 	endpointCheck := exec.Command("python3", "-c", `
@@ -335,7 +347,7 @@ with socket.create_connection((uri.hostname,uri.port or 443),timeout=15) as sock
 	if endpointCheck.Run() != nil {
 		t.Fatal("exact container API endpoint TLS attestation failed")
 	}
-	if os.Getenv("OPNSENSE_FRR_IPV6_READY_ATTESTATION") != "13921598-695f-42cc-9d09-1b06dd2d38b5:vtnet0:2001:db8:2::15:linklocal:ready" {
+	if os.Getenv("OPNSENSE_FRR_IPV6_READY_ATTESTATION") != frrRequiredBinding(t, "OPNSENSE_DISPOSABLE_VM_UUID")+":vtnet0:2001:db8:2::15:linklocal:ready" {
 		t.Fatal("requires independently attested isolated WAN IPv6 next-hop readiness")
 	}
 	t.Log("FRR_LAB_IPV6_READY interface=vtnet0 global=2001:db8:2::15 linklocal=true provisioning=parent_lab_not_provider")
@@ -343,7 +355,7 @@ with socket.create_connection((uri.hostname,uri.port or 443),timeout=15) as sock
 	if observed.Collector.DefaultObserved {
 		t.Fatal("collector already observed default before fixture")
 	}
-	t.Logf("FRR_IDENTITY core=26.7.7 plugin=2.0_1 daemon=10.7.1 collector_sha256=%s vm_uuid=%s", observed.CollectorSHA, observed.Identity.UUID)
+	t.Logf("FRR_IDENTITY core=%s plugin=%s daemon=%s collector_sha256=%s", frrVersionToken(observed.Core.Stdout, "OPNsense"), strings.TrimSpace(observed.Plugin.Stdout), frrVersionToken(observed.Daemon.Stdout, "bgpd version"), observed.CollectorSHA)
 }
 
 func TestAccFRRCompatibility(t *testing.T) {
@@ -415,14 +427,75 @@ func TestAccFRRCompatibility(t *testing.T) {
 
 	frrLegacyCoreUpgrade(t, marker)
 	config := frrCompatibilityConfig(marker, true, false)
-	check := func(s *terraform.State) error { return frrLiveCheck(t, s, marker, true, baseline.Collector.Sessions) }
-	steps := []resource.TestStep{{Config: config, Check: check}, {Config: config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}}}
-	for _, name := range []string{"opnsense_quagga_prefix_list.a", "opnsense_quagga_prefix_list.b", "opnsense_quagga_route_map.a", "opnsense_quagga_route_map.b", "opnsense_quagga_bgp_peergroup.policy", "opnsense_quagga_bgp_neighbor.peer", "opnsense_quagga_bgp_redistribution.policy"} {
-		steps = append(steps, resource.TestStep{ResourceName: name, ImportState: true, ImportStateVerify: true, ImportStateVerifyIgnore: []string{"linked_prefixlist_out", "linked_routemap_out", "match_prefix", "route_map"}, ImportStateCheck: frrCheckImportedPolicy(t, marker, name)})
+	var advancedID string
+	sequenceIDs := map[string]string{}
+	check := func(s *terraform.State) error {
+		owner := s.RootModule().Resources["opnsense_quagga_bgp_neighbor.advanced"]
+		if owner == nil {
+			return fmt.Errorf("advanced owner missing")
+		}
+		if advancedID != "" && advancedID != owner.Primary.ID {
+			return fmt.Errorf("advanced identity churn")
+		}
+		advancedID = owner.Primary.ID
+		for _, name := range []string{"a", "b"} {
+			object := s.RootModule().Resources["opnsense_quagga_route_map."+name]
+			if object == nil {
+				return fmt.Errorf("route-map owner missing")
+			}
+			if previous := sequenceIDs[name]; previous != "" && previous != object.Primary.ID {
+				return fmt.Errorf("route-map identity changed")
+			}
+			sequenceIDs[name] = object.Primary.ID
+		}
+		if err := frrAdvancedLiveCheck(t, s); err != nil {
+			return err
+		}
+		return frrLiveCheck(t, s, marker, true, baseline.Collector.Sessions)
 	}
+	steps := []resource.TestStep{{Config: config, Check: check}, {Config: config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}}}
+	for _, name := range []string{"opnsense_quagga_prefix_list.a", "opnsense_quagga_prefix_list.b", "opnsense_quagga_route_map.a", "opnsense_quagga_route_map.b", "opnsense_quagga_bgp_peergroup.policy", "opnsense_quagga_bgp_neighbor.peer", "opnsense_quagga_bgp_neighbor.advanced", "opnsense_quagga_bgp_neighbor.reflector", "opnsense_quagga_bgp_redistribution.policy"} {
+		steps = append(steps, resource.TestStep{ResourceName: name, ImportState: true, ImportStateVerify: true, ImportStateVerifyIgnore: []string{"linked_prefixlist_out", "linked_routemap_out", "match_prefix", "route_map", "password"}, ImportStateCheck: frrCheckImportedPolicy(t, marker, name)})
+	}
+	reordered := strings.ReplaceAll(strings.ReplaceAll(config, "order = 10", "order = 30"), "order = 20", "order = 5")
+	steps = append(steps, resource.TestStep{Config: reordered, Check: func(s *terraform.State) error {
+		observation := frrObserve(t)
+		generated := observation.Config.Stdout
+		if !strings.Contains(generated, "route-map "+marker+"_rm permit 30") || !strings.Contains(generated, "route-map "+marker+"_rm deny 5") || strings.Index(generated, "route-map "+marker+"_rm deny 5") >= strings.Index(generated, "route-map "+marker+"_rm permit 30") {
+			return fmt.Errorf("generated route-map sequence update missing")
+		}
+		a, b := s.RootModule().Resources["opnsense_quagga_route_map.a"], s.RootModule().Resources["opnsense_quagga_route_map.b"]
+		if a == nil || b == nil || a.Primary.ID == b.Primary.ID || a.Primary.ID != sequenceIDs["a"] || b.Primary.ID != sequenceIDs["b"] {
+			return fmt.Errorf("sequence update lost route-map identities")
+		}
+		if err := frrCheckImportedPolicy(t, marker, "opnsense_quagga_bgp_peergroup.policy")([]*terraform.InstanceState{s.RootModule().Resources["opnsense_quagga_bgp_peergroup.policy"].Primary}); err != nil {
+			return err
+		}
+		deadline := time.Now().Add(180 * time.Second)
+		for {
+			observation = frrObserve(t)
+			if observation.Collector.DefaultObserved {
+				return fmt.Errorf("reversed policy exported forbidden default")
+			}
+			if observation.Collector.Active && !slices.Contains(observation.Collector.Prefixes, "198.18.31.0/24") {
+				break
+			}
+			if time.Now().After(deadline) {
+				return fmt.Errorf("reversed policy did not withdraw current approved prefix with active session")
+			}
+			time.Sleep(time.Second)
+		}
+		t.Log("FRR_ADVANCED_SEQUENCE sequence_numeric=true generated_order=true grouped_reference=true")
+		return nil
+	}}, resource.TestStep{Config: config, Check: check})
 	steps = append(steps, resource.TestStep{Config: config, ExpectNonEmptyPlan: true, Check: func(s *terraform.State) error {
 		owner := s.RootModule().Resources["opnsense_quagga_bgp_neighbor.peer"]
 		result := frrRaw(t, "POST", "/api/quagga/bgp/set_neighbor/"+owner.Primary.ID, map[string]any{"neighbor": map[string]string{"description": marker + "_drift", "family": "ipv6"}})
+		advanced := s.RootModule().Resources["opnsense_quagga_bgp_neighbor.advanced"]
+		drift := frrRaw(t, "POST", "/api/quagga/bgp/set_neighbor/"+advanced.Primary.ID, map[string]any{"neighbor": map[string]string{"weight": "9", "attributeunchanged": "med"}})
+		if string(drift["result"]) != `"saved"` {
+			return fmt.Errorf("advanced drift rejected")
+		}
 		if string(result["result"]) != `"saved"` {
 			return fmt.Errorf("raw drift mutation rejected")
 		}
@@ -652,6 +725,7 @@ resource "opnsense_quagga_bgp_peergroup" "policy" {
 }
 resource "opnsense_quagga_bgp_peergroup" "unused" {
  name = "%[1]s_unused"
+ listen_ranges = ["192.0.2.0/24","2001:db8:31::/64"]
  remote_as = 65222
  family = ["ipv4","ipv6"]
  default_originate = %[3]t
@@ -662,6 +736,41 @@ resource "opnsense_quagga_bgp_neighbor" "peer" {
  description = "%[1]s"
  family = ["ipv4","ipv6"]
  peer_group = opnsense_quagga_bgp_peergroup.policy.id
+ depends_on = [opnsense_quagga_general.lab]
+}
+resource "opnsense_quagga_bgp_neighbor" "advanced" {
+ address = "2001:db8::34"
+ description = "%[1]s_advanced"
+ family = ["ipv6"]
+ remote_as_mode = "external"
+ local_as = 64513
+ password = "acceptance-only-input"
+ weight = 0
+ local_ip = "2001:db8:2::15"
+ link_local_interface = "wan"
+ next_hop_self = true
+ next_hop_self_all = true
+ multihop = true
+ route_reflector_client = false
+ soft_reconfiguration_inbound = true
+ bfd = true
+ bfd_strict = true
+ connect_timer = 30
+ default_originate = true
+ as_override = true
+ remove_private_as = "remove-private-AS all replace-AS"
+ allow_as_in = "origin"
+ disable_connected_check = true
+ attribute_unchanged = "as-path"
+ capabilities = ["extended-nexthop","dynamic","fqdn","link-local"]
+ depends_on = [opnsense_quagga_general.lab]
+}
+resource "opnsense_quagga_bgp_neighbor" "reflector" {
+ address = "2001:db8::35"
+ description = "%[1]s_reflector"
+ remote_as_mode = "internal"
+ family = ["ipv6"]
+ route_reflector_client = true
  depends_on = [opnsense_quagga_general.lab]
 }
 resource "opnsense_quagga_bgp_neighbor" "v4" {
@@ -693,6 +802,7 @@ resource "opnsense_quagga_bgp_neighbor" "cross" {
  description="%[1]s_cross"
 }
 data "opnsense_quagga_bgp_neighbor" "peer" {id=opnsense_quagga_bgp_neighbor.peer.id}
+data "opnsense_quagga_bgp_neighbor" "advanced" {id=opnsense_quagga_bgp_neighbor.advanced.id}
 data "opnsense_quagga_bgp_peergroup" "policy" {id=opnsense_quagga_bgp_peergroup.policy.id}
 data "opnsense_quagga_route_map" "a" {id=opnsense_quagga_route_map.a.id}
 `, marker, firewall, defaultOriginate)
@@ -964,4 +1074,111 @@ func frrAFPolicyProof(config, marker string, unusedDefault bool) error {
 		}
 	}
 	return nil
+}
+
+// Advanced observations never print generated configuration or credentials.
+func frrAdvancedLiveCheck(t *testing.T, s *terraform.State) error {
+	t.Helper()
+	owner := s.RootModule().Resources["opnsense_quagga_bgp_neighbor.advanced"]
+	lookup := s.RootModule().Resources["data.opnsense_quagga_bgp_neighbor.advanced"]
+	if owner == nil || lookup == nil {
+		return fmt.Errorf("advanced owner/lookup missing")
+	}
+	if _, exists := lookup.Primary.Attributes["password"]; exists {
+		return fmt.Errorf("lookup exposed authentication")
+	}
+	if owner.Primary.Attributes["password"] != "acceptance-only-input" || owner.Primary.Attributes["weight"] != "0" || owner.Primary.Attributes["attribute_unchanged"] != "as-path" {
+		return fmt.Errorf("advanced configured state did not converge")
+	}
+	for key, value := range owner.Primary.Attributes {
+		if key != "password" && lookup.Primary.Attributes[key] != value {
+			return fmt.Errorf("advanced public lookup differs for %s", key)
+		}
+	}
+	observation := frrObserve(t)
+	config := observation.Config.Stdout
+	for _, fragment := range []string{"neighbor 2001:db8::34 remote-as external", "neighbor 2001:db8::34 local-as 64513", "neighbor 2001:db8::34 weight 0", "neighbor 2001:db8::34 interface vtnet0", "neighbor 2001:db8::34 bfd strict", "neighbor 2001:db8::34 ebgp-multihop 255", "neighbor 2001:db8::34 timers connect 30", "neighbor 2001:db8::34 attribute-unchanged as-path", "neighbor 2001:db8::34 capability dynamic", "neighbor 2001:db8::34 disable-connected-check"} {
+		if !strings.Contains(config, fragment) {
+			return fmt.Errorf("advanced generated transport/listen settings incomplete")
+		}
+	}
+	af := ""
+	reflectorCount := 0
+	for _, line := range strings.Split(config, "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "address-family ") {
+			af = strings.TrimPrefix(line, "address-family ")
+		}
+		if line == "exit-address-family" {
+			af = ""
+		}
+		if line == "neighbor 2001:db8::35 route-reflector-client" {
+			reflectorCount++
+			if af != "ipv6 unicast" {
+				return fmt.Errorf("reflector escaped IPv6 address family")
+			}
+		}
+		if strings.HasPrefix(line, "neighbor 2001:db8::34 ") && (strings.Contains(line, "next-hop-self") || strings.Contains(line, "route-reflector-client") || strings.Contains(line, "soft-reconfiguration") || strings.Contains(line, "default-originate") || strings.Contains(line, "as-override") || strings.Contains(line, "remove-private-AS") || strings.Contains(line, "allowas-in")) {
+			if af != "ipv6 unicast" {
+				return fmt.Errorf("advanced AF flag escaped selected IPv6 family")
+			}
+		}
+	}
+	if reflectorCount != 1 {
+		return fmt.Errorf("reflector AF setting missing or duplicated")
+	}
+	for _, capability := range []string{"extended-nexthop", "dynamic", "fqdn", "link-local"} {
+		if !strings.Contains(config, "neighbor 2001:db8::34 capability "+capability+"\n") {
+			return fmt.Errorf("configured capability missing from generated settings")
+		}
+	}
+	group := s.RootModule().Resources["opnsense_quagga_bgp_peergroup.unused"]
+	if group == nil {
+		return fmt.Errorf("listen-range owner missing")
+	}
+	for _, prefix := range []string{"192.0.2.0/24", "2001:db8:31::/64"} {
+		if !strings.Contains(config, "bgp listen range "+prefix+" peer-group "+group.Primary.Attributes["name"]+"\n") {
+			return fmt.Errorf("listen range not bound to intended peer-group")
+		}
+	}
+	for _, suffix := range []string{"next-hop-self all", "soft-reconfiguration inbound", "default-originate", "as-override", "remove-private-AS all replace-AS", "allowas-in origin"} {
+		if !strings.Contains(config, "neighbor 2001:db8::34 "+suffix) {
+			return fmt.Errorf("advanced generated AF settings incomplete")
+		}
+	}
+	if !strings.Contains(config, "neighbor 2001:db8::35 remote-as internal") || !strings.Contains(config, "neighbor 2001:db8::35 route-reflector-client") {
+		return fmt.Errorf("mode-only iBGP reflector generation incomplete")
+	}
+	t.Log("FRR_ADVANCED public_fields=19 password_lookup=false numeric_zero=true generated_transport=true generated_ipv6=true listen_ranges=2 identity_stable=true")
+	return nil
+}
+
+func frrVersionToken(output, label string) string {
+	fields := strings.Fields(output)
+	labelFields := strings.Fields(label)
+	for i := 0; i+len(labelFields) < len(fields); i++ {
+		if slices.Equal(fields[i:i+len(labelFields)], labelFields) {
+			token := fields[i+len(labelFields)]
+			if label == "OPNsense" {
+				match := regexp.MustCompile(`^([0-9]+(?:\.[0-9]+)+(?:_[0-9]+)?)(?:-(?:amd64|aarch64))?$`).FindStringSubmatch(token)
+				if match == nil {
+					return ""
+				}
+				return match[1]
+			}
+			return token
+		}
+	}
+	return ""
+}
+
+func TestFRRVersionTokensRejectPrefixes(t *testing.T) {
+	for _, tc := range []struct{ output, label, want string }{{"OPNsense 26.7.8_20-amd64", "OPNsense", "26.7.8_2"}, {"bgpd version 10.7.10", "bgpd version", "10.7.1"}} {
+		if frrVersionToken(tc.output, tc.label) == tc.want {
+			t.Fatal("version prefix falsely accepted")
+		}
+	}
+	if frrVersionToken("OPNsense 26.7.8_2 (amd64)", "OPNsense") != "26.7.8_2" || frrVersionToken("OPNsense 26.7.8_2-amd64", "OPNsense") != "26.7.8_2" {
+		t.Fatal("exact core token not parsed")
+	}
 }

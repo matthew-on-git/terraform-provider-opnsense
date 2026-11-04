@@ -105,6 +105,32 @@ func resolveBGPModel(ctx context.Context, config tfsdk.Config, model any, prior 
 		}
 		return fmt.Errorf("BGP %s intent is unknown; resolve configured values before applying", name)
 	}
+	for _, name := range []string{"Capabilities", "ListenRanges"} {
+		f := value.FieldByName(name)
+		if !f.IsValid() {
+			continue
+		}
+		set := f.Interface().(types.Set)
+		if set.IsNull() || set.IsUnknown() {
+			continue
+		}
+		var members []string
+		if set.ElementsAs(ctx, &members, false).HasError() {
+			return fmt.Errorf("BGP %s members are invalid", name)
+		}
+		for _, member := range members {
+			if strings.Contains(member, ",") {
+				return fmt.Errorf("BGP %s requires one value per set member, not CSV", name)
+			}
+			wire := "capabilities"
+			if name == "ListenRanges" {
+				wire = "listenranges"
+			}
+			if err := validateAdvancedWire(map[string]string{wire: member}); err != nil {
+				return err
+			}
+		}
+	}
 	if m, ok := model.(*BGPNeighborResourceModel); ok {
 		if m.Family.IsNull() {
 			f, err := legacyFamilies(m.Address.ValueString(), m.MultiProtocol)

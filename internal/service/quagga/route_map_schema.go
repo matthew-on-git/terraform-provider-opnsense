@@ -6,14 +6,16 @@ package quagga
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -36,14 +38,14 @@ func (r *routeMapResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				MarkdownDescription: "Description.",
 			},
 			"name": schema.StringAttribute{
-				Required: true, MarkdownDescription: "Route map name.",
+				Required: true, MarkdownDescription: "Route map name.", Validators: []validator.String{stringvalidator.RegexMatches(frrPolicyName, "Use 1-64 letters, digits, dot, underscore or hyphen.")},
 			},
 			"action": schema.StringAttribute{
 				Required: true, MarkdownDescription: "Action: `permit` or `deny`.",
 				Validators: []validator.String{stringvalidator.OneOf("permit", "deny")},
 			},
 			"order": schema.Int64Attribute{
-				Required: true, MarkdownDescription: "Route map sequence number (1-65535).",
+				Required: true, MarkdownDescription: "Route map sequence number (1-65535).", Validators: []validator.Int64{int64validator.Between(1, 65535)},
 			},
 			"match_prefix": schema.SetAttribute{
 				ElementType: types.StringType, Optional: true, Computed: true,

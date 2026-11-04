@@ -48,7 +48,7 @@ func TestReviewTransportFamilyAndUnknownAliasPlanning(t *testing.T) {
 		case r.URL.Path == "/api/quagga/service/reconfigure":
 			_, _ = fmt.Fprint(w, `{"status":"ok"}`)
 		case strings.Contains(r.URL.Path, "/get_neighbor/"):
-			_, _ = fmt.Fprint(w, `{"neighbor":{"enabled":"1","description":"","address":"2001:db8::1","remoteas":"64512","updatesource":"","nexthopself":"0","family":"ipv6","peergroup":"","keepalive":"","holddown":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
+			_, _ = fmt.Fprint(w, `{"neighbor":{"remote_as_mode":"","localas":"","weight":"","localip":"","linklocalinterface":"","nexthopselfall":"0","multihop":"0","rrclient":"0","soft_reconfiguration_inbound":"0","bfd":"0","bfd_strict":"0","connecttimer":"","defaultoriginate":"0","asoverride":"0","removeprivateas":"","allowas_in":"","disable_connected_check":"0","attributeunchanged":"","capabilities":[],"enabled":"1","description":"","address":"2001:db8::1","remoteas":"64512","updatesource":"","nexthopself":"0","family":"ipv6","peergroup":"","keepalive":"","holddown":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
 		default:
 			t.Errorf("unexpected resolved owner %s", r.URL.Path)
 		}
@@ -164,6 +164,7 @@ func TestReviewUpdateSavedFailuresRetainNewStateAndDoNotReplay(t *testing.T) {
 				writes, reloads := 0, 0
 				fail := true
 				description := "old"
+				advanced := map[string]string{}
 				id := "22222222-2222-4222-8222-222222222222"
 				api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					if frrFixture(w, r) {
@@ -175,6 +176,10 @@ func TestReviewUpdateSavedFailuresRetainNewStateAndDoNotReplay(t *testing.T) {
 						var body map[string]map[string]string
 						_ = json.NewDecoder(r.Body).Decode(&body)
 						description = body["neighbor"]["description"]
+						advanced = body["neighbor"]
+						if advanced["password"] != "configured-test-input" || advanced["weight"] != "0" || advanced["attributeunchanged"] != "as-path" {
+							t.Error("saved advanced intent differs")
+						}
 						_, _ = fmt.Fprint(w, `{"result":"saved"}`)
 					case "/api/quagga/service/reconfigure":
 						reloads++
@@ -188,7 +193,15 @@ func TestReviewUpdateSavedFailuresRetainNewStateAndDoNotReplay(t *testing.T) {
 							_, _ = fmt.Fprint(w, `{"neighbor":{"description":null}}`)
 							return
 						}
-						_, _ = fmt.Fprintf(w, `{"neighbor":{"enabled":"1","description":%q,"address":"192.0.2.1","remoteas":"64512","updatesource":"","nexthopself":"0","family":"ipv4","peergroup":"","keepalive":"","holddown":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`, description)
+						response := finalNeighbor()
+						response["description"] = description
+						for k, v := range advanced {
+							if k != "password" {
+								response[k] = v
+							}
+						}
+						response["password"] = "remote-not-config-owned"
+						_ = json.NewEncoder(w).Encode(map[string]any{"neighbor": response})
 					default:
 						t.Errorf("unexpected %s", r.URL.Path)
 					}
@@ -202,7 +215,12 @@ func TestReviewUpdateSavedFailuresRetainNewStateAndDoNotReplay(t *testing.T) {
 				values["description"] = "old"
 				prior := frrProtocolValue(t, schema, values)
 				values["description"] = "new"
-				config := frrProtocolValue(t, schema, map[string]any{"address": "192.0.2.1", "remote_as": 64512, "description": "new"})
+				values["password"] = "configured-test-input"
+				values["local_ip"] = "192.0.2.2"
+				values["weight"] = 0
+				values["attribute_unchanged"] = "as-path"
+				values["capabilities"] = []string{"dynamic", "fqdn"}
+				config := frrProtocolValue(t, schema, map[string]any{"address": "192.0.2.1", "remote_as": 64512, "description": "new", "password": "configured-test-input", "local_ip": "192.0.2.2", "weight": 0, "attribute_unchanged": "as-path", "capabilities": []string{"dynamic", "fqdn"}})
 				plan, err := server.PlanResourceChange(context.Background(), &tfprotov6.PlanResourceChangeRequest{TypeName: name, PriorState: prior, ProposedNewState: frrProtocolValue(t, schema, values), Config: config})
 				if err != nil || frrProtocolErrors(plan.Diagnostics) {
 					t.Fatal(err, plan.Diagnostics)
@@ -211,6 +229,21 @@ func TestReviewUpdateSavedFailuresRetainNewStateAndDoNotReplay(t *testing.T) {
 				if err != nil || !frrProtocolErrors(saved.Diagnostics) || len(saved.Private) == 0 {
 					t.Fatal("missing saved update recovery", err, saved.Diagnostics)
 				}
+				checkAdvanced := func(state *tfprotov6.DynamicValue) {
+					attrs := frrProtocolAttrs(t, schema, state)
+					var secret, attribute, identity string
+					_ = attrs["id"].As(&identity)
+					var weight int64
+					_ = attrs["password"].As(&secret)
+					_ = attrs["attribute_unchanged"].As(&attribute)
+					_ = attrs["weight"].As(&weight)
+					var caps []tftypes.Value
+					_ = attrs["capabilities"].As(&caps)
+					if identity != id || attrs["weight"].IsNull() || !attrs["weight"].IsKnown() || secret != "configured-test-input" || attribute != "as-path" || weight != 0 || len(caps) != 2 {
+						t.Fatal("saved advanced/authentication state lost")
+					}
+				}
+				checkAdvanced(saved.NewState)
 				attrs := frrProtocolAttrs(t, schema, saved.NewState)
 				var got string
 				_ = attrs["description"].As(&got)
@@ -225,11 +258,19 @@ func TestReviewUpdateSavedFailuresRetainNewStateAndDoNotReplay(t *testing.T) {
 				fresh, _ := frrProtocolServer(t, api.URL)
 				if recovery == "refresh" {
 					read, e := fresh.ReadResource(context.Background(), &tfprotov6.ReadResourceRequest{TypeName: name, CurrentState: saved.NewState, Private: saved.Private})
+					checkAdvanced(read.NewState)
+					if len(read.Private) != 0 {
+						t.Fatal("pending recovery marker retained after successful refresh")
+					}
 					if e != nil || frrProtocolErrors(read.Diagnostics) {
 						t.Fatal(e, read.Diagnostics)
 					}
 				} else {
 					retry, e := fresh.ApplyResourceChange(context.Background(), &tfprotov6.ApplyResourceChangeRequest{TypeName: name, PriorState: saved.NewState, PlannedState: saved.NewState, Config: config, PlannedPrivate: saved.Private})
+					checkAdvanced(retry.NewState)
+					if len(retry.Private) != 0 {
+						t.Fatal("pending recovery marker retained after successful retry")
+					}
 					if e != nil || frrProtocolErrors(retry.Diagnostics) {
 						t.Fatal(e, retry.Diagnostics)
 					}
@@ -315,7 +356,7 @@ func TestReviewOmittedUpdateFieldsRetainImportedValues(t *testing.T) {
 			field, wire := "linked_routemap_out", "linkedRoutemapOut"
 			want := "b"
 			values := map[string]any{"id": id, "enabled": true, "name": "old", "remote_as_mode": "", "remote_as": 64512, "family": []string{"ipv6"}, "update_source": "", "next_hop_self": false, "default_originate": false, "linked_prefixlist_in": []string{}, "linked_prefixlist_out": []string{}, "linked_routemap_in": []string{}, "linked_routemap_out": []string{"b"}}
-			get := `{"peergroup":{"enabled":"1","name":"new","remote_as_mode":"","remoteas":"64512","family":"ipv6","updatesource":"","nexthopself":"0","defaultoriginate":"0","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":"b"}}`
+			get := `{"peergroup":{"listenranges":[],"enabled":"1","name":"new","remote_as_mode":"","remoteas":"64512","family":"ipv6","updatesource":"","nexthopself":"0","defaultoriginate":"0","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":"b"}}`
 			configValues := map[string]any{"name": "new", "remote_as": 64512}
 			if kind == "routemap" {
 				name = "opnsense_quagga_route_map"
@@ -403,7 +444,7 @@ func TestReviewNullScalarReadRetainsPriorState(t *testing.T) {
 				if frrFixture(w, r) {
 					return
 				}
-				response := map[string]any{"enabled": "1", "description": "retain-me", "address": "192.0.2.1", "remoteas": "64512", "updatesource": "", "nexthopself": "0", "family": "ipv4", "peergroup": "", "keepalive": "30", "holddown": "90", "linkedPrefixlistIn": []any{}, "linkedPrefixlistOut": []any{}, "linkedRoutemapIn": []any{}, "linkedRoutemapOut": map[string]any{"": map[string]any{"selected": 1}}}
+				response := map[string]any{"remote_as_mode": "", "localas": "", "weight": "", "localip": "", "linklocalinterface": "", "nexthopselfall": "0", "multihop": "0", "rrclient": "0", "soft_reconfiguration_inbound": "0", "bfd": "0", "bfd_strict": "0", "connecttimer": "", "defaultoriginate": "0", "asoverride": "0", "removeprivateas": "", "allowas_in": "", "disable_connected_check": "0", "attributeunchanged": "", "capabilities": []any{}, "enabled": "1", "description": "retain-me", "address": "192.0.2.1", "remoteas": "64512", "updatesource": "", "nexthopself": "0", "family": "ipv4", "peergroup": "", "keepalive": "30", "holddown": "90", "linkedPrefixlistIn": []any{}, "linkedPrefixlistOut": []any{}, "linkedRoutemapIn": []any{}, "linkedRoutemapOut": map[string]any{"": map[string]any{"selected": 1}}}
 				if malformed.Load() {
 					response[field] = nil
 				}
@@ -481,7 +522,7 @@ func TestReviewPeerGroupCreateDefaultsRemainIPv4(t *testing.T) {
 		case r.URL.Path == "/api/quagga/service/reconfigure":
 			_, _ = fmt.Fprint(w, `{"status":"ok"}`)
 		default:
-			_, _ = fmt.Fprint(w, `{"peergroup":{"enabled":"1","name":"group","remote_as_mode":"","remoteas":"64512","family":"ipv4","updatesource":"","nexthopself":"0","defaultoriginate":"0","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
+			_, _ = fmt.Fprint(w, `{"peergroup":{"listenranges":[],"enabled":"1","name":"group","remote_as_mode":"","remoteas":"64512","family":"ipv4","updatesource":"","nexthopself":"0","defaultoriginate":"0","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
 		}
 	}))
 	defer api.Close()
@@ -579,7 +620,7 @@ func TestReviewDelayedTransportResolutionDoesNotReuseStaleFamily(t *testing.T) {
 		case r.URL.Path == "/api/quagga/service/reconfigure":
 			_, _ = fmt.Fprint(w, `{"status":"ok"}`)
 		default:
-			_, _ = fmt.Fprint(w, `{"neighbor":{"enabled":"1","description":"","address":"2001:db8::1","remoteas":"64512","updatesource":"","nexthopself":"0","family":"ipv6","peergroup":"","keepalive":"","holddown":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
+			_, _ = fmt.Fprint(w, `{"neighbor":{"remote_as_mode":"","localas":"","weight":"","localip":"","linklocalinterface":"","nexthopselfall":"0","multihop":"0","rrclient":"0","soft_reconfiguration_inbound":"0","bfd":"0","bfd_strict":"0","connecttimer":"","defaultoriginate":"0","asoverride":"0","removeprivateas":"","allowas_in":"","disable_connected_check":"0","attributeunchanged":"","capabilities":[],"enabled":"1","description":"","address":"2001:db8::1","remoteas":"64512","updatesource":"","nexthopself":"0","family":"ipv6","peergroup":"","keepalive":"","holddown":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
 		}
 	}))
 	defer api.Close()

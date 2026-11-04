@@ -52,6 +52,13 @@ reconcile an ambiguous create with no uniquely proven identity rather than blind
 re-applying. The provider does not install or upgrade plugins, manage unexposed BGP
 credentials, or make production adoption/full advanced-field-parity claims.
 
+## Sequence and identity
+
+`order` is the numeric sequence (1–65535), never the entry UUID. Names use the
+released 1–64 character alphanumeric, dot, underscore or hyphen pattern. Changing
+sequence preserves UUID relationships and grouped policy membership. Generated
+ordering and address-family behavior require separate appliance observations.
+
 ## Example Usage
 
 ```terraform

@@ -30,6 +30,7 @@ func (d *bgpPeerGroupDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 		"linked_prefixlist_out": dsschema.SetAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: "Linked linked_prefixlist_out policy entry UUIDs."},
 		"linked_routemap_in":    dsschema.SetAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: "Linked linked_routemap_in policy entry UUIDs."},
 		"linked_routemap_out":   dsschema.SetAttribute{ElementType: types.StringType, Computed: true, MarkdownDescription: "Linked linked_routemap_out policy entry UUIDs."},
+		"listen_ranges":         dsschema.SetAttribute{Computed: true, ElementType: types.StringType, MarkdownDescription: "Dynamic peer listen ranges."},
 		"id":                    dsschema.StringAttribute{Required: true, MarkdownDescription: "UUID to look up."},
 		"enabled":               dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Whether this peer group is enabled."},
 		"name":                  dsschema.StringAttribute{Computed: true, MarkdownDescription: "Peer group name."},

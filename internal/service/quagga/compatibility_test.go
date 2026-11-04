@@ -182,7 +182,7 @@ func TestFRRNeighborPasswordPreservedOutsidePublicModel(t *testing.T) {
 	}
 	var model BGPNeighborResourceModel
 	model.fromAPI(context.Background(), &api, "existing-id")
-	encoded, err := json.Marshal(model.toAPI(context.Background()))
+	encoded, err := marshalAdvancedRequest(t, model)
 	if err != nil {
 		t.Fatal(err)
 	}

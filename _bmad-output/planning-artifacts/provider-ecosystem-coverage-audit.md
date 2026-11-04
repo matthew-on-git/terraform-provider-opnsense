@@ -400,10 +400,10 @@ Use one provider per appliance and object domain in steady state. Never configur
 - **Domain / local mapping:** Quagga/BGP / `quagga_bgp_neighbor`
 - **Baseline fields:** as_override, attribute_unchanged, bfd, connect_timer, default_route, description, disable_connected_check, enabled, hold_down, id, keep_alive, link_local_interface, local_ip, md5_password, multi_hop, multi_protocol, next_hop_self, next_hop_self_all, peer_ip, prefix_list_in, prefix_list_out, remote_as, route_map_in, route_map_out, rr_client, update_source, weight
 - **Shared semantics:** same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema
-- **Baseline-only:** BFD, authentication, connect timer, default route, multihop, route-reflector, weight, connected-check, and next-hop-self-all controls are absent locally
+- **Baseline-only:** No remaining buildable neighbor field gaps in advanced candidate; release and required live lifecycle proof remain pending.
 - **Local-only:** none material
 - **Lifecycle:** UUID-backed API create/read/update/delete with the domain reconfigure/apply action where required
-- **Sensitive/write-only:** none
+- **Sensitive/write-only:** Optional Sensitive config-owned password input; never remote-adopted or exposed in lookup. Sensitive state is not encryption; remote secret drift cannot be proven.
 - **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/resources/quagga_bgp_neighbor.md; docs/resources/quagga_bgp_neighbor.md
 - **Follow-up:** `_bmad-output/implementation-artifacts/31-0h-quagga-bgp-field-parity.md`
 

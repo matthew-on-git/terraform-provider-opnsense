@@ -59,3 +59,23 @@ Quagga unit/schema/generated tests, real Terraform import/no-change/drift/state-
 - Historical WireGuard evidence belongs to its prior candidate; these FRR changes
   do not extend that proof to this digest. No coverage-audit row is promoted to
   complete without full row-level proof.
+
+## Advanced parity candidate (unreleased)
+
+The advanced candidate adds all 20 neighbor fields and peer-group listen ranges
+on the existing owners, with strict source enum/range validation, config-owned
+sensitive password input and password-free lookups. Route-map sequence remains
+numeric and UUID relationships remain unchanged. Released source hashes are
+recorded in `31-0h-advanced-source-evidence.json`. Protocol/Core fixture evidence,
+new disposable lifecycle evidence, release publication and Registry availability
+are distinct gates. Parent status remains open pending required live evidence;
+legacy appliance, OpenTofu and route-collector rows are explicitly unverified.
+
+### Remaining numeric-clear interface limitation
+
+`local_as`, `connect_timer`, and `remote_as` are Optional+Computed numeric
+properties. After adopting a non-null appliance value, omission or `null`
+preserves that value; neither is a configured clear. There is currently no
+configured numeric clear for these properties. No zero sentinel is introduced.
+Designing an explicit clear interface remains an open parent Story 31.0h
+follow-up; empty string/set clears described above apply only to those types.

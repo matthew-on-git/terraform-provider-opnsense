@@ -2,7 +2,17 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.12.0 (Unreleased)
+## 0.13.0 (Unreleased)
+
+FEATURES:
+
+* Extend the existing FRR neighbor with 20 source-backed advanced attributes, config-owned sensitive authentication input, public password-free lookups, and peer-group strict CIDR listen ranges. Preserve existing addresses, grouped policy references, family semantics and pending activation recovery. Advanced writes require released capability or authoritative field-presence proof before mutation.
+
+UPGRADE NOTES:
+
+* Neighbor `remote_as` becomes Optional+Computed without changing its numeric type; mode takes precedence and peer-group inheritance remains possible. New public fields adopt on omission, while explicit false, zero weight and empty clears remain intent. Authentication is never adopted from the appliance; Sensitive state is not encryption and remote password drift cannot be proven. Existing schema-v0 migration is retained. Real legacy/OpenTofu and route-collector proof remain separate, unverified gates; this candidate does not close parent Story 31.0h. Refresh the version against published tags before merge; pending sibling changes are not dependencies.
+
+## 0.12.0 (Released)
 
 FEATURES:
 

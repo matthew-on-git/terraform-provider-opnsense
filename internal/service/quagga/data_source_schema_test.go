@@ -46,14 +46,15 @@ func TestBGPNeighborDataSource_read(t *testing.T) {
 		if r.Method != http.MethodGet || r.URL.Path != bgpNeighborReqOpts.GetEndpoint+"/"+id {
 			t.Fatalf("unexpected request %s %s", r.Method, r.URL.Path)
 		}
-		_, _ = w.Write([]byte(`{"neighbor":{"enabled":"1","description":"edge peer","address":"203.0.113.10","remoteas":"64512","updatesource":{"lo0":{"selected":1}},"nexthopself":"1","multiprotocol":"1","peergroup":"","keepalive":"30","holddown":"90","linkedPrefixlistIn":{"pl-in":{"selected":1}},"linkedPrefixlistOut":[],"linkedRoutemapIn":{"rm-in":{"selected":1}},"linkedRoutemapOut":[]}}`))
+		_, _ = w.Write([]byte(`{"neighbor":{"remote_as_mode":"","localas":"","weight":"","localip":"","linklocalinterface":"","nexthopselfall":"0","multihop":"0","rrclient":"0","soft_reconfiguration_inbound":"0","bfd":"0","bfd_strict":"0","connecttimer":"","defaultoriginate":"0","asoverride":"0","removeprivateas":"","allowas_in":"","disable_connected_check":"0","attributeunchanged":"","capabilities":[],"enabled":"1","description":"edge peer","address":"203.0.113.10","remoteas":"64512","updatesource":{"lo0":{"selected":1}},"nexthopself":"1","multiprotocol":"1","peergroup":"","keepalive":"30","holddown":"90","linkedPrefixlistIn":{"pl-in":{"selected":1}},"linkedPrefixlistOut":[],"linkedRoutemapIn":{"rm-in":{"selected":1}},"linkedRoutemapOut":[]}}`))
 	}))
 	t.Cleanup(server.Close)
 
 	ds := newBGPNeighborDataSource()
 	configureDataSource(t, ds, newTestClient(t, server.URL))
 	schema := dataSourceSchema(t, ds)
-	config := BGPNeighborResourceModel{
+	config := bgpNeighborLookupModel{
+		Capabilities:        types.SetNull(types.StringType),
 		ID:                  types.StringValue(id),
 		Family:              types.SetNull(types.StringType),
 		LinkedPrefixlistIn:  types.SetNull(types.StringType),
@@ -68,7 +69,7 @@ func TestBGPNeighborDataSource_read(t *testing.T) {
 		t.Fatalf("read diagnostics: %v", resp.Diagnostics)
 	}
 
-	var state BGPNeighborResourceModel
+	var state bgpNeighborLookupModel
 	if diags := resp.State.Get(context.Background(), &state); diags.HasError() {
 		t.Fatalf("state diagnostics: %v", diags)
 	}

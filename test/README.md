@@ -233,3 +233,20 @@ sshpass -p opnsense ssh -p 2222 \
 
 The root shell is `tcsh`; pipe a script to `/bin/sh` for POSIX commands:
 `... root@127.0.0.1 /bin/sh < script.sh`.
+
+### Advanced FRR candidate target bindings
+
+The digest-bound Story 31.0h runner requires a newly reserved isolated guest and
+independent identity, TLS, oracle and IPv6-readiness probes. Historical guest IDs
+and versions are not defaults. Supply `OPNSENSE_FRR_EXPECTED_CORE`,
+`OPNSENSE_FRR_EXPECTED_PLUGIN`, and `OPNSENSE_FRR_EXPECTED_DAEMON` from independent
+installed-version observations, along with the existing disposable VM name/UUID,
+identity/guest probe, loopback API/oracle and expected candidate digest bindings.
+Compare installed model/controller/template bytes to the released source evidence
+before acceptance; a numeric plugin revision is eligibility, not appliance proof.
+The matrix adds an isolated IPv6 advanced neighbor, sensitive config-owned input,
+password-free lookup, source enums, strict listen ranges, import/no-change and
+advanced drift repair with generated AF/transport observations. It retains the
+collector-positive-prefix, exact restoration and zero-leftover gates. Legacy
+appliance/OpenTofu rows are not synthesized by these tests. Raw artifacts remain
+private; only sanitized versions/digests/counts belong in published evidence.

@@ -38,17 +38,39 @@ output "quagga_bgp_neighbor_id" {
 ### Read-Only
 
 - `address` (String) Neighbor IP address.
+- `allow_as_in` (String) Source-supported allow_as_in.
+- `as_override` (Boolean) Source-supported as_override.
+- `attribute_unchanged` (String) Source-supported attribute_unchanged.
+- `bfd` (Boolean) Source-supported bfd.
+- `bfd_strict` (Boolean) Source-supported bfd_strict.
+- `capabilities` (Set of String) Source-supported capabilities.
+- `connect_timer` (Number) Source-supported connect_timer.
+- `default_originate` (Boolean) Source-supported default_originate.
 - `description` (String) Description of the BGP neighbor.
+- `disable_connected_check` (Boolean) Source-supported disable_connected_check.
 - `enabled` (Boolean) Whether this BGP neighbor is enabled.
 - `family` (Set of String) Activated lowercase address families.
 - `holddown` (Number) BGP hold time.
 - `keepalive` (Number) BGP keepalive interval.
+- `link_local_interface` (String) Source-supported link_local_interface.
 - `linked_prefixlist_in` (Set of String) Inbound linked prefix lists.
 - `linked_prefixlist_out` (Set of String) Outbound linked prefix lists.
 - `linked_routemap_in` (Set of String) Inbound linked route maps.
 - `linked_routemap_out` (Set of String) Outbound linked route maps.
+- `local_as` (Number) Source-supported local_as.
+- `local_ip` (String) Source-supported local_ip.
 - `multi_protocol` (Boolean) Whether multi-protocol support is enabled.
+- `multihop` (Boolean) Source-supported multihop.
 - `next_hop_self` (Boolean) Whether next-hop-self is enabled.
+- `next_hop_self_all` (Boolean) Source-supported next_hop_self_all.
 - `peer_group` (String) Linked BGP peer-group UUID.
 - `remote_as` (Number) Remote autonomous system number.
+- `remote_as_mode` (String) Source-supported remote_as_mode.
+- `remove_private_as` (String) Source-supported remove_private_as.
+- `route_reflector_client` (Boolean) Source-supported route_reflector_client.
+- `soft_reconfiguration_inbound` (Boolean) Source-supported soft_reconfiguration_inbound.
 - `update_source` (String) Update source interface.
+- `weight` (Number) Source-supported weight.
+
+Advanced public fields are read-only and source-capability gated. Authentication
+passwords are never exposed or adopted by this lookup.

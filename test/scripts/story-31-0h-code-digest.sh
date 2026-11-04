@@ -11,6 +11,8 @@ if [[ "${1:-}" == --help ]]; then
 fi
 paths=(.gitleaksignore .devrail.yml .goreleaser.yml DEVELOPMENT.md README.md Makefile go.mod go.sum main.go
   _bmad-output/implementation-artifacts/spec-31-0h-frr2-compatibility-gate.md
+  _bmad-output/implementation-artifacts/spec-31-0h-advanced-frr-parity.md
+  _bmad-output/implementation-artifacts/31-0h-advanced-source-evidence.json
   _bmad-output/implementation-artifacts/epic-31-context.md
   _bmad-output/implementation-artifacts/31-0h-quagga-bgp-field-parity.md
   _bmad-output/implementation-artifacts/sprint-status.yaml

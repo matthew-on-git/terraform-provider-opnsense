@@ -1,0 +1,87 @@
+{
+  "purpose": "Pinned released source contract evidence, not live appliance proof",
+  "sources": [
+    {
+      "revision": "45b79b80aff277fc9edc97ce18bcd91177c40554",
+      "file": "BGP.xml",
+      "sha256": "454e9da967abb71bf8d52b9083127e2adbe8ad3ff6e8f39e3f9c2e77fb261a91"
+    },
+    {
+      "revision": "45b79b80aff277fc9edc97ce18bcd91177c40554",
+      "file": "BgpController.php",
+      "sha256": "55ce90265bd2142c840bcc7271b43a5cf943c19881d7923b0538c32ab74c9993"
+    },
+    {
+      "revision": "45b79b80aff277fc9edc97ce18bcd91177c40554",
+      "file": "bgpd.conf",
+      "sha256": "844642208ca5c60b8e05a12619ee1c708d90e484c84921bb832f96b55d5e381c"
+    },
+    {
+      "revision": "484ea085f28fdf4f701a9e503ed33e117c1425cd",
+      "file": "BGP.xml",
+      "sha256": "cb95b93416e2cd20e328d70258aace45c2913bf85ab34066b39435771d65494e"
+    },
+    {
+      "revision": "484ea085f28fdf4f701a9e503ed33e117c1425cd",
+      "file": "BgpController.php",
+      "sha256": "c71ca7f8e3b574df620570fe4185f1758adf8aa5c455dff988835eda4d713929"
+    },
+    {
+      "revision": "484ea085f28fdf4f701a9e503ed33e117c1425cd",
+      "file": "bgpd.conf",
+      "sha256": "5f19e2b9433c2e02cf4060eeaf249aebc8146d98a2537fb7e663f0f952f1ab66"
+    },
+    {
+      "revision": "5ac2959c8514b4f60e94d65439be5f629f10521f",
+      "file": "BGP.xml",
+      "sha256": "cb95b93416e2cd20e328d70258aace45c2913bf85ab34066b39435771d65494e"
+    },
+    {
+      "revision": "5ac2959c8514b4f60e94d65439be5f629f10521f",
+      "file": "BgpController.php",
+      "sha256": "c71ca7f8e3b574df620570fe4185f1758adf8aa5c455dff988835eda4d713929"
+    },
+    {
+      "revision": "5ac2959c8514b4f60e94d65439be5f629f10521f",
+      "file": "bgpd.conf",
+      "sha256": "5f19e2b9433c2e02cf4060eeaf249aebc8146d98a2537fb7e663f0f952f1ab66"
+    }
+  ],
+  "installed_source_comparison": {
+    "core": "26.7.8_2",
+    "plugin": "2.0_4",
+    "daemon": "10.7.1",
+    "released_revision": "5ac2959c8514b4f60e94d65439be5f629f10521f",
+    "scope": "Read-only installed source comparison only; lifecycle not yet executed",
+    "files": {
+      "BGP.xml": {
+        "installed_sha256": "cb95b93416e2cd20e328d70258aace45c2913bf85ab34066b39435771d65494e",
+        "release_sha256": "cb95b93416e2cd20e328d70258aace45c2913bf85ab34066b39435771d65494e",
+        "equal": true,
+        "source_url": "https://raw.githubusercontent.com/opnsense/plugins/5ac2959c8514b4f60e94d65439be5f629f10521f/net/frr/src/opnsense/mvc/app/models/OPNsense/Quagga/BGP.xml",
+        "diff_lines": 0
+      },
+      "bgpd.conf": {
+        "installed_sha256": "5f19e2b9433c2e02cf4060eeaf249aebc8146d98a2537fb7e663f0f952f1ab66",
+        "release_sha256": "5f19e2b9433c2e02cf4060eeaf249aebc8146d98a2537fb7e663f0f952f1ab66",
+        "equal": true,
+        "source_url": "https://raw.githubusercontent.com/opnsense/plugins/5ac2959c8514b4f60e94d65439be5f629f10521f/net/frr/src/opnsense/service/templates/OPNsense/Quagga/Config/bgpd.conf",
+        "diff_lines": 0
+      },
+      "sa_policies.conf": {
+        "installed_sha256": "718123bea60eb95abd178954c8f05e5d836ed39c01408538ff87e72e32986da3",
+        "release_sha256": "718123bea60eb95abd178954c8f05e5d836ed39c01408538ff87e72e32986da3",
+        "equal": true,
+        "source_url": "https://raw.githubusercontent.com/opnsense/plugins/5ac2959c8514b4f60e94d65439be5f629f10521f/net/frr/src/opnsense/service/templates/OPNsense/Quagga/Config/sa_policies.conf",
+        "diff_lines": 0
+      },
+      "BgpController.php": {
+        "installed_sha256": "c71ca7f8e3b574df620570fe4185f1758adf8aa5c455dff988835eda4d713929",
+        "release_sha256": "c71ca7f8e3b574df620570fe4185f1758adf8aa5c455dff988835eda4d713929",
+        "equal": true,
+        "source_url": "https://raw.githubusercontent.com/opnsense/plugins/5ac2959c8514b4f60e94d65439be5f629f10521f/net/frr/src/opnsense/mvc/app/controllers/OPNsense/Quagga/Api/BgpController.php",
+        "diff_lines": 0
+      }
+    }
+  }
+}

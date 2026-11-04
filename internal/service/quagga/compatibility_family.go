@@ -132,7 +132,7 @@ func (r *bgpNeighborResource) ModifyPlan(ctx context.Context, req resource.Modif
 	// Reuse only genuinely omitted state; configured unknown expressions are
 	// never defaults/clears and must remain unknown. Known-null timers also
 	// matter: UseStateForUnknown alone intentionally ignores null state.
-	for _, name := range []string{"keepalive", "holddown", "peer_group", "linked_prefixlist_in", "linked_prefixlist_out", "linked_routemap_in", "linked_routemap_out"} {
+	for _, name := range []string{"remote_as", "remote_as_mode", "local_as", "weight", "local_ip", "link_local_interface", "next_hop_self_all", "multihop", "route_reflector_client", "soft_reconfiguration_inbound", "bfd", "bfd_strict", "connect_timer", "default_originate", "as_override", "remove_private_as", "allow_as_in", "disable_connected_check", "attribute_unchanged", "capabilities", "keepalive", "holddown", "peer_group", "linked_prefixlist_in", "linked_prefixlist_out", "linked_routemap_in", "linked_routemap_out"} {
 		var configured, planned, prior attr.Value
 		resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root(name), &configured)...)
 		resp.Diagnostics.Append(resp.Plan.GetAttribute(ctx, path.Root(name), &planned)...)
@@ -179,6 +179,11 @@ func upgradeNeighborV0(ctx context.Context, req resource.UpgradeStateRequest, re
 	resp.Diagnostics.Append(family.ElementsAs(ctx, &values, false)...)
 	state["family"], _ = json.Marshal(values)
 	state["peer_group"] = json.RawMessage(`null`)
+	for _, name := range []string{"remote_as_mode", "local_as", "weight", "local_ip", "link_local_interface", "next_hop_self_all", "multihop", "route_reflector_client", "soft_reconfiguration_inbound", "bfd", "bfd_strict", "connect_timer", "default_originate", "as_override", "remove_private_as", "allow_as_in", "disable_connected_check", "attribute_unchanged", "capabilities", "password"} {
+		if _, exists := state[name]; !exists {
+			state[name] = json.RawMessage(`null`)
+		}
+	}
 	encoded, err := json.Marshal(state)
 	if err != nil {
 		resp.Diagnostics.AddError("Error upgrading BGP state", err.Error())

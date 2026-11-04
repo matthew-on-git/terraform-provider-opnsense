@@ -311,3 +311,23 @@ func mutateSurface(t *testing.T, audit *coverageaudit.Manifest, kind, name strin
 	}
 	t.Fatalf("missing surface %s:%s", kind, name)
 }
+
+func TestAdvancedFRRCandidateRetainsProofBoundary(t *testing.T) {
+	audit, err := coverageaudit.Load(root(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, surface := range audit.Surfaces {
+		if surface.Kind != "resource" || surface.Name != "quagga_bgp_neighbor" {
+			continue
+		}
+		if surface.Classification != "missing-buildable" || !strings.Contains(surface.Evidence.BaselineOnly, "candidate") || !strings.Contains(surface.Evidence.BaselineOnly, "pending") {
+			t.Fatal("advanced implementation was promoted to full proof/release")
+		}
+		if !strings.Contains(surface.Evidence.SensitiveWriteOnly, "never remote-adopted") || !strings.Contains(surface.Evidence.SensitiveWriteOnly, "not encryption") {
+			t.Fatal("authentication boundary missing from audit")
+		}
+		return
+	}
+	t.Fatal("neighbor audit row missing")
+}

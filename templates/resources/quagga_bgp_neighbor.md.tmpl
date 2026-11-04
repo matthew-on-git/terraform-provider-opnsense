@@ -61,8 +61,39 @@ If a confirmed save succeeds but activation/read-back fails, the UUID and privat
 pending-activation state are retained. Refresh retries activation without creating
 another object. Resolve unsupported configuration/capabilities before retrying;
 reconcile an ambiguous create with no uniquely proven identity rather than blindly
-re-applying. The provider does not install or upgrade plugins, manage unexposed BGP
-credentials, or make production adoption/full advanced-field-parity claims.
+re-applying. The provider does not install or upgrade plugins, make production adoption or full appliance-proof claims.
+
+## Advanced neighbor ownership
+
+The candidate advanced surface requires released FRR 1.55 or 2.0 capabilities;
+older supported base plugins require authoritative field-presence proof before
+advanced writes. New public properties are Optional+Computed without defaults:
+omission adopts remote values, explicit false, weight zero, empty strings and
+empty capability sets are configured intent. Null numeric values remain unset.
+`remote_as` is optional: `remote_as_mode` (`internal` / `external`) takes
+precedence; a peer group may supply the AS. `attribute_unchanged` is one scalar
+option, not a set. `remove_private_as` uses source values such as
+`remove-private-AS all replace-AS`, not XML element labels. `allow_as_in` accepts
+empty, `1` through `10`, or `origin`. Capabilities are a set of
+`extended-nexthop`, `dynamic`, `fqdn`, and `link-local`.
+
+`next_hop_self_all` requires `next_hop_self`; `bfd_strict` requires `bfd`.
+Transport-wide flags and per-family policies follow the installed plugin template.
+`link_local_interface` is meaningful for IPv6 transports; update-source rendering
+is transport-dependent. Saved settings alone do not prove an established session.
+
+`password` is an Optional Sensitive, **configuration-owned input**. Omitted or null
+passwords are never read from the appliance, sent as clears, or adopted on import.
+An explicit empty string clears authentication. Refresh retains prior configured
+input, and lookups have no password property. A configured nonempty password
+requires a host `local_ip`, as required by the released model. Sensitive marks
+state for display redaction; it is **not encryption**. Protect Terraform state and
+backend access. Remote password drift cannot be proven. A failed ambiguous create
+with authentication cannot recover identity from remote secret comparison.
+
+Candidate protocol/Core checks and disposable proof are separate from release
+publication. Legacy appliance, OpenTofu and route-collector coverage remain
+unverified unless separately evidenced; parent Story 31.0h remains open.
 
 ## Example Usage
 
@@ -73,3 +104,12 @@ credentials, or make production adoption/full advanced-field-parity claims.
 ## Import
 
 {{codefile "shell" "examples/resources/opnsense_quagga_bgp_neighbor/import.sh"}}
+
+### Remaining numeric-clear interface limitation
+
+`local_as`, `connect_timer`, and `remote_as` are Optional+Computed numeric
+properties. After adopting a non-null appliance value, omission or `null`
+preserves that value; neither is a configured clear. There is currently no
+configured numeric clear for these properties. No zero sentinel is introduced.
+Designing an explicit clear interface remains an open parent Story 31.0h
+follow-up; empty string/set clears described above apply only to those types.

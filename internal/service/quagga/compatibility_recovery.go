@@ -40,8 +40,11 @@ func exactBGPPayload(remote map[string]json.RawMessage, want map[string]string) 
 		if !exists {
 			return false
 		}
-		list := key == "family" || key == "match" || key == "match2" || key == "match3" || key == "networks" || strings.HasPrefix(key, "linkedPrefixlist") || (strings.HasPrefix(key, "linkedRoutemap") && key != "linkedRoutemap")
-		selector := list || strings.HasPrefix(key, "linkedPrefixlist") || strings.HasPrefix(key, "linkedRoutemap") || key == "peergroup" || key == "updatesource" || key == "action" || key == "version" || key == "remote_as_mode" || key == "redistribute" || key == "profile" || key == "sysloglevel"
+		if key == "password" {
+			return false
+		} // Authentication cannot be reconciled from remote responses.
+		list := key == "capabilities" || key == "listenranges" || key == "family" || key == "match" || key == "match2" || key == "match3" || key == "networks" || strings.HasPrefix(key, "linkedPrefixlist") || (strings.HasPrefix(key, "linkedRoutemap") && key != "linkedRoutemap")
+		selector := key == "linklocalinterface" || key == "removeprivateas" || key == "allowas_in" || key == "attributeunchanged" || list || strings.HasPrefix(key, "linkedPrefixlist") || strings.HasPrefix(key, "linkedRoutemap") || key == "peergroup" || key == "updatesource" || key == "action" || key == "version" || key == "remote_as_mode" || key == "redistribute" || key == "profile" || key == "sysloglevel"
 		if !selector {
 			var scalar *string
 			if json.Unmarshal(raw, &scalar) != nil || scalar == nil || *scalar != expected {

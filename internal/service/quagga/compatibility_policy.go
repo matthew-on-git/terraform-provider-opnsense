@@ -118,6 +118,37 @@ func prepareBGPRequest[K any](ctx context.Context, c *opnsense.Client, capabilit
 	if err := json.Unmarshal(encoded, &fields); err != nil {
 		return nil, err
 	}
+	if err := validateAdvancedWire(fields); err != nil {
+		return nil, err
+	}
+	if _, neighbor := any(payload).(*bgpNeighborAPIRequest); neighbor {
+		if selected := fields["linklocalinterface"]; selected != "" && !capability.InterfaceOptions[selected] {
+			return nil, fmt.Errorf("FRR link_local_interface is not offered by the discovered model; no mutation was sent")
+		}
+		for wire := range fields {
+			if advancedNeighborFields[wire] && !advancedSupported(capability, wire) {
+				return nil, fmt.Errorf("FRR configured %s is unsupported by the discovered plugin/model; no mutation was sent", wire)
+			}
+		}
+	}
+	if _, peer := any(payload).(*bgpPeerGroupAPIRequest); peer {
+		if _, exists := fields["listenranges"]; exists && !advancedSupported(capability, "listenranges") {
+			if c == nil {
+				return nil, fmt.Errorf("FRR listen_ranges requires authoritative peer-group field proof; no mutation was sent")
+			}
+			var template struct {
+				PeerGroup map[string]json.RawMessage `json:"peergroup"`
+			}
+			if err := frrRead(ctx, c, "/api/quagga/bgp/get_peergroup", &template); err != nil {
+				return nil, err
+			}
+			raw, exists := template.PeerGroup["listenranges"]
+			var ranges frrSelectedMapList
+			if !exists || json.Unmarshal(raw, &ranges) != nil {
+				return nil, fmt.Errorf("FRR listen_ranges is unsupported by the discovered peer-group model; no mutation was sent")
+			}
+		}
+	}
 	if multi, exists := fields["multiprotocol"]; exists {
 		if fields["family"] == "" {
 			families, err := legacyFamilies(fields["address"], boolFromWire(multi))

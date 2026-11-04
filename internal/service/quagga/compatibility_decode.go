@@ -90,6 +90,11 @@ func (s *frrSelectedMap) UnmarshalJSON(raw []byte) error {
 
 func validateBGPResponse(value any, capability frrCapability) error {
 	v := reflect.ValueOf(value).Elem()
+	_, neighborAdvanced := value.(*bgpNeighborAPIResponse)
+	_, peerAdvanced := value.(*bgpPeerGroupAPIResponse)
+	exempt := func(wire string) bool {
+		return (neighborAdvanced && advancedNeighborFields[wire]) || (peerAdvanced && wire == "listenranges")
+	}
 	presence, ok := value.(interface{ hasField(string) bool })
 	if !ok {
 		return fmt.Errorf("FRR response lacks strict field presence")
@@ -108,13 +113,19 @@ func validateBGPResponse(value any, capability frrCapability) error {
 			}
 			continue
 		}
+		if exempt(wire) && !advancedSupported(capability, wire) && !presence.hasField(wire) {
+			continue
+		}
 		if !presence.hasField(wire) {
 			return fmt.Errorf("FRR %s is absent from read-back; no clear/default was inferred", wire)
 		}
 	}
-	for _, name := range []string{"Enabled", "NextHopSelf", "DefaultOriginate", "MultiProtocol", "GracefulRestart", "NetworkImportCheck", "EnforceFirstAS", "LogNeighborChanges", "EnableCARP", "EnableSyslog", "EnableSNMP", "FirewallRules"} {
+	for _, name := range []string{"Enabled", "NextHopSelf", "DefaultOriginate", "MultiProtocol", "GracefulRestart", "NetworkImportCheck", "EnforceFirstAS", "LogNeighborChanges", "EnableCARP", "EnableSyslog", "EnableSNMP", "FirewallRules", "NextHopSelfAll", "Multihop", "RouteReflectorClient", "SoftReconfigurationInbound", "BFD", "BFDStrict", "ASOverride", "DisableConnectedCheck"} {
 		field := v.FieldByName(name)
 		if !field.IsValid() {
+			continue
+		}
+		if exempt(jsonWire(v.Type(), name)) && !presence.hasField(jsonWire(v.Type(), name)) {
 			continue
 		}
 		raw := field.String()
@@ -146,18 +157,41 @@ func validateBGPResponse(value any, capability frrCapability) error {
 		field := v.Field(i)
 		name := v.Type().Field(i).Name
 		if field.Type() == reflect.TypeFor[frrSelectedMapList]() && field.IsNil() {
+			if exempt(strings.Split(v.Type().Field(i).Tag.Get("json"), ",")[0]) && !presence.hasField(strings.Split(v.Type().Field(i).Tag.Get("json"), ",")[0]) {
+				continue
+			}
 			if name == "Family" && !capability.Grouped && v.FieldByName("MultiProtocol").IsValid() {
 				continue
 			}
 			return fmt.Errorf("FRR %s selector is missing from read-back", name)
 		}
 	}
+	fields := map[string]string{}
+	for i := 0; i < v.NumField(); i++ {
+		wire := strings.Split(v.Type().Field(i).Tag.Get("json"), ",")[0]
+		f := v.Field(i)
+		if wire != "-" && presence.hasField(wire) {
+			if f.Kind() == reflect.String {
+				fields[wire] = f.String()
+			} else if f.Type() == reflect.TypeFor[frrSelectedMapList]() {
+				fields[wire] = strings.Join(f.Interface().(frrSelectedMapList), ",")
+			}
+		}
+	}
+	if err := validateAdvancedWire(fields); err != nil {
+		return err
+	}
 	return nil
+}
+
+func jsonWire(t reflect.Type, name string) string {
+	f, _ := t.FieldByName(name)
+	return strings.Split(f.Tag.Get("json"), ",")[0]
 }
 
 func validateFRRFields(value any) error {
 	v := reflect.ValueOf(value).Elem()
-	numeric := map[string][2]int64{"RemoteAS": {1, 4294967295}, "ASNumber": {1, 4294967295}, "Order": {1, 65535}, "SeqNumber": {1, 4294967294}, "Number": {0, 4294967295}, "Keepalive": {1, 1000}, "Holddown": {3, 3000}, "Distance": {1, 255}, "MaximumPaths": {1, 128}, "MaximumPathsIBGP": {1, 128}}
+	numeric := map[string][2]int64{"RemoteAS": {1, 4294967295}, "ASNumber": {1, 4294967295}, "Order": {1, 65535}, "SeqNumber": {1, 4294967294}, "Number": {0, 4294967295}, "Keepalive": {1, 1000}, "Holddown": {3, 3000}, "Distance": {1, 255}, "MaximumPaths": {1, 128}, "MaximumPathsIBGP": {1, 128}, "LocalAS": {1, 4294967295}, "Weight": {0, 65535}, "ConnectTimer": {1, 65000}}
 	_, neighbor := value.(*bgpNeighborAPIResponse)
 	_, community := value.(*bgpCommunityListAPIResponse)
 	if community {

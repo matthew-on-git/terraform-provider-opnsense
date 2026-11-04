@@ -105,7 +105,7 @@ func TestProtocolFRRVersionZeroUpgradePlanApplyRefresh(t *testing.T) {
 				}
 				switch r.URL.Path {
 				case "/api/quagga/bgp/get_neighbor/stable-id":
-					_, _ = fmt.Fprintf(w, `{"neighbor":{"enabled":"1","description":"","address":%q,"remoteas":"64512","updatesource":"","nexthopself":"0","family":%q,"peergroup":"","keepalive":"","holddown":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`, tc.address, family)
+					_, _ = fmt.Fprintf(w, `{"neighbor":{"remote_as_mode":"","localas":"","weight":"","localip":"","linklocalinterface":"","nexthopselfall":"0","multihop":"0","rrclient":"0","soft_reconfiguration_inbound":"0","bfd":"0","bfd_strict":"0","connecttimer":"","defaultoriginate":"0","asoverride":"0","removeprivateas":"","allowas_in":"","disable_connected_check":"0","attributeunchanged":"","capabilities":[],"enabled":"1","description":"","address":%q,"remoteas":"64512","updatesource":"","nexthopself":"0","family":%q,"peergroup":"","keepalive":"","holddown":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`, tc.address, family)
 				case "/api/quagga/bgp/set_neighbor/stable-id":
 					writes++
 					var body map[string]map[string]string
@@ -197,7 +197,7 @@ func testFRRSavedCreateRecovery(t *testing.T, stage string) {
 				_, _ = fmt.Fprint(w, `{"neighbor":{}}`)
 				return
 			}
-			_, _ = fmt.Fprint(w, `{"neighbor":{"enabled":"1","description":"","address":"192.0.2.1","remoteas":"64512","updatesource":"","nexthopself":"0","family":"ipv4","peergroup":"","keepalive":"","holddown":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
+			_, _ = fmt.Fprint(w, `{"neighbor":{"remote_as_mode":"","localas":"","weight":"","localip":"","linklocalinterface":"","nexthopselfall":"0","multihop":"0","rrclient":"0","soft_reconfiguration_inbound":"0","bfd":"0","bfd_strict":"0","connecttimer":"","defaultoriginate":"0","asoverride":"0","removeprivateas":"","allowas_in":"","disable_connected_check":"0","attributeunchanged":"","capabilities":[],"enabled":"1","description":"","address":"192.0.2.1","remoteas":"64512","updatesource":"","nexthopself":"0","family":"ipv4","peergroup":"","keepalive":"","holddown":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
 		default:
 			t.Errorf("unexpected API %s", r.URL.Path)
 		}
@@ -264,7 +264,7 @@ func TestProtocolFRROwnersSerializeDiscoveryAndMutation(t *testing.T) {
 			<-release
 			_, _ = fmt.Fprint(w, `{"status":"ok"}`)
 		case "/api/quagga/bgp/get_neighbor/11111111-1111-4111-8111-111111111111":
-			_, _ = fmt.Fprint(w, `{"neighbor":{"enabled":"1","description":"","address":"192.0.2.1","remoteas":"64512","updatesource":"","nexthopself":"0","family":"ipv4","peergroup":"","keepalive":"","holddown":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
+			_, _ = fmt.Fprint(w, `{"neighbor":{"remote_as_mode":"","localas":"","weight":"","localip":"","linklocalinterface":"","nexthopselfall":"0","multihop":"0","rrclient":"0","soft_reconfiguration_inbound":"0","bfd":"0","bfd_strict":"0","connecttimer":"","defaultoriginate":"0","asoverride":"0","removeprivateas":"","allowas_in":"","disable_connected_check":"0","attributeunchanged":"","capabilities":[],"enabled":"1","description":"","address":"192.0.2.1","remoteas":"64512","updatesource":"","nexthopself":"0","family":"ipv4","peergroup":"","keepalive":"","holddown":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
 		default:
 			t.Errorf("unexpected owner handshake request %s", r.URL.Path)
 		}
@@ -495,7 +495,7 @@ func TestProtocolFRRAmbiguousCreateUniqueIdentityRecovery(t *testing.T) {
 			writes++
 			_, _ = fmt.Fprint(w, `{"result":"unknown"}`)
 		case "/api/quagga/bgp/get_neighbor/" + id:
-			_, _ = fmt.Fprint(w, `{"neighbor":{"enabled":"1","description":"","address":"192.0.2.1","remoteas":"64512","updatesource":"","nexthopself":"0","family":"ipv4","keepalive":"","holddown":"","peergroup":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
+			_, _ = fmt.Fprint(w, `{"neighbor":{"remote_as_mode":"","localas":"","weight":"","localip":"","linklocalinterface":"","nexthopselfall":"0","multihop":"0","rrclient":"0","soft_reconfiguration_inbound":"0","bfd":"0","bfd_strict":"0","connecttimer":"","defaultoriginate":"0","asoverride":"0","removeprivateas":"","allowas_in":"","disable_connected_check":"0","attributeunchanged":"","capabilities":[],"enabled":"1","description":"","address":"192.0.2.1","remoteas":"64512","updatesource":"","nexthopself":"0","family":"ipv4","keepalive":"","holddown":"","peergroup":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
 		case "/api/quagga/service/reconfigure":
 			reloads++
 			_, _ = fmt.Fprint(w, `{"status":"ok"}`)
@@ -844,7 +844,7 @@ func TestProtocolFRR20PackageRevisionRefresh(t *testing.T) {
 				}
 				if r.URL.Path == "/api/quagga/bgp/get_neighbor/11111111-1111-4111-8111-111111111111" {
 					reads++
-					_, _ = fmt.Fprint(w, `{"neighbor":{"enabled":"1","description":"","address":"192.0.2.1","remoteas":"64512","updatesource":"","nexthopself":"0","family":"ipv4","peergroup":"","keepalive":"","holddown":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
+					_, _ = fmt.Fprint(w, `{"neighbor":{"remote_as_mode":"","localas":"","weight":"","localip":"","linklocalinterface":"","nexthopselfall":"0","multihop":"0","rrclient":"0","soft_reconfiguration_inbound":"0","bfd":"0","bfd_strict":"0","connecttimer":"","defaultoriginate":"0","asoverride":"0","removeprivateas":"","allowas_in":"","disable_connected_check":"0","attributeunchanged":"","capabilities":[],"enabled":"1","description":"","address":"192.0.2.1","remoteas":"64512","updatesource":"","nexthopself":"0","family":"ipv4","peergroup":"","keepalive":"","holddown":"","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
 					return
 				}
 				t.Errorf("unexpected refresh request %s", r.URL.Path)
