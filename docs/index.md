@@ -24,13 +24,19 @@ terraform {
   }
 }
 
-# Configure the OPNsense provider. Credentials may also be supplied via the
-# OPNSENSE_URI, OPNSENSE_API_KEY, OPNSENSE_API_SECRET, and OPNSENSE_ALLOW_INSECURE
-# environment variables (HCL values take priority).
+# Configure the OPNsense provider. Credentials and retry settings may also be
+# supplied via the OPNSENSE_URI, OPNSENSE_API_KEY, OPNSENSE_API_SECRET,
+# OPNSENSE_ALLOW_INSECURE, OPNSENSE_RETRIES, OPNSENSE_MIN_BACKOFF, and
+# OPNSENSE_MAX_BACKOFF environment variables (HCL values take priority).
 provider "opnsense" {
   uri        = "https://opnsense.example.com"
   api_key    = var.opnsense_api_key
   api_secret = var.opnsense_api_secret
+
+  # Optional retry tuning (whole seconds):
+  # retries     = 3
+  # min_backoff = 1
+  # max_backoff = 30
 }
 
 # Quickstart: a firewall alias and a rule that references it.
@@ -59,16 +65,36 @@ TLS.
 Credentials and connection settings can be supplied two ways, with **HCL taking
 priority over environment variables**:
 
-| Setting        | HCL argument  | Environment variable      |
-|----------------|---------------|---------------------------|
-| Base URL       | `uri`         | `OPNSENSE_URI`            |
-| API key        | `api_key`     | `OPNSENSE_API_KEY`        |
-| API secret     | `api_secret`  | `OPNSENSE_API_SECRET`     |
-| Skip TLS verify| `insecure`    | `OPNSENSE_ALLOW_INSECURE` |
+| Setting         | HCL argument  | Environment variable      |
+|-----------------|---------------|---------------------------|
+| Base URL        | `uri`         | `OPNSENSE_URI`            |
+| API key         | `api_key`     | `OPNSENSE_API_KEY`        |
+| API secret      | `api_secret`  | `OPNSENSE_API_SECRET`     |
+| Skip TLS verify | `insecure`    | `OPNSENSE_ALLOW_INSECURE` |
+| Retries         | `retries`     | `OPNSENSE_RETRIES`        |
+| Min backoff     | `min_backoff` | `OPNSENSE_MIN_BACKOFF`    |
+| Max backoff     | `max_backoff` | `OPNSENSE_MAX_BACKOFF`    |
 
-`api_key` and `api_secret` are marked sensitive. On configuration the provider
-validates credentials against `/api/core/firmware/status` and reports a clear
-diagnostic if authentication fails.
+`retries` is a retry count; `min_backoff` and `max_backoff` are whole seconds.
+They default to `3`, `1`, and `30` respectively and must be between `1` and
+`2147483647` (`retries = 0` is not supported). Invalid environment values are
+ignored so the defaults apply. `api_key` and `api_secret` are marked sensitive.
+On configuration the provider validates credentials against
+`/api/core/menu/search` and reports a clear diagnostic if authentication fails.
+
+### Retry behavior
+
+The provider retries transient API failures for every resource and data source.
+`retries = 3` permits up to four attempts (the initial request plus three
+retries). Waits begin at `min_backoff` and double up to `max_backoff`; a
+`Retry-After` header on a `429` or `503` response can extend a wait beyond
+`max_backoff`. A `min_backoff` greater than `max_backoff` is accepted and the
+computed wait is clamped to `max_backoff`.
+
+Retries also apply to writes. If OPNsense processes a write but the response is
+lost or fails, a retry can repeat that write. The upper bounds are overflow
+guards, not recommended values; large retry/backoff settings can block Terraform
+for a very long time.
 
 ```hcl
 # Environment-variable configuration (no secrets in HCL):
@@ -173,4 +199,7 @@ For a full brownfield workflow with dependency-ordered examples, see
 - `api_key` (String, Sensitive) The API key for OPNsense authentication. Can also be set with the `OPNSENSE_API_KEY` environment variable.
 - `api_secret` (String, Sensitive) The API secret for OPNsense authentication. Can also be set with the `OPNSENSE_API_SECRET` environment variable.
 - `insecure` (Boolean) Whether to disable TLS certificate verification. Required for self-signed certificates. Defaults to `false`. Can also be set with the `OPNSENSE_ALLOW_INSECURE` environment variable.
+- `max_backoff` (Number) Maximum wait in seconds between retries. Defaults to `30`. Can also be set with the `OPNSENSE_MAX_BACKOFF` environment variable.
+- `min_backoff` (Number) Minimum wait in seconds between retries. Defaults to `1`. Can also be set with the `OPNSENSE_MIN_BACKOFF` environment variable.
+- `retries` (Number) Maximum number of retries for transient OPNsense API failures. Defaults to `3`. Can also be set with the `OPNSENSE_RETRIES` environment variable.
 - `uri` (String) The URI of the OPNsense appliance (e.g., `https://opnsense.example.com`). Can also be set with the `OPNSENSE_URI` environment variable.

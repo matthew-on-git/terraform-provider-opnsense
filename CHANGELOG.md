@@ -2,7 +2,7 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.13.0 (Unreleased)
+## 0.14.0 (Unreleased)
 
 FEATURES:
 
@@ -10,9 +10,19 @@ FEATURES:
 
 UPGRADE NOTES:
 
-* Existing resource names, UUID imports and configured certificate/private-key PEM input text remain compatible. New readable payloads are separate outputs; private material is Sensitive but remains in Terraform state. OPNsense 26.7.8 rejects certificate-only CA imports because of its private-key validation path; no substitute key or XML workaround is used. Full disposable action/settings acceptance remains unexecuted and the Trust parent story remains open. Merging this new versioned heading enables automatic publication after successful main CI.
+* Existing resource names, UUID imports and configured certificate/private-key PEM input text remain compatible. New readable payloads are separate outputs; private material is Sensitive but remains in Terraform state. The provider conservatively rejects certificate-only CA import/update before writes, including on the patched 26.7.8_2 package where the upstream keyless condition was fixed. Keyless-CA provider support remains deferred; no substitute key or XML workaround is used. The recorded disposable 26.7.8_2 action/settings matrix passed; older-firmware and OpenTofu execution remain unverified and the Trust parent story remains open. Merging this new versioned heading enables automatic publication after successful main CI.
 
-## 0.12.0 (November 4, 2026)
+## 0.13.0 (Released)
+
+FEATURES:
+
+* Add provider-level `retries`, `min_backoff`, and `max_backoff` settings, with `OPNSENSE_RETRIES`, `OPNSENSE_MIN_BACKOFF`, and `OPNSENSE_MAX_BACKOFF` environment fallbacks, to tune retry behavior for slow or transiently failing OPNsense APIs. `retries` is a count; backoffs are whole seconds. Values must be between 1 and 2147483647. Omitted values preserve the existing 3 retries, 1 second minimum, and 30 second maximum.
+
+UPGRADE NOTES:
+
+* No action required. The new attributes are optional and default to the previous retry behavior.
+
+## 0.12.0 (Released)
 
 FEATURES:
 

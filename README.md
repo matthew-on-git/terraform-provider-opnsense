@@ -25,7 +25,7 @@ provider "opnsense" {
 }
 ```
 
-Credentials can also be supplied with `OPNSENSE_URI`, `OPNSENSE_API_KEY`, `OPNSENSE_API_SECRET`, and `OPNSENSE_ALLOW_INSECURE`.
+Credentials can also be supplied with `OPNSENSE_URI`, `OPNSENSE_API_KEY`, `OPNSENSE_API_SECRET`, and `OPNSENSE_ALLOW_INSECURE`. Retry behavior can be tuned with the `retries`, `min_backoff`, and `max_backoff` provider arguments or the `OPNSENSE_RETRIES`, `OPNSENSE_MIN_BACKOFF`, and `OPNSENSE_MAX_BACKOFF` environment variables.
 
 ## Support
 
