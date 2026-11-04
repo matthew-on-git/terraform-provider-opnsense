@@ -254,7 +254,6 @@ func TestAssignmentRejectsUnsupportedExistingModesBeforeMutation(t *testing.T) {
 		mode  string
 	}{
 		{name: "PPPoE", field: "type4", mode: "pppoe"},
-		{name: "track6", field: "type6", mode: "track6"},
 		{name: "6rd", field: "type6", mode: "6rd"},
 		{name: "6to4", field: "type6", mode: "6to4"},
 	}

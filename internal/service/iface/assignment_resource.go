@@ -88,7 +88,7 @@ func (r *assignmentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Validators: []validator.Int64{int64validator.Between(0, 32)},
 			},
 			"ipv4_gateway": optionalString("Existing OPNsense IPv4 gateway name. Valid only with `ipv4_mode = \"staticv4\"`."),
-			"ipv6_mode":    optionalString("IPv6 mode: `none`, `staticv6`, `dhcp6`, `linklocal`, or `slaac`."),
+			"ipv6_mode":    optionalString("IPv6 mode: `none`, `staticv6`, `dhcp6`, `linklocal`, `slaac`, `idassoc6`, or `track6`."),
 			"ipv6_address": optionalString("Static IPv6 address without a prefix. Valid only with `ipv6_mode = \"staticv6\"`."),
 			"ipv6_prefix_length": schema.Int64Attribute{
 				Optional: true, Computed: true, MarkdownDescription: "Static IPv6 prefix length (0-128). Valid only with `ipv6_mode = \"staticv6\"`.",
@@ -114,8 +114,11 @@ func (r *assignmentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 	}
 
 	attrs := resp.Schema.Attributes
+	for name, attribute := range assignmentDelegationAttributes() {
+		attrs[name] = attribute
+	}
 	attrs["ipv4_mode"] = schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "IPv4 mode: `none`, `staticv4`, or `dhcp`.", Validators: []validator.String{stringvalidator.OneOf("none", "staticv4", "dhcp")}}
-	attrs["ipv6_mode"] = schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "IPv6 mode: `none`, `staticv6`, `dhcp6`, `linklocal`, or `slaac`.", Validators: []validator.String{stringvalidator.OneOf("none", "staticv6", "dhcp6", "linklocal", "slaac")}}
+	attrs["ipv6_mode"] = schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "IPv6 mode: `none`, `staticv6`, `dhcp6`, `linklocal`, `slaac`, `idassoc6`, or `track6`.", Validators: []validator.String{stringvalidator.OneOf("none", "staticv6", "dhcp6", "linklocal", "slaac", "idassoc6", "track6")}}
 	priorityValidator := []validator.String{stringvalidator.OneOf("", "0", "1", "2", "3", "4", "5", "6", "7")}
 	attrs["dhcp_vlan_priority"] = schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "DHCPv4 VLAN priority: empty (disabled) or `0` through `7`.", Validators: priorityValidator}
 	attrs["dhcp6_vlan_priority"] = schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "DHCPv6 VLAN priority: empty (disabled) or `0` through `7`.", Validators: priorityValidator}
@@ -374,9 +377,16 @@ func validateSafeAssignmentModes(assignment *assignmentAPIResponse) error {
 	}
 	ipv6Mode := assignmentModeFromAPI(assignment.stringValue("type6"))
 	switch ipv6Mode {
-	case "none", "staticv6", "dhcp6", "linklocal", "slaac":
+	case "none", "staticv6", "dhcp6", "linklocal", "slaac", "idassoc6", "track6":
 	default:
-		return fmt.Errorf("existing assignment uses unsupported IPv6 mode %q; supported modes are none, staticv6, dhcp6, linklocal, and slaac", ipv6Mode)
+		return fmt.Errorf("existing assignment uses unsupported IPv6 mode %q; supported modes are none, staticv6, dhcp6, linklocal, slaac, idassoc6, and track6", ipv6Mode)
+	}
+	if ipv6Mode == "idassoc6" || ipv6Mode == "track6" {
+		for _, key := range assignmentDelegationAPIFields {
+			if _, ok := assignment.Raw[key]; !ok {
+				return &assignmentCompatibilityError{detail: "Assignment API response is missing delegation field " + key + "."}
+			}
+		}
 	}
 	return nil
 }
