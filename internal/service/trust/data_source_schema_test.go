@@ -35,7 +35,7 @@ func TestCADataSource_read(t *testing.T) {
 		if r.Method != http.MethodGet || r.URL.Path != caReqOpts.GetEndpoint+"/"+id {
 			t.Fatalf("unexpected request %s %s", r.Method, r.URL.Path)
 		}
-		_, _ = w.Write([]byte(`{"ca":{"refid":"ref1","descr":"Root CA","commonname":"Example Root","country":{"US":{"value":"United States","selected":1}},"lifetime":"3650","crt_payload":"-----BEGIN CERTIFICATE-----","valid_from":"2026-01-01","valid_to":"2036-01-01"}}`))
+		_, _ = w.Write([]byte(`{"ca":{"refid":"ref1","descr":"Root CA","commonname":"Example Root","country":{"US":{"value":"United States","selected":1}},"lifetime":"3650","crt_payload":"-----BEGIN CERTIFICATE-----","prv_payload":"","valid_from":"1767225600","valid_to":"2082758400"}}`))
 	}))
 	t.Cleanup(server.Close)
 

@@ -2,7 +2,7 @@
 title: 'Story 31.0f: Remaining Trust lifecycle and read parity'
 type: 'feature'
 created: '2026-11-03'
-status: 'done'
+status: 'in-review'
 baseline_revision: '4bd107fc769586d5904919c8e69562897a87e84d'
 review_loop_iteration: 0
 followup_review_recommended: true
@@ -284,3 +284,37 @@ package caused a preserved real exact-version rejection of the original runner;
 full non-skipped matrix and exact restoration are still pending parent execution.
 
 The later [real execution checkpoint](spec-31-0f-live-acceptance-repair.md#parent-real-execution-checkpoint-2026-11-04) supersedes that pending-live status: the full frozen matrix passed on actual 26.7.8_2 with zero owned leftovers and four exact restored hashes. Historical source/failed attempts remain distinct; broader firmware/OpenTofu and keyless provider gates remain open.
+
+## 2026-11-04 — Maintainer-authorized sequential merge review
+
+Integrated main after retry PR84 without rewriting existing commits. Trust now
+targets the next unpublished minor v0.14.0; published v0.13.0 retry and v0.12.0
+settings history are preserved. This is a bounded supported-lifecycle increment,
+not completion of keyless CA support or the broader compatibility parent.
+
+### Review Triage Log — integration pass
+
+Thirteen findings from four BMAD layers: high1, medium9, low1, false2. All
+layers completed; no ambiguous product decision was needed. The standing
+maintainer instruction to validate and merge sequentially authorizes applying
+review repairs without another confirmation.
+
+- [medium][patch] Verification gap: cert lookup CSR was not asserted; add exact populated and absent-null protocol reads with zero-write counts.
+- [false][reject] Edge CA input normalization: carried prior rejection; released controller base64-encodes exact configured PEM and loader decodes it. Authoritative subject refresh is intended legacy behavior. Synthetic normalization is not an appliance contract.
+- [high][patch] Blind1 confirmed Create/readback errors could taint and replace an acknowledged object. Use warning-only recovery after confirmed UUID; real Terraform Core tests cover CA, cert and missing local key, unchanged second apply and no-change plan, one add only. Old resource snapshot fails all three controls; fixed Core cases pass.
+- [false][reject] Blind2 CA normalization repeats the same disproven claim; preserve authoritative refresh, not hidden configured-value caching.
+- [medium][patch] Blind3 JSON null silently decodes as an empty Go string. Reject null known scalar observations before changing state.
+- [medium][patch] Blind4 truncated editor with refid alone could erase observations. Require released description/certificate/key fields, distinguishing missing from explicit empty strings.
+- [medium][patch] Blind5 delimited substring membership accepted compound options. Enforce exact membership with compound-value negative protocol controls.
+- [medium][patch] Blind6 caller or returned IDs could alter URL paths. Accept UUID and legacy identifier characters only; reject unsafe import/lookup before API calls and malformed add identity before accepting it.
+- [low][patch] Blind7 CSR labels were unchecked despite valid DER. Require CERTIFICATE REQUEST or NEW CERTIFICATE REQUEST PEM labels.
+- [medium][patch] Blind8 live reissue checked only post-action existence. Assert changed certificate, same UUID/key and exactly one independently logged cryptographic write.
+- [medium][patch] Blind9 one-time key marker did not prove usability. Parse it with OpenSSL and compare public keys against the returned certificate; assert no persisted appliance key.
+- [medium][patch] Blind10 live matrix omitted repeat-token semantics. Exercise same action/new token exactly once, then unchanged token with zero cryptographic writes.
+- [medium][patch] Acceptance auditor: string validity timestamps bypassed numeric validation. Validate both JSON numeric and string representations; reject malformed/negative/null timestamps.
+
+The stronger live runner needs new before-operation/verify-operation oracle
+checkpoints exposing cryptographic_writes from access-log cursors; snapshot,
+identity, exact restoration and all prior gates remain required. Original live
+receipts remain historical and are not retroactively attributed to this repaired
+source. Fresh identity-bound proof must be recorded separately.

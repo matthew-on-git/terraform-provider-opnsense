@@ -50,10 +50,13 @@ Inspect the appliance securely and reconcile before deliberately changing the
 operation token. A subsequent successful metadata edit is not proof that the
 previous cryptographic operation succeeded. A failed create without a returned
 UUID cannot fabricate an identity; inspect for an orphan before retrying.
-Terraform Core can taint a failed create even when the provider retained a
-confirmed UUID/key after readback failure. Inspect that UUID securely and
-reconcile/import before accepting any replacement plan; do not blindly retry
-creation or assume automatic recovery of a response-only key.
+After an acknowledged add with a confirmed UUID, readback failure or an absent
+response-only key produces a warning and retains valid managed state rather than
+returning a create error that would taint the resource. Refresh to recover readable
+observations; the next unchanged apply does not recreate the object. A missing
+response-only key remains unrecoverable: inspect the retained UUID securely and
+choose any replacement explicitly. A mutation without a confirmed UUID still
+returns an error; inspect for an orphan before retrying.
 
 ## Example Usage
 

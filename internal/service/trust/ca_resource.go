@@ -89,7 +89,7 @@ func (r *caResource) Create(ctx context.Context, req resource.CreateRequest, res
 	resp.Diagnostics.Append(resp.State.Set(ctx, &saved)...)
 	record, err := trustRecord(ctx, r.client, "ca", id)
 	if err != nil {
-		resp.Diagnostics.AddError("Trust object saved; readback failed", "Confirmed UUID and any available one-time key are retained. Refresh without replaying creation.")
+		resp.Diagnostics.AddWarning("Trust object saved; readback failed", "Confirmed UUID and any available one-time key are retained without tainting the resource. Refresh to recover observations; creation is not replayed.")
 		return
 	}
 	plan.fromRecord(record, id)
@@ -225,5 +225,9 @@ func (r *caResource) Delete(ctx context.Context, req resource.DeleteRequest, res
 }
 
 func (r *caResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	if !trustSafeID(req.ID) {
+		resp.Diagnostics.AddError("Invalid Trust identity", "Expected an appliance object identifier without path or query characters.")
+		return
+	}
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

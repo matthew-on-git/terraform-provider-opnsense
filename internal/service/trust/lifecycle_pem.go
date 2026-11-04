@@ -55,7 +55,7 @@ func validateTrustPEM(p map[string]string) error {
 	}
 	if csr := p["csr_payload"]; csr != "" {
 		block, rest := pem.Decode([]byte(csr))
-		if block == nil || len(bytes.TrimSpace(rest)) != 0 {
+		if block == nil || (block.Type != "CERTIFICATE REQUEST" && block.Type != "NEW CERTIFICATE REQUEST") || len(bytes.TrimSpace(rest)) != 0 {
 			return errors.New("invalid Trust CSR")
 		}
 		req, err := x509.ParseCertificateRequest(block.Bytes)

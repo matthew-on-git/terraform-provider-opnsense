@@ -78,7 +78,7 @@ func (r *certResource) Create(ctx context.Context, req resource.CreateRequest, r
 		plan.GeneratedPrivateKey = types.StringValue(key)
 	}
 	if payload["action"] == "internal" && payload["private_key_location"] == "local" && key == "" {
-		resp.Diagnostics.AddError("One-time key unavailable", "Object was saved but add did not return the local-only key. The confirmed UUID is retained; lookup cannot recover this key and creation must not be replayed automatically.")
+		resp.Diagnostics.AddWarning("One-time key unavailable", "Object was saved but add did not return the local-only key. The confirmed UUID is retained; lookup cannot recover this key and creation must not be replayed automatically.")
 	}
 	// Save confirmed identity and one-time material before fallible readback.
 	saved := plan
@@ -86,7 +86,7 @@ func (r *certResource) Create(ctx context.Context, req resource.CreateRequest, r
 	resp.Diagnostics.Append(resp.State.Set(ctx, &saved)...)
 	record, err := trustRecord(ctx, r.client, "cert", id)
 	if err != nil {
-		resp.Diagnostics.AddError("Trust object saved; readback failed", "Confirmed UUID and any available one-time key are retained. Refresh without replaying creation.")
+		resp.Diagnostics.AddWarning("Trust object saved; readback failed", "Confirmed UUID and any available one-time key are retained without tainting the resource. Refresh to recover observations; creation is not replayed.")
 		return
 	}
 	plan.fromRecord(record, id)
@@ -232,5 +232,9 @@ func (r *certResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 }
 
 func (r *certResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	if !trustSafeID(req.ID) {
+		resp.Diagnostics.AddError("Invalid Trust identity", "Expected an appliance object identifier without path or query characters.")
+		return
+	}
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

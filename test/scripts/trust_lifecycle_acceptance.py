@@ -147,7 +147,9 @@ def hcl_string(value):
     return json.dumps(value)
 
 
-def resources(marker, cert_pem, key_pem, csr=None, signed=None, reissue=False):
+def resources(
+    marker, cert_pem, key_pem, csr=None, signed=None, reissue=False, token=None
+):
     # Persisted fixtures are confined to the private attempt directory.
     text = """terraform {
   required_providers {
@@ -194,6 +196,8 @@ provider "opnsense" {}
         text += '\nresource "opnsense_trust_cert" "' + name + '" {\n'
         text += " description = " + hcl_string(marker + "-" + name) + "\n"
         text += " action = " + hcl_string(active_action) + "\n"
+        if name == "internal" and token:
+            text += " operation_token = " + hcl_string(token) + "\n"
         if name == "external" and signed:
             text += " certificate = " + hcl_string(signed) + "\n"
         if name != "imported":
@@ -229,6 +233,7 @@ provider "opnsense" {}
         )
     text += """
 data "opnsense_trust_cert" "observed" { id = opnsense_trust_cert.internal.id }
+data "opnsense_trust_cert" "csr_holder" { id = opnsense_trust_cert.external.id }
 data "opnsense_trust_ca" "observed" { id = opnsense_trust_ca.root.id }
 data "opnsense_trust_settings" "observed" {
   depends_on = [opnsense_trust_settings.observed]
@@ -267,6 +272,41 @@ def verify_signed_key(directory, csr, certificate):
     require(
         csr_key.stdout == cert_key.stdout and csr_key.stdout,
         "signed result does not match holder CSR",
+    )
+
+
+def verify_private_key(directory, key, certificate):
+    require(key and certificate, "one-time key/certificate missing")
+    (directory / "local.key").write_text(key)
+    (directory / "local.crt").write_text(certificate)
+    private = owned_command(
+        ["openssl", "pkey", "-in", "local.key", "-pubout"], cwd=directory
+    )
+    public = owned_command(
+        ["openssl", "x509", "-in", "local.crt", "-pubkey", "-noout"], cwd=directory
+    )
+    require(
+        private.returncode == 0 and public.returncode == 0,
+        "one-time key/certificate cannot be parsed",
+    )
+    require(
+        private.stdout and private.stdout == public.stdout,
+        "one-time key does not match certificate",
+    )
+
+
+def verify_reissue(before, after):
+    require(before["id"] == after["id"], "reissue replaced certificate UUID")
+    require(
+        before.get("returned_private_key")
+        and before["returned_private_key"] == after.get("returned_private_key"),
+        "reissue changed or lost stored key",
+    )
+    require(
+        before.get("returned_certificate")
+        and after.get("returned_certificate")
+        and before["returned_certificate"] != after["returned_certificate"],
+        "reissue did not change certificate",
     )
 
 
@@ -553,13 +593,25 @@ def main():
         apply("initial-actions")
         observed = state_values(directory)
         local_key = observed["opnsense_trust_cert.local"].get("generated_private_key")
-        require(local_key and "PRIVATE KEY" in local_key, "one-time key missing")
+        verify_private_key(
+            directory,
+            local_key,
+            observed["opnsense_trust_cert.local"].get("returned_certificate"),
+        )
+        require(
+            not observed["opnsense_trust_cert.local"].get("returned_private_key"),
+            "one-time key persisted on appliance",
+        )
         external_before = observed["opnsense_trust_cert.external"]
         external_id = external_before["id"]
         external_key = external_before.get("returned_private_key")
         require(external_key, "CSR holder stored key missing")
         csr = external_before.get("returned_csr")
         require(csr and "CERTIFICATE REQUEST" in csr, "CSR missing")
+        require(
+            observed["data.opnsense_trust_cert.csr_holder"].get("csr") == csr,
+            "certificate lookup lost CSR",
+        )
         root_certificate = observed["opnsense_trust_ca.root"].get("certificate", "")
         require("CERTIFICATE" in root_certificate, "CA public certificate missing")
         fingerprint = sha256_bytes(root_certificate)
@@ -586,7 +638,49 @@ def main():
         config.write_text(
             resources(marker, cert_pem, key_pem, csr=csr, signed=signed, reissue=True)
         )
+        before_reissue = state_values(directory)["opnsense_trust_cert.internal"]
+        helper(runtime, "oracle", "before-operation", directory)
         apply("reissue")
+        after_reissue = state_values(directory)["opnsense_trust_cert.internal"]
+        verify_reissue(before_reissue, after_reissue)
+        require(
+            helper(runtime, "oracle", "verify-operation", directory).get(
+                "cryptographic_writes"
+            )
+            == 1,
+            "reissue was not exactly one cryptographic write",
+        )
+        config.write_text(
+            resources(
+                marker,
+                cert_pem,
+                key_pem,
+                csr=csr,
+                signed=signed,
+                reissue=True,
+                token="repeat-1",
+            )
+        )
+        helper(runtime, "oracle", "before-operation", directory)
+        apply("same-action-new-token")
+        repeated = state_values(directory)["opnsense_trust_cert.internal"]
+        verify_reissue(after_reissue, repeated)
+        require(
+            helper(runtime, "oracle", "verify-operation", directory).get(
+                "cryptographic_writes"
+            )
+            == 1,
+            "new token was not exactly one cryptographic write",
+        )
+        helper(runtime, "oracle", "before-operation", directory)
+        apply("same-token-no-replay")
+        require(
+            helper(runtime, "oracle", "verify-operation", directory).get(
+                "cryptographic_writes"
+            )
+            == 0,
+            "unchanged token replayed operation",
+        )
         cert_fingerprint = sha256_bytes(
             state_values(directory)["opnsense_trust_cert.internal"].get(
                 "returned_certificate", ""

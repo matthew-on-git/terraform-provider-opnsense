@@ -25,6 +25,57 @@ SPEC.loader.exec_module(acceptance)
 
 
 class TrustAcceptanceGuardTest(unittest.TestCase):
+    def test_reissue_requires_new_certificate_and_preserved_identity_key(self):
+        before = {
+            "id": "certificate-id",
+            "returned_private_key": "private-key",
+            "returned_certificate": "certificate-before",
+        }
+        after = {**before, "returned_certificate": "certificate-after"}
+        acceptance.verify_reissue(before, after)
+        for bad in (
+            before,
+            {**after, "id": "other-id"},
+            {**after, "returned_private_key": "other-key"},
+            {**after, "returned_private_key": None},
+            {**after, "returned_certificate": None},
+        ):
+            with self.subTest(bad=bad), self.assertRaises(acceptance.AcceptanceError):
+                acceptance.verify_reissue(before, bad)
+
+    def test_one_time_private_key_is_parseable_and_matches_certificate(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for label in ("first", "other"):
+                result = subprocess.run(
+                    [
+                        "openssl",
+                        "req",
+                        "-x509",
+                        "-newkey",
+                        "rsa:2048",
+                        "-nodes",
+                        "-keyout",
+                        str(root / (label + ".key")),
+                        "-out",
+                        str(root / (label + ".crt")),
+                        "-days",
+                        "1",
+                        "-subj",
+                        "/CN=example.invalid",
+                    ],
+                    capture_output=True,
+                )
+                self.assertEqual(result.returncode, 0, "fixture generation failed")
+            key, certificate = (
+                (root / "first.key").read_text(),
+                (root / "first.crt").read_text(),
+            )
+            acceptance.verify_private_key(root, key, certificate)
+            for bad in ("PRIVATE KEY but not PEM", (root / "other.key").read_text()):
+                with self.assertRaises(acceptance.AcceptanceError):
+                    acceptance.verify_private_key(root, bad, certificate)
+
     def test_missing_runtime_performs_no_command(self):
         with (
             mock.patch.dict(os.environ, {}, clear=True),
@@ -196,6 +247,7 @@ if action==os.environ.get('TRUST_TEST_NONOBJECT_PHASE'):
  print('null'); raise SystemExit(0)
 value={'ok':True,'owner':'00000000-0000-4000-8000-000000000001','guest_uuid':'00000000-0000-4000-8000-000000000002','endpoint':'https://disposable.example.invalid','tls_sha256':'a'*64,'isolated':True,'non_production':True,'reservation_current':True,'core_version':os.environ.get('TRUST_TEST_CORE_VERSION','26.7.8_2'),'owned_count':0,'exact_restored':True,'cipher_choice':'DEFAULT'}
 value.update(json.loads(os.environ.get('TRUST_TEST_ATTESTATION_OVERRIDE','{}')))
+if action=='verify-operation': value['cryptographic_writes']=1 if (root/'trace').read_text().splitlines().count(action)<=2 else 0
 if action=='before-destroy': value['owned_count']=1
 value['settings_destroy_equal']=True
 for key in ('config_sha256','settings_sha256','routes_sha256','runtime_sha256'): value[key]='a'*64
@@ -658,7 +710,13 @@ if name=='terraform' and sys.argv[1]=='apply':
                 "id": "root",
                 "description": "root",
             },
-            "opnsense_trust_cert.local": {"generated_private_key": "PRIVATE KEY-local"},
+            "opnsense_trust_cert.local": {
+                "generated_private_key": "PRIVATE KEY-local",
+                "returned_certificate": "CERTIFICATE-local",
+            },
+            "data.opnsense_trust_cert.csr_holder": {
+                "csr": "CERTIFICATE REQUEST-holder"
+            },
             "opnsense_trust_cert.external": {
                 "id": "holder",
                 "returned_private_key": "PRIVATE KEY-holder",
@@ -709,6 +767,8 @@ if name=='terraform' and sys.argv[1]=='apply':
                         acceptance, "state_values", return_value=observed
                     ),
                     mock.patch.object(acceptance, "verify_signed_key"),
+                    mock.patch.object(acceptance, "verify_private_key"),
+                    mock.patch.object(acceptance, "verify_reissue"),
                     mock.patch.object(acceptance, "verify_adoption"),
                     mock.patch.object(acceptance, "exercise_settings"),
                     contextlib.redirect_stdout(output),

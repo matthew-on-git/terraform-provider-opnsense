@@ -354,7 +354,7 @@ func TestTrustLifecycleProtocolPartialFailureKeyRetentionAndStrictReads(t *testi
 	if decodeErr != nil || !value.IsFullyKnown() {
 		t.Fatal("provisional saved state contains unknown outputs", decodeErr)
 	}
-	if !settingsErrors(result.Diagnostics) || lifecycleString(t, sc, result.NewState, "id") != "fixture-id" || lifecycleString(t, sc, result.NewState, "generated_private_key") != "one-time-sentinel" {
+	if settingsErrors(result.Diagnostics) || len(result.Diagnostics) == 0 || lifecycleString(t, sc, result.NewState, "id") != "fixture-id" || lifecycleString(t, sc, result.NewState, "generated_private_key") != "one-time-sentinel" {
 		t.Fatal("saved identity/key lost", result.Diagnostics)
 	}
 	a.badRead = ""
@@ -718,7 +718,7 @@ func TestTrustLifecycleProtocolCAPartialCreateAndDelete(t *testing.T) {
 	config := settingsValue(t, sc, fields)
 	prior := settingsNull(t, sc)
 	failed := lifecycleApply(t, s, "ca", prior, lifecyclePlan(t, s, "ca", sc, prior, config), config)
-	if !settingsErrors(failed.Diagnostics) || lifecycleString(t, sc, failed.NewState, "id") != "fixture-id" {
+	if settingsErrors(failed.Diagnostics) || len(failed.Diagnostics) == 0 || lifecycleString(t, sc, failed.NewState, "id") != "fixture-id" {
 		t.Fatal("CA confirmed UUID lost")
 	}
 	a.badRead = ""

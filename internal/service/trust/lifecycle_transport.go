@@ -29,7 +29,25 @@ func nullableTrustString(s string) types.String {
 
 // trustRecord accepts only the released monad contract. An empty/default editor
 // is not evidence of deletion; malformed responses must retain managed state.
+// Trust object identities include both UUIDs and legacy hexadecimal refids.
+// Keep them single unencoded path segments; never reinterpret caller input as a URL.
+func trustSafeID(id string) bool {
+	if id == "" {
+		return false
+	}
+	for _, ch := range id {
+		if ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '-' || ch == '_' {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
 func trustRecord(ctx context.Context, c *opnsense.Client, kind, id string) (map[string]string, error) {
+	if !trustSafeID(id) {
+		return nil, errors.New("invalid Trust object identity")
+	}
 	if err := c.AcquireRead(ctx); err != nil {
 		return nil, errors.New("trust read admission failed")
 	}
@@ -53,6 +71,15 @@ func trustRecord(ctx context.Context, c *opnsense.Client, kind, id string) (map[
 	if parseErr != nil || len(values) == 0 {
 		return nil, errors.New("invalid or empty Trust editor response")
 	}
+	// These strings are always present in a released object editor. Missing
+	// fields are not an affirmative empty value and must not erase managed state.
+	for _, key := range []string{"descr", "crt_payload", "prv_payload"} {
+		var value string
+		rawValue, present := values[key]
+		if !present || string(rawValue) == "null" || json.Unmarshal(rawValue, &value) != nil {
+			return nil, errors.New("incomplete Trust object editor")
+		}
+	}
 	result := make(map[string]string)
 	for key, value := range values {
 		if key == "in_use" || key == "is_user" {
@@ -62,6 +89,33 @@ func trustRecord(ctx context.Context, c *opnsense.Client, kind, id string) (map[
 			}
 			result[key] = v
 			continue
+		}
+		if key == "valid_from" || key == "valid_to" {
+			var timestamp string
+			if string(value) == "null" {
+				return nil, errors.New("invalid Trust validity timestamp")
+			}
+			if json.Unmarshal(value, &timestamp) != nil {
+				var number json.Number
+				if json.Unmarshal(value, &number) != nil {
+					return nil, errors.New("invalid Trust validity timestamp")
+				}
+				timestamp = number.String()
+			}
+			if timestamp != "" {
+				n, err := strconv.ParseInt(timestamp, 10, 64)
+				if err != nil || n < 0 {
+					return nil, errors.New("invalid Trust validity timestamp")
+				}
+			}
+			result[key] = timestamp
+			continue
+		}
+		if string(value) == "null" {
+			switch key {
+			case "refid", "descr", "commonname", "crt_payload", "prv_payload", "csr_payload", "name", "rfc3280_purpose", "city", "state", "organization", "organizationalunit", "email", "ocsp_uri", "altnames_dns", "altnames_ip", "altnames_uri", "altnames_email", "lifetime", "serial", "refcount":
+				return nil, errors.New("invalid null Trust string field")
+			}
 		}
 		var s string
 		if json.Unmarshal(value, &s) == nil {
@@ -74,17 +128,6 @@ func trustRecord(ctx context.Context, c *opnsense.Client, kind, id string) (map[
 				}
 			}
 			result[key] = s
-			continue
-		}
-		if key == "valid_from" || key == "valid_to" {
-			var number json.Number
-			if json.Unmarshal(value, &number) != nil {
-				return nil, errors.New("invalid Trust validity timestamp")
-			}
-			if _, err := strconv.ParseInt(number.String(), 10, 64); err != nil {
-				return nil, errors.New("invalid Trust validity timestamp")
-			}
-			result[key] = number.String()
 			continue
 		}
 		if key == "country" || key == "caref" || key == "action" || key == "key_type" || key == "digest" || key == "cert_type" || key == "private_key_location" {
@@ -126,6 +169,9 @@ func trustRecord(ctx context.Context, c *opnsense.Client, kind, id string) (map[
 }
 
 func trustWrite(ctx context.Context, c *opnsense.Client, kind, operation, id string, payload map[string]string) (string, string, error) {
+	if id != "" && !trustSafeID(id) {
+		return "", "", errors.New("invalid Trust object identity")
+	}
 	endpoint := "/api/trust/" + kind + "/" + operation
 	if id != "" {
 		endpoint += "/" + id
@@ -156,10 +202,19 @@ func trustWrite(ctx context.Context, c *opnsense.Client, kind, operation, id str
 	if response.Result != expected {
 		return "", "", errors.New("trust mutation was not confirmed; inspect appliance validation without exposing private payloads")
 	}
-	if operation == "add" && response.UUID == "" {
+	if operation == "add" && !trustSafeID(response.UUID) {
 		return "", "", errors.New("trust add did not return a confirmed UUID; do not automatically replay")
 	}
 	return response.UUID, response.PrivateKey, nil
+}
+
+func trustOption(options, value string) bool {
+	for _, option := range strings.Split(strings.Trim(options, "|"), "|") {
+		if option == value {
+			return true
+		}
+	}
+	return false
 }
 
 func trustAction(p map[string]string, kind string, create, explicit bool) error {
@@ -189,11 +244,11 @@ func trustAction(p map[string]string, kind string, create, explicit bool) error 
 	if kind == "cert" {
 		allowed = "|internal|external|import|sign_csr|import_csr|reissue|manual|"
 	}
-	if !strings.Contains(allowed, "|"+action+"|") {
+	if !trustOption(allowed, action) {
 		return errors.New("unsupported Trust action")
 	}
 	for field, allowed := range map[string]string{"key_type": "|512|1024|2048|3072|4096|7680|8192|prime256v1|secp384r1|secp521r1|", "digest": "|sha1|sha224|sha256|sha384|sha512|", "cert_type": "|usr_cert|server_cert|combined_server_client|v3_ca|", "private_key_location": "|firewall|local|"} {
-		if value, ok := p[field]; ok && !strings.Contains(allowed, "|"+value+"|") {
+		if value, ok := p[field]; ok && !trustOption(allowed, value) {
 			return errors.New("invalid Trust generation option: " + field)
 		}
 	}
@@ -207,7 +262,7 @@ func trustAction(p map[string]string, kind string, create, explicit bool) error 
 	switch action {
 	case "existing":
 		if p["prv_payload"] == "" {
-			return errors.New("OPNsense 26.7.8 rejects certificate-only CA import and keyless CA metadata updates; a matching private key is required, never regenerate as a workaround")
+			return errors.New("certificate-only CA import and keyless CA metadata updates are not supported by this provider; the original OPNsense 26.7.8 keyless validation was corrected in 26.7.8_2, but provider support remains deferred; a matching private key is required, never regenerate as a workaround")
 		}
 		required = []string{"crt_payload", "prv_payload"}
 	case "internal": // Released subject fields are optional, including common name.
