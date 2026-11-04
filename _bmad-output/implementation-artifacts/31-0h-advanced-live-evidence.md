@@ -7,8 +7,8 @@ Story31.0h. Candidate implementation is in
 
 ## Executed candidate and runtime
 
-- Tested head: `82de6314ab78e7e9e93e5ad2722f4b0f11f9de45`.
-- Frozen source digest: `7efa6f7be577cd0722a74de4a5f16b72072e014ac89f2c096c68719d5624e7de`.
+- Latest tested head: `56253b1643deefb6cdaadcca0badc89f24550010`.
+- Latest frozen source digest: `2e26cb01403f0f3927d77313412ac9d39331493294b4e798e1c2fb642feeff44`.
 - Actual disposable versions: OPNsense26.7.8_2, os-frr2.0_4, bgpd10.7.1.
 - Installed BGP model/controller and both routing/authentication templates exactly
   match released pin `5ac2959c8514b4f60e94d65439be5f629f10521f`; source hashes are
@@ -126,3 +126,49 @@ whitespace/padded member IDs remain invalid. Focused controls retain required
 managed nonempty selection, strict fresh canonical equality, cardinality and
 all authoritative group/current-prefix/lifecycle checks. Independent bounded
 source recheck passed. Full corrected17-step execution remains pending.
+
+
+## Sixth failed attempt — actual firmware metadata stall
+
+Attempt `matrix06` tested head
+`56253b1643deefb6cdaadcca0badc89f24550010` and frozen source digest
+`2e26cb01403f0f3927d77313412ac9d39331493294b4e798e1c2fb642feeff44`.
+It executed initial creation/no-change and nine imports. The corrected Step12
+check passed exact numeric sequence declarations, stable route-map identities,
+independent managed/raw authoritative group reads and active-session withdrawal
+from current routes. Its effective-numeric-order marker was actually emitted.
+This does not establish successful completion of Step12's later refresh or the
+remaining matrix.
+
+Terraform's post-apply refresh then failed the bounded read-only firmware-info
+discovery. Independent diagnostics found a high-CPU `pkg update -q` metadata
+refresh holding the repository lock, queued metadata queries and firmware-tier
+timeouts. The actual BGP API returned HTTP200 in0.027s while firmware info timed
+out after8.007s. Installed source confirms info discovery synchronously invokes
+metadata refresh, not package installation. Memory/disk were ample and no
+upgrade/install process was running. The cause beyond the observed metadata
+stall and its nonrecurrence remain unproven; provider timeouts were not weakened.
+
+The failed run's Terraform cleanup stalled in the same discovery path. After
+preserving that outcome, the exact isolated source/identity-bound acceptance
+container was stopped. **Actual Terraform deletion was not verified for this
+attempt.** The independent full-config fallback was attempted but returned a
+guarded-oracle HTTP error: **exact restoration did not pass for matrix06.** Frozen
+source remained unchanged. Earlier failed attempts' passing deletion/restoration
+results do not substitute for these missing predicates.
+
+The whole corrected17-step matrix, later drift/repair, firewall toggles and final
+exact restoration therefore remain pending. Do not count historical or partial
+observations as a full live PASS. A future fresh isolated target must first prove
+firmware discovery health and retain cumulative collector evidence. Any recovery
+reboot and its effectiveness remain unexecuted/unverified in this attempt.
+
+Local validation of the current test-only repairs passed focused race1.036s,
+full make check6/6with none skipped83633ms, deterministic generation and
+whitespace/privacy checks. All8 hosted checks completed successfully on the exact
+latest tested head above. These are offline/hosted gates, not full appliance
+acceptance or merge authorization. Keep the PR draft and parent Story31.0h open.
+
+After retaining the failed receipt, the exact owned disposable guest/disk and collector, tunnel and oracle were retired. Independent parent checks found the owned guest/config/disk absent, all owned listeners gone and no acceptance container remaining. Physical disposable retirement is cleanup evidence only; it does not turn unverified Terraform deletion or failed exact restoration into successful predicates.
+
+Final evidence-only publication gate: make checkPASS6/6, none skipped81938ms; whitespace/privacy auditPASS. The interrupted acceptance left generated Go build temporaries and a plugin socket; these initially failed formatting and the transitive-source fixture copy. Only the stopped run's generated temporary tree was retained outside the checkout, with no source modification, deletion or check suppression, before the full successful rerun. This local cleanup does not change the failed live disposition.
