@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"reflect"
@@ -242,7 +243,10 @@ func frrRawSelection(raw json.RawMessage) (string, error) {
 		if flag != "0" && flag != "1" {
 			return "", fmt.Errorf("malformed raw selected flag")
 		}
-		if flag == "1" && id != "" {
+		if flag == "1" {
+			if strings.TrimSpace(id) == "" {
+				return "", fmt.Errorf("empty raw selected member")
+			}
 			values = append(values, id)
 		}
 	}
@@ -468,7 +472,7 @@ func TestAccFRRCompatibility(t *testing.T) {
 		if a == nil || b == nil || a.Primary.ID == b.Primary.ID || a.Primary.ID != sequenceIDs["a"] || b.Primary.ID != sequenceIDs["b"] {
 			return fmt.Errorf("sequence update lost route-map identities")
 		}
-		if err := frrCheckImportedPolicy(t, marker, "opnsense_quagga_bgp_peergroup.policy")([]*terraform.InstanceState{s.RootModule().Resources["opnsense_quagga_bgp_peergroup.policy"].Primary}); err != nil {
+		if err := frrCheckManagedPolicyReference(t, marker, s.RootModule().Resources["opnsense_quagga_bgp_peergroup.policy"]); err != nil {
 			return err
 		}
 		deadline := time.Now().Add(180 * time.Second)
@@ -504,6 +508,83 @@ func TestAccFRRCompatibility(t *testing.T) {
 	resource.Test(t, resource.TestCase{ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories, WorkingDir: workingDir, CheckDestroy: func(_ *terraform.State) error { frrAssertZeros(t, marker, "TERRAFORM_DESTROY"); return nil }, Steps: steps})
 }
 
+// Managed references retain configured siblings. Observe the same owner freshly,
+// then prove both selections independently instead of applying import semantics.
+func frrCheckManagedPolicyReference(t *testing.T, marker string, owner *terraform.ResourceState) error {
+	t.Helper()
+	if owner == nil || owner.Primary == nil || owner.Primary.ID == "" {
+		return fmt.Errorf("managed policy owner missing")
+	}
+	read := func(kind, id string) (map[string]json.RawMessage, error) {
+		raw := frrRaw(t, "GET", "/api/quagga/bgp/get_"+kind+"/"+id, nil)
+		var object map[string]json.RawMessage
+		if json.Unmarshal(raw[kind], &object) != nil || len(object) == 0 {
+			return nil, fmt.Errorf("authoritative policy object missing")
+		}
+		return object, nil
+	}
+	return frrManagedPolicyReference(owner.Primary, owner.Primary.ID, marker, read)
+}
+
+// The injected authoritative reader keeps selection/group negative controls
+// independent of an appliance. No state or provider behavior is modified.
+func frrManagedPolicyReference(owner *terraform.InstanceState, rawOwnerID, marker string, read func(string, string) (map[string]json.RawMessage, error)) error {
+	if owner == nil || owner.ID == "" || rawOwnerID != owner.ID || owner.Attributes["id"] != owner.ID {
+		return fmt.Errorf("managed policy owner identity mismatch")
+	}
+	managed, err := frrFlatmapSelection(owner.Attributes, "linked_routemap_out")
+	if err != nil || len(managed) == 0 {
+		return fmt.Errorf("managed policy selection absent or malformed")
+	}
+	raw, err := read("peergroup", rawOwnerID)
+	if err != nil {
+		return fmt.Errorf("managed policy owner unreadable")
+	}
+	var name string
+	if json.Unmarshal(raw["name"], &name) != nil || name != marker+"_pg" {
+		return fmt.Errorf("managed policy owner group mismatch")
+	}
+	selected, err := frrRawSelection(raw["linkedRoutemapOut"])
+	if err != nil || selected == "" {
+		return fmt.Errorf("raw managed policy selection absent or malformed")
+	}
+	for _, selection := range [][]string{managed, strings.Split(selected, ",")} {
+		for _, id := range selection {
+			if strings.TrimSpace(id) == "" {
+				return fmt.Errorf("empty policy reference member")
+			}
+			object, err := read("routemap", id)
+			var groupName string
+			if err != nil || json.Unmarshal(object["name"], &groupName) != nil || groupName != marker+"_rm" {
+				return fmt.Errorf("policy reference lost authoritative group identity")
+			}
+		}
+	}
+	return nil
+}
+
+// Validate the actual flatmap members, not just the synthetic count. Empty
+// sets are valid here; callers that require a configured relation reject them.
+func frrFlatmapSelection(attrs map[string]string, field string) ([]string, error) {
+	count, err := strconv.Atoi(attrs[field+".#"])
+	if err != nil || count < 0 {
+		return nil, fmt.Errorf("policy reference set count missing or malformed")
+	}
+	members := []string{}
+	for key, id := range attrs {
+		if strings.HasPrefix(key, field+".") && key != field+".#" {
+			if strings.TrimSpace(id) == "" {
+				return nil, fmt.Errorf("empty policy reference member")
+			}
+			members = append(members, id)
+		}
+	}
+	if len(members) != count {
+		return nil, fmt.Errorf("policy reference set count disagrees with members")
+	}
+	return members, nil
+}
+
 // Imports may canonicalize a sibling UUID within a name/number group. Verify
 // every ignored reference independently through the authoritative raw API.
 func frrCheckImportedPolicy(t *testing.T, marker, name string) resource.ImportStateCheckFunc {
@@ -529,6 +610,16 @@ func frrCheckImportedPolicy(t *testing.T, marker, name string) resource.ImportSt
 			}
 			if err := frrCanonicalReferences(states[0].Attributes, owner); err != nil {
 				return err
+			}
+		}
+		// This additional inspected set is not canonicalized above, but its
+		// count/member boundary must be equally strict before per-UUID reads.
+		for key := range states[0].Attributes {
+			if strings.HasPrefix(key, "linked_prefixlist_out.") {
+				if _, err := frrFlatmapSelection(states[0].Attributes, "linked_prefixlist_out"); err != nil {
+					return err
+				}
+				break
 			}
 		}
 		for key, id := range states[0].Attributes {
@@ -985,10 +1076,16 @@ func frrBGPFirewallProof(rules, rendered string, enabled bool) error {
 
 func frrCanonicalReferences(attrs map[string]string, raw map[string]json.RawMessage) error {
 	for field, wire := range map[string]string{"linked_routemap_out": "linkedRoutemapOut", "match_prefix": "match2", "route_map": "linkedRoutemap", "peer_group": "peergroup"} {
-		if _, present := attrs[field]; !present {
-			if _, present = attrs[field+".#"]; !present {
-				continue
-			}
+		_, scalar := attrs[field]
+		set := false
+		for key := range attrs {
+			set = set || strings.HasPrefix(key, field+".")
+		}
+		if scalar && set {
+			return fmt.Errorf("policy reference mixes scalar and set representations")
+		}
+		if !scalar && !set {
+			continue
 		}
 		selected, err := frrRawSelection(raw[wire])
 		if err != nil {
@@ -1000,10 +1097,9 @@ func frrCanonicalReferences(attrs map[string]string, raw map[string]json.RawMess
 				want = append(want, value)
 			}
 		} else {
-			for key, value := range attrs {
-				if strings.HasPrefix(key, field+".") && key != field+".#" {
-					want = append(want, value)
-				}
+			want, err = frrFlatmapSelection(attrs, field)
+			if err != nil {
+				return err
 			}
 		}
 		got := []string{}
@@ -1314,5 +1410,270 @@ func TestFRRRenderedSequenceValuesAllowReleasedLexicalOrder(t *testing.T) {
 		if frrRenderedSequenceValues(invalid, "fixture_rm") == nil {
 			t.Fatal("missing, wrong or duplicated numeric sequence accepted")
 		}
+	}
+}
+
+func TestFRRManagedPolicyReference(t *testing.T) {
+	for _, tc := range []struct {
+		name, managed, raw, count, managedGroup, rawGroup, unreadable, ownerID, rawOwnerID, invalidName string
+		missingOwner, missingRelation, missingCount, emptyMember, missingRaw, badOwner                  bool
+		wantError                                                                                       bool
+	}{
+		{name: "different canonical same group", managed: "b", raw: "a"},
+		{name: "exact canonical", managed: "a", raw: "a"},
+		{name: "multiple same group", managed: "a,b", raw: "a,b"},
+		{name: "managed multiple raw single", managed: "a,b", raw: "a"},
+		{name: "managed single raw multiple", managed: "b", raw: "a,b"},
+		{name: "valid then null member name", managed: "b", raw: "a", invalidName: "null", wantError: true},
+		{name: "valid then missing member name", managed: "b", raw: "a", invalidName: "missing", wantError: true},
+		{name: "managed wrong group", managed: "b", raw: "a", managedGroup: "other", wantError: true},
+		{name: "raw wrong group", managed: "b", raw: "a", rawGroup: "other", wantError: true},
+		{name: "managed stale", managed: "b", raw: "a", unreadable: "b", wantError: true},
+		{name: "raw unreadable", managed: "b", raw: "a", unreadable: "a", wantError: true},
+		{name: "owner unreadable", managed: "b", raw: "a", unreadable: "owner", wantError: true},
+		{name: "missing selected object", managed: "b", raw: "a", unreadable: "missing-b", wantError: true},
+		{name: "missing owner", missingOwner: true, wantError: true},
+		{name: "empty owner ID", ownerID: "empty", wantError: true},
+		{name: "owner ID mismatch", managed: "b", raw: "a", rawOwnerID: "other", wantError: true},
+		{name: "owner attribute mismatch", managed: "b", raw: "a", ownerID: "other", wantError: true},
+		{name: "wrong owner group", managed: "b", raw: "a", badOwner: true, wantError: true},
+		{name: "missing relation", missingRelation: true, wantError: true},
+		{name: "empty managed", raw: "a", wantError: true},
+		{name: "empty raw", managed: "b", wantError: true},
+		{name: "missing raw", managed: "b", missingRaw: true, wantError: true},
+		{name: "empty member", managed: "b", raw: "a", emptyMember: true, wantError: true},
+		{name: "empty raw member", managed: "b", raw: "a,", wantError: true},
+		{name: "missing count", managed: "b", raw: "a", missingCount: true, wantError: true},
+		{name: "noninteger count", managed: "b", raw: "a", count: "invalid", wantError: true},
+		{name: "negative count", managed: "b", raw: "a", count: "-1", wantError: true},
+		{name: "count mismatch", managed: "b", raw: "a", count: "2", wantError: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			attrs := map[string]string{"id": "owner", "linked_routemap_out.#": "0"}
+			if tc.managed != "" {
+				members := strings.Split(tc.managed, ",")
+				attrs["linked_routemap_out.#"] = strconv.Itoa(len(members))
+				for i, id := range members {
+					attrs["linked_routemap_out."+strconv.Itoa(i)] = id
+				}
+			}
+			if tc.count != "" {
+				attrs["linked_routemap_out.#"] = tc.count
+			}
+			if tc.missingCount {
+				delete(attrs, "linked_routemap_out.#")
+			}
+			if tc.missingRelation {
+				attrs = map[string]string{"id": "owner"}
+			}
+			if tc.emptyMember {
+				attrs["linked_routemap_out.0"] = ""
+			}
+			owner := &terraform.InstanceState{ID: "owner", Attributes: attrs}
+			if tc.ownerID == "empty" {
+				owner.ID = ""
+			} else if tc.ownerID != "" {
+				attrs["id"] = tc.ownerID
+			}
+			if tc.missingOwner {
+				owner = nil
+			}
+			rawID := "owner"
+			if tc.rawOwnerID != "" {
+				rawID = tc.rawOwnerID
+			}
+			reads := map[string]int{}
+			read := func(kind, id string) (map[string]json.RawMessage, error) {
+				reads[kind+"/"+id]++
+				if id == tc.unreadable {
+					return nil, fmt.Errorf("unreadable fixture")
+				}
+				if tc.unreadable == "missing-"+id {
+					return nil, nil
+				}
+				if kind == "peergroup" {
+					name := "m_pg"
+					if tc.badOwner {
+						name = "other"
+					}
+					encoded, err := json.Marshal(tc.raw)
+					if err != nil {
+						return nil, err
+					}
+					result := map[string]json.RawMessage{"name": json.RawMessage(strconv.Quote(name)), "linkedRoutemapOut": encoded}
+					if tc.missingRaw {
+						delete(result, "linkedRoutemapOut")
+					}
+					return result, nil
+				}
+				if id == "a" && tc.invalidName != "" {
+					if tc.invalidName == "null" {
+						return map[string]json.RawMessage{"name": json.RawMessage(`null`)}, nil
+					}
+					return map[string]json.RawMessage{}, nil
+				}
+				group := "m_rm"
+				if id == "b" && tc.managedGroup != "" {
+					group = tc.managedGroup
+				}
+				if id == "a" && tc.rawGroup != "" {
+					group = tc.rawGroup
+				}
+				return map[string]json.RawMessage{"name": json.RawMessage(strconv.Quote(group))}, nil
+			}
+			err := frrManagedPolicyReference(owner, rawID, "m", read)
+			if (err != nil) != tc.wantError {
+				t.Fatalf("error = %v, wantError = %t", err, tc.wantError)
+			}
+			if !tc.wantError {
+				wantReads := map[string]int{}
+				for _, id := range append(strings.Split(tc.managed, ","), strings.Split(tc.raw, ",")...) {
+					wantReads[id]++
+				}
+				for id, count := range wantReads {
+					if reads["routemap/"+id] != count {
+						t.Fatal("each selection was not independently authoritatively read")
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestFRRFreshCanonicalSelectionCardinality(t *testing.T) {
+	raw := map[string]json.RawMessage{"linkedRoutemapOut": json.RawMessage(`"a"`)}
+	for _, tc := range []struct {
+		name, count, member     string
+		missingCount, wantError bool
+	}{
+		{name: "canonical", count: "1", member: "a"},
+		{name: "noncanonical sibling", count: "1", member: "b", wantError: true},
+		{name: "missing count", member: "a", missingCount: true, wantError: true},
+		{name: "malformed count", count: "x", member: "a", wantError: true},
+		{name: "negative count", count: "-1", member: "a", wantError: true},
+		{name: "count mismatch", count: "2", member: "a", wantError: true},
+		{name: "empty member", count: "1", wantError: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			attrs := map[string]string{"linked_routemap_out.#": tc.count, "linked_routemap_out.0": tc.member}
+			if tc.missingCount {
+				delete(attrs, "linked_routemap_out.#")
+			}
+			if err := frrCanonicalReferences(attrs, raw); (err != nil) != tc.wantError {
+				t.Fatalf("error = %v, wantError = %t", err, tc.wantError)
+			}
+		})
+	}
+	if _, err := frrRawSelection(json.RawMessage(`{"":{"selected":"1"},"a":{"selected":"1"}}`)); err == nil {
+		t.Fatal("empty selected UUID accepted")
+	}
+}
+
+// This HTTP fixture checks observation wiring only, never live acceptance.
+func TestFRRManagedPolicyReferenceHTTPObservation(t *testing.T) {
+	reads := map[string]int{}
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reads[r.URL.Path]++
+		if r.Method != http.MethodGet {
+			t.Error("oracle attempted mutation")
+		}
+		switch r.URL.Path {
+		case "/api/quagga/bgp/get_peergroup/owner":
+			_, _ = fmt.Fprint(w, `{"peergroup":{"name":"m_pg","linkedRoutemapOut":{"a":{"selected":"1"},"b":{"selected":"0"}}}}`)
+		case "/api/quagga/bgp/get_routemap/a", "/api/quagga/bgp/get_routemap/b":
+			_, _ = fmt.Fprint(w, `{"routemap":{"name":"m_rm"}}`)
+		default:
+			t.Error("unexpected authoritative read")
+			http.NotFound(w, r)
+		}
+	}))
+	defer api.Close()
+	t.Setenv("OPNSENSE_URI", api.URL)
+	t.Setenv("OPNSENSE_API_KEY", "fixture")
+	t.Setenv("OPNSENSE_API_SECRET", "fixture")
+	attrs := map[string]string{"id": "owner", "linked_routemap_out.#": "1", "linked_routemap_out.0": "b"}
+	owner := &terraform.ResourceState{Primary: &terraform.InstanceState{ID: "owner", Attributes: attrs}}
+	if err := frrCheckManagedPolicyReference(t, "m", owner); err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range []string{"/api/quagga/bgp/get_peergroup/owner", "/api/quagga/bgp/get_routemap/a", "/api/quagga/bgp/get_routemap/b"} {
+		if reads[path] != 1 {
+			t.Fatal("oracle did not independently read owner and both selected UUIDs")
+		}
+	}
+	if attrs["linked_routemap_out.0"] != "b" {
+		t.Fatal("managed representation mutated")
+	}
+}
+
+func TestFRRFreshCanonicalRepresentationShape(t *testing.T) {
+	raw := map[string]json.RawMessage{"linkedRoutemapOut": json.RawMessage(`"a"`)}
+	for _, tc := range []struct {
+		name      string
+		attrs     map[string]string
+		wantError bool
+	}{
+		{name: "canonical scalar", attrs: map[string]string{"linked_routemap_out": "a"}},
+		{name: "canonical set", attrs: map[string]string{"linked_routemap_out.#": "1", "linked_routemap_out.0": "a"}},
+		{name: "conflicting mixed", attrs: map[string]string{"linked_routemap_out": "a", "linked_routemap_out.#": "1", "linked_routemap_out.0": "b"}, wantError: true},
+		{name: "matching mixed", attrs: map[string]string{"linked_routemap_out": "a", "linked_routemap_out.#": "1", "linked_routemap_out.0": "a"}, wantError: true},
+		{name: "malformed mixed count", attrs: map[string]string{"linked_routemap_out": "a", "linked_routemap_out.#": "x"}, wantError: true},
+		{name: "mixed uncounted member", attrs: map[string]string{"linked_routemap_out": "a", "linked_routemap_out.0": "b"}, wantError: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := frrCanonicalReferences(tc.attrs, raw); (err != nil) != tc.wantError {
+				t.Fatalf("error = %v, wantError = %t", err, tc.wantError)
+			}
+		})
+	}
+}
+
+func TestFRRImportedPrefixSelectionCardinality(t *testing.T) {
+	for _, tc := range []struct {
+		name, count             string
+		missingCount, wantError bool
+	}{
+		{name: "valid", count: "1"},
+		{name: "malformed", count: "x", wantError: true},
+		{name: "missing", missingCount: true, wantError: true},
+		{name: "mismatched", count: "2", wantError: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var prefixReads atomic.Int32
+			api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodGet {
+					t.Error("oracle attempted mutation")
+				}
+				switch r.URL.Path {
+				case "/api/quagga/bgp/get_neighbor/owner":
+					_, _ = fmt.Fprint(w, `{"neighbor":{"peergroup":"pg"}}`)
+				case "/api/quagga/bgp/get_prefixlist/prefix":
+					prefixReads.Add(1)
+					_, _ = fmt.Fprint(w, `{"prefixlist":{"name":"m_pl"}}`)
+				default:
+					t.Error("unexpected authoritative read")
+					http.NotFound(w, r)
+				}
+			}))
+			defer api.Close()
+			t.Setenv("OPNSENSE_URI", api.URL)
+			t.Setenv("OPNSENSE_API_KEY", "fixture")
+			t.Setenv("OPNSENSE_API_SECRET", "fixture")
+			attrs := map[string]string{"id": "owner", "peer_group": "pg", "linked_prefixlist_out.#": tc.count, "linked_prefixlist_out.0": "prefix"}
+			if tc.missingCount {
+				delete(attrs, "linked_prefixlist_out.#")
+			}
+			err := frrCheckImportedPolicy(t, "m", "opnsense_quagga_bgp_neighbor.peer")([]*terraform.InstanceState{{ID: "owner", Attributes: attrs}})
+			if (err != nil) != tc.wantError {
+				t.Fatalf("error = %v, wantError = %t", err, tc.wantError)
+			}
+			wantReads := int32(1)
+			if tc.wantError {
+				wantReads = 0
+			}
+			if prefixReads.Load() != wantReads {
+				t.Fatal("unexpected authoritative prefix-group read count")
+			}
+		})
 	}
 }

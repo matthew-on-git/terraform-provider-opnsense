@@ -63,3 +63,44 @@ Later drift/repair, firewall-toggle/restored-positive steps and the full final
 candidate remain unverified. Legacy appliance/OpenTofu execution and the numeric
 clear-interface design remain parent-story work. No production writes, merge,
 release or blanket advanced-neighbor session proof is claimed.
+
+## Fourth failed attempt and bounded managed-reference repair
+
+Attempt `matrix04`, at head `b0cada56890dd8afeb1d61c2372f03d12e738d1e`
+and frozen source digest
+`d027c2626e5fbd681be39152e2a68eff8959ae6a08d01c93206ae6d0a2299df7`,
+failed Step12/17: the managed peer-group was incorrectly checked using the strict
+fresh import/data-source canonical-selection oracle. Managed state can retain a
+configured sibling UUID when authoritative membership proves the same logical
+route-map group. The exact compared UUIDs were not retained in the reviewed
+bounded evidence, so this does not claim reversal changed the canonical sibling.
+
+The retained independent observation contained `permit30`, `deny5`, an active
+collector and no approved prefix in current routes. Failure preceded the mandatory
+withdrawal loop: that observation is not passing Step12 evidence. Parent reported
+seven-namespace Terraform deletion, unchanged frozen source and six-predicate
+fallback restoration. This remains a failed attempt, not full acceptance.
+
+The test-only repair now reads the same identified managed owner freshly, validates
+its configured flatmap cardinality and nonempty selection, decodes the raw
+selection strictly and independently resolves every selected UUID on both sides
+to the exact fixture route-map group. Missing owners, owner-ID mismatch, missing
+or empty selections, malformed counts, stale/unreadable members and wrong groups
+fail closed. Correct same-group single/multiple sibling representations pass.
+Strict canonical equality remains mandatory for genuinely fresh imports/lookups;
+no provider normalization, schema, configuration or lifecycle gate changed.
+
+Focused controls and the full affected quagga package suite passed with the race
+detector in pinned `ghcr.io/devrail-dev/dev-toolchain:1.12.24`, using actual
+`go1.26.10 linux/arm64`. Controls include managed same-group/different-canonical
+and exact-canonical positives, both-sided group/stale negatives, cardinality and
+owner identity failures, strict fresh canonical rejection/acceptance, HTTP fixture
+observation wiring, public-field parity and released lexical-rendering regressions.
+Fixtures and offline passing tests are not live appliance acceptance.
+
+A new frozen full17-step non-skipped run on a newly attested disposable target
+remains mandatory after bounded review and repository checks. Do not resume at
+Step12 or count prior partial observations as completed steps. All numeric-policy,
+current-prefix withdrawal/restored-positive, identity, authentication, actual
+Terraform deletion, exact restoration and zero-leftover requirements remain.
+Parent Story31.0h and the separately unverified platform/interface rows stay open.
