@@ -39,6 +39,7 @@ func (d *connectionDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 			"unique":       dsschema.StringAttribute{Computed: true, MarkdownDescription: "Connection uniqueness policy. Defaults to 'no'."},
 		},
 	}
+	addIPsecLookupAttributes(resp.Schema.Attributes, connectionAdvancedFields)
 }
 
 func (d *connectionDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -62,7 +63,7 @@ func (d *connectionDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	id := config.ID.ValueString()
 	result, err := opnsense.Get[ipsecConnectionAPIResponse](ctx, d.client, connectionReqOpts, id)
 	if err != nil {
-		resp.Diagnostics.AddError("Error reading IPsec connection", fmt.Sprintf("Could not read IPsec connection %s: %s", id, err))
+		resp.Diagnostics.AddError("Error reading IPsec connection", fmt.Sprintf("Could not read IPsec connection %s: %s", id, ipsecErrorMessage(err)))
 		return
 	}
 	config.fromAPI(ctx, result, id)

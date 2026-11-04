@@ -488,10 +488,10 @@
         "start_action"
       ],
       "field_evidence": {
-        "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "close/DPD actions, policy installation, request ID, SHA256-96, and rekey controls are absent locally",
+        "shared": "Pinned core 26.7.8 Swanctl.xml/ConnectionsController.php; existing connections-controller endpoints and UUID ownership; remote_addresses maps to remote_addrs, child audit names map to existing connection_id/local_ts/remote_ts/esp_proposals without changing their types.",
+        "baseline_only": "All audited advanced controls are implemented on the existing owner; live disposable lifecycle proof is still outstanding, so classification remains missing-buildable.",
         "local_only": "none material",
-        "lifecycle": "UUID-backed API create/read/update/delete with the domain reconfigure/apply action where required",
+        "lifecycle": "Offline HTTP-backed actual framework PlanResourceChange/ApplyResourceChange, import, lookup, omission, clears, drift, failure recovery and deletion tests; live lifecycle not executed (zero writes), guarded acceptance remains required.",
         "sensitive_write_only": "none on these rows; PSKs are owned by the separate sensitive ipsec_psk surface"
       },
       "source_refs": [
@@ -533,10 +533,10 @@
         "version"
       ],
       "field_evidence": {
-        "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "DPD, ports, MOBIKE, lifetimes, local addresses, pools, certificate-send, encapsulation, and keying controls are absent locally",
+        "shared": "Pinned core 26.7.8 Swanctl.xml/ConnectionsController.php; existing connections-controller endpoints and UUID ownership; remote_addresses maps to remote_addrs, child audit names map to existing connection_id/local_ts/remote_ts/esp_proposals without changing their types.",
+        "baseline_only": "All audited advanced controls are implemented on the existing owner; live disposable lifecycle proof is still outstanding, so classification remains missing-buildable.",
         "local_only": "none material",
-        "lifecycle": "UUID-backed API create/read/update/delete with the domain reconfigure/apply action where required",
+        "lifecycle": "Offline HTTP-backed actual framework PlanResourceChange/ApplyResourceChange, import, lookup, omission, clears, drift, failure recovery and deletion tests; live lifecycle not executed (zero writes), guarded acceptance remains required.",
         "sensitive_write_only": "none on these rows; PSKs are owned by the separate sensitive ipsec_psk surface"
       },
       "source_refs": [

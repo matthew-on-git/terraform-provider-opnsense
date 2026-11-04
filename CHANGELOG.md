@@ -2,7 +2,17 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.12.0 (Unreleased)
+## 0.13.0 (Unreleased)
+
+FEATURES:
+
+* Extend the existing IPsec connection/child resources and UUID lookups with all 21 audited advanced controls, omission-preserving imported updates, explicit false/blank/zero handling, strict policy reads, and durable failed-activation recovery. Preserve CSV spelling/order for equivalent membership and retain all child ESP proposal selections, including combined `trap|start` startup behavior.
+
+UPGRADE NOTES:
+
+* No resource renames or legacy public type changes. Advanced numbers remain decimal strings; omitted advanced values adopt/preserve appliance truth without provider defaults. `ike_lifetime` is overtime grace (`over_time`), not total IKE lifetime; child `rekey_time` cannot be blank. Authentication/PSK/key ownership remains separate. Offline protocol/race tests do not establish live lifecycle parity: isolated disposable acceptance is still outstanding. The new version heading triggers automatic tagging/release after merge and successful main CI; these pending capabilities are not yet released.
+
+## 0.12.0 (2026-11-04)
 
 FEATURES:
 

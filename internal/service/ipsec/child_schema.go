@@ -73,9 +73,10 @@ func (r *childResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Optional:            true,
 				Computed:            true,
 				Default:             stringdefault.StaticString("start"),
-				MarkdownDescription: "Action on startup: `none`, `trap`, `start`, or `route`. Defaults to `start`.",
-				Validators:          []validator.String{stringvalidator.OneOf("none", "trap", "start", "route")},
+				MarkdownDescription: "Action on startup: `none`, `trap`, `start`, `route`, or `trap|start`. Defaults to `start`.",
+				Validators:          []validator.String{stringvalidator.OneOf("none", "trap", "start", "route", "trap|start")},
 			},
 		},
 	}
+	addIPsecResourceAttributes(resp.Schema.Attributes, childAdvancedFields)
 }

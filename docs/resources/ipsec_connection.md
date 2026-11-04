@@ -2,18 +2,88 @@
 page_title: "opnsense_ipsec_connection Resource - opnsense"
 subcategory: "IPsec"
 description: |-
-  Manages a ipsec connection on OPNsense.
+  Manages an IPsec connection on OPNsense.
 ---
 # opnsense_ipsec_connection (Resource)
-Manages a ipsec connection on OPNsense.
+Manages an IPsec connection on OPNsense.
 ## Example Usage
 ```terraform
 resource "opnsense_ipsec_connection" "site2site" {
-  description  = "Site-to-site VPN"
-  remote_addrs = "203.0.113.1"
-  version      = "2"
+  description              = "Disabled advanced IPsec example"
+  enabled                  = false
+  remote_addrs             = "203.0.113.1"
+  local_addresses          = "192.0.2.1"
+  version                  = "2"
+  aggressive               = false
+  dpd_delay                = "0"
+  dpd_timeout              = "120"
+  ike_lifetime             = "30" # Overtime grace, NOT total IKE lifetime.
+  keying_tries             = "0"
+  reauthentication_time    = ""
+  rekey_time               = "3600"
+  local_port               = "" # Daemon port 500; literal "500" is invalid.
+  remote_port              = "4500"
+  mobike                   = false
+  send_certificate         = "never"
+  send_certificate_request = false
+  udp_encapsulation        = true
+  # ip_pools may reference existing appliance pool UUIDs (or built-in radius); omitted values survive import.
 }
 ```
+
+## Advanced policy (unreleased)
+
+This additive surface targets the released OPNsense **26.7.8** model. Existing
+UUID ownership, public names and string types remain unchanged. Numeric settings
+are decimal **strings** so blank and zero remain distinct; flags are booleans.
+Addresses, pools and proposals use comma-separated strings. Equivalent membership
+retains configured/prior CSV spelling and order to avoid textual drift. Selected-map
+GET responses expose **membership only**, not IKE/ESP proposal preference order.
+The prior read path also observed unordered selections; retaining CSV presentation
+is not proof of appliance preference-order fidelity. Child ESP proposals retain
+**all** selected members.
+
+`remote_addrs` remains the public name (the audit calls it `remote_addresses`).
+`local_addresses` maps to `local_addrs`, `ip_pools` to `pools`, `keying_tries` to
+`keyingtries`, `reauthentication_time` to `reauth_time`, `send_certificate` to
+`send_cert`, `send_certificate_request` to `send_certreq`, and
+`udp_encapsulation` to `encap`. Pool selections use pool UUIDs (or built-in `radius`), not their display labels. New `local_addresses` and `ip_pools` lists reject duplicate normalized members and empty members; use a whole empty string to clear. Address syntax remains appliance-validated.
+
+**`ike_lifetime` maps to `over_time`: it is overtime grace, NOT total IKE lifetime.**
+That field, DPD delay/timeout, reauthentication and rekey intervals accept blank
+or `"0"` through `"500000"`. `keying_tries` accepts blank or `"0"` through `"1000"`.
+Ports accept only `""` (daemon port 500) or `"4500"`, **not** `"500"`.
+`send_certificate` accepts `""`, `"ifasked"`, `"never"`, or `"always"`.
+
+All new controls are Optional+Computed, with **no provider-side static defaults**.
+Omitting an advanced argument preserves imported policy by omitting its wire key;
+explicit `false`, `"0"`, and permitted `""` values are intentional writes/clears.
+Unknown explicitly configured values fail before any mutation. Existing legacy
+attributes retain their types and defaults. Unowned `replay_window` and separate
+local/remote auth objects are not serialized.
+
+CRUD uses `/api/ipsec/connections/{add,get,set,del}_connection` with the
+`connection` envelope. Successful saves activate through
+`/api/ipsec/service/reconfigure`, which is **service-wide**, not object-scoped.
+Validation rejection never activates. A confirmed saved create keeps its UUID
+if activation/readback fails; pending failed activation is retried on subsequent
+resource refresh without repeating the object mutation. A malformed GET reports
+an error and retains prior state. Do not remove state to retry a known saved create.
+Deleting a connection may cascade to its auth/child objects on the appliance;
+delete independently managed children before their parent.
+
+Authentication, keys, certificates and PSKs remain on their separate owners;
+these models/lookups contain no credentials or key material. Offline HTTP-backed
+framework protocol tests are evidence of the contract, **not live appliance
+lifecycle proof**. Isolated live acceptance remains outstanding; see
+[the guarded proof procedure](../ipsec-advanced-acceptance.md).
+
+### Pinned public source
+
+- [Swanctl.xml](https://github.com/opnsense/core/blob/96978001a8343669154e4492172ce0a07dac7e4b/src/opnsense/mvc/app/models/OPNsense/IPsec/Swanctl.xml)
+- [ConnectionsController.php](https://github.com/opnsense/core/blob/96978001a8343669154e4492172ce0a07dac7e4b/src/opnsense/mvc/app/controllers/OPNsense/IPsec/Api/ConnectionsController.php)
+- [BaseField.php omission semantics](https://github.com/opnsense/core/blob/96978001a8343669154e4492172ce0a07dac7e4b/src/opnsense/mvc/app/models/OPNsense/Base/FieldTypes/BaseField.php#L810-L830)
+
 <!-- schema generated by tfplugindocs -->
 ## Schema
 
@@ -23,9 +93,24 @@ resource "opnsense_ipsec_connection" "site2site" {
 
 ### Optional
 
+- `aggressive` (Boolean) Enable aggressive IKEv1 mode. Omission preserves imported values; explicit false, zero and permitted empty strings are written.
+- `dpd_delay` (String) DPD delay in seconds; blank or 0..500000. Omission preserves imported values; explicit false, zero and permitted empty strings are written.
+- `dpd_timeout` (String) IKEv1 DPD timeout in seconds; blank or 0..500000. Omission preserves imported values; explicit false, zero and permitted empty strings are written.
 - `enabled` (Boolean) Whether this connection is enabled. Defaults to `true`.
+- `ike_lifetime` (String) Overtime grace in seconds, NOT total IKE lifetime; blank or 0..500000. Omission preserves imported values; explicit false, zero and permitted empty strings are written.
+- `ip_pools` (String) Comma-separated pool UUIDs (or the built-in radius pool). Omission preserves imported values; explicit false, zero and permitted empty strings are written.
+- `keying_tries` (String) Keying attempts; blank or 0..1000 (zero retries indefinitely). Omission preserves imported values; explicit false, zero and permitted empty strings are written.
+- `local_addresses` (String) Comma-separated local IKE addresses. Omission preserves imported values; explicit false, zero and permitted empty strings are written.
+- `local_port` (String) Blank uses daemon port 500; otherwise 4500. Omission preserves imported values; explicit false, zero and permitted empty strings are written.
+- `mobike` (Boolean) Enable MOBIKE. Omission preserves imported values; explicit false, zero and permitted empty strings are written.
 - `proposals` (String) IKE proposals. Defaults to `default`.
+- `reauthentication_time` (String) Reauthentication interval in seconds; blank or 0..500000. Omission preserves imported values; explicit false, zero and permitted empty strings are written.
+- `rekey_time` (String) IKE rekey interval in seconds; blank or 0..500000. Omission preserves imported values; explicit false, zero and permitted empty strings are written.
 - `remote_addrs` (String) Remote address(es) for the IPsec connection.
+- `remote_port` (String) Blank uses daemon port 500; otherwise 4500. Omission preserves imported values; explicit false, zero and permitted empty strings are written.
+- `send_certificate` (String) Certificate sending policy: blank, ifasked, never, always. Omission preserves imported values; explicit false, zero and permitted empty strings are written.
+- `send_certificate_request` (Boolean) Send certificate requests. Omission preserves imported values; explicit false, zero and permitted empty strings are written.
+- `udp_encapsulation` (Boolean) Force UDP encapsulation. Omission preserves imported values; explicit false, zero and permitted empty strings are written.
 - `unique` (String) Connection uniqueness policy. Defaults to `no`.
 - `version` (String) IKE version: `0` (IKEv1+IKEv2), `1` (IKEv1), or `2` (IKEv2). Defaults to `2`.
 
