@@ -272,3 +272,15 @@ list with exactly two entries. Ten guard/orchestration test methods passed; Ruff
 Shellcheck with source following and shfmt passed. Full fixture HCL validates
 offline against the actual built provider. No production/disposable appliance
 was mutated; no live or OpenTofu execution is claimed.
+
+### Later acceptance repair checkpoint (2026-11-04)
+
+This implementation spec remains historical. The parent story and live proof
+gate remain open. The [bounded live repair spec](spec-31-0f-live-acceptance-repair.md)
+owns the exact `26.7.8_2` runner pin and worktree/TLS harness repairs; it does
+not start a new capability workflow or enable keyless CA imports. Original
+`26.7.8` source review is not `_2` execution evidence. The actual signed `_2`
+package caused a preserved real exact-version rejection of the original runner;
+full non-skipped matrix and exact restoration are still pending parent execution.
+
+The later [real execution checkpoint](spec-31-0f-live-acceptance-repair.md#parent-real-execution-checkpoint-2026-11-04) supersedes that pending-live status: the full frozen matrix passed on actual 26.7.8_2 with zero owned leftovers and four exact restored hashes. Historical source/failed attempts remain distinct; broader firmware/OpenTofu and keyless provider gates remain open.

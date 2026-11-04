@@ -20,11 +20,13 @@ routine description edit as a generation trigger.
 
 ## Release-specific limitation
 
-The released OPNsense 26.7.8 CA controller requires one private-key PEM section
-even for certificate-only import. Keyless import and metadata updates of an
-existing keyless CA are rejected rather than generating a substitute key or
+The provider retains its original unpatched OPNsense 26.7.8 key requirement.
+The released 26.7.8_2 controller corrects that upstream condition, but keyless
+provider support has not been enabled. Keyless import and metadata updates of
+an existing keyless CA are rejected rather than generating a substitute key or
 using raw configuration writes. Import with a matching certificate and key is
-supported by the source contract; actual appliance proof remains separately gated.
+exercised by the 26.7.8_2 live matrix. Older firmware and OpenTofu execution
+are not established by that proof.
 
 ## Sensitive material
 

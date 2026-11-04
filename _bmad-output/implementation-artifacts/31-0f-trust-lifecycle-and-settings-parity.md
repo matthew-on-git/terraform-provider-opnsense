@@ -65,7 +65,7 @@ The full parent remains **in-progress**. Buildable scope includes CA root,
 intermediate, OCSP and matching-key import; certificate internal/local-only,
 CSR/sign/import/reissue/manual lifecycles; safe metadata updates, separate
 returned public/sensitive values and certificate lookup. OPNsense 26.7.8's
-certificate-only CA import defect remains an explicit release limitation.
+certificate-only CA import restriction remains a provider limitation. The later patched package fixes the upstream condition, but this provider capability has not been enabled.
 
 Disposable action/settings proof remains **unexecuted**: no newly reserved,
 identity-bound runtime has been established. The acceptance runner refuses to
@@ -77,8 +77,11 @@ implementation/evidence checkpoint, not full story completion or release proof.
 
 Run `test/scripts/run-story-31-0f-acceptance.sh` only with an external private
 `OPNSENSE_TRUST_RUNTIME` JSON file and ephemeral API environment. The wrapper
-uses the pinned toolchain and mounts only the repository and private runtime
-root. Required JSON fields are `owner` (fresh reservation UUID), `guest_uuid`,
+uses the pinned toolchain and mounts the repository, private runtime root and
+actual common Git metadata read-only at its absolute path (including isolated
+worktree references). An explicit `SSL_CERT_FILE` is forwarded only when its
+resolved file is inside the already-mounted private runtime root; no SSH keys
+are mounted and insecure TLS has no fallback. Required JSON fields are `owner` (fresh reservation UUID), `guest_uuid`,
 `endpoint` (verified HTTPS), `tls_sha256`, `source_sha256`, `guard`, `oracle`,
 `guard_sha256` and `oracle_sha256`. Helpers must be executable, digest-bound,
 not writable by others, and inside that private root. The source digest hashes
@@ -87,7 +90,7 @@ reviewed frozen candidate before building and after execution.
 
 Each helper receives `action`, private attempt directory and reservation owner.
 Every reply must affirm `ok`, `isolated`, `non_production`,
-`reservation_current`, exact core version `26.7.8`, and match owner, guest UUID,
+`reservation_current`, exact core version `26.7.8_2`, and match owner, guest UUID,
 endpoint and TLS fingerprint. The guard must establish actual VM identity,
 current reservation and endpoint/TLS binding from authoritative live evidence,
 not echo caller assertions. Helpers must never expose credentials publicly.
@@ -126,3 +129,72 @@ and destroys before exact restoration. These are executable test intentions,
 Before calling this complete, establish the runtime, execute this frozen path,
 retain successful no-change/import/action/restore receipts and fill any remaining
 matrix gaps (including older-firmware/OpenTofu boundaries) honestly.
+
+### Bounded live acceptance repair (2026-11-04)
+
+The original official-package attempt reached a real disposable guest and
+failed the frozen runner's exact `26.7.8` gate because the authentic signed
+package is `26.7.8_2`. Earlier statements above about unavailable reservation
+and zero appliance mutations describe the original continuation checkpoint,
+not current discovery or provisioning. The failure remains private evidence;
+it is not live matrix success. See the [source distinction](31-0f-trust-source-contract.md#actual-acceptance-package-distinction-2026-11-04).
+
+The corrected runner requires exactly `_2` and preserves all owner, guest,
+endpoint, TLS, digest, isolation, cancellation and recovery gates. No provider
+lifecycle algorithm or keyless import support changes in this repair. Live
+matrix execution remains incomplete pending the parent's actual run, independent
+cleanup/zero-leftover oracle and four-hash exact restoration receipts. Offline
+synthetic helpers validate orchestration only and never establish appliance proof.
+
+
+### Executed live matrix supersedes discovery blocker (2026-11-04)
+
+The bounded repair's real frozen runner passed on a newly reserved isolated
+OPNsense 26.7.8_2 guest. The executed source digest is
+`91aebd345968990c4b8b84ae3a80eede0b8a3f00d1ff003d07a42dfd67eee26d`;
+see the [repair execution checkpoint](spec-31-0f-live-acceptance-repair.md#parent-real-execution-checkpoint-2026-11-04)
+for actual action/settings/adoption/destroy/restoration coverage and failed-run
+history. The previous unavailable-lab/live-unexecuted statements are historical,
+not a current infrastructure blocker. Nine owned objects were deleted before
+rollback, singleton deletion was state-only, and all four baseline hashes
+restored exactly. Keyless CA provider support and broader firmware/OpenTofu
+validation remain deferred; this does not mark the whole parent complete,
+merge the draft PR or establish a published release.
+
+### Current post-review proof and reproducible code binding (2026-11-04)
+
+The post-review read-only harness rerun passed the complete non-skipped matrix.
+The [sanitized proof](31-0f-live-proof.json) records the exact tested working-tree
+digest, executable digest, authentic firmware, Terraform/toolchain, coverage,
+request counters, baseline/restoration hashes and retirement result. The newly
+reserved disposable guest, disk, owner marker and owned listeners were retired
+after restoration. Private raw baselines and failed attempts remain retained.
+
+Evidence-only documentation changes make the final whole-tree digest different.
+Verify final executable equality from the repository root with this inventory
+procedure (no private files or credentials are read):
+
+```python
+import hashlib
+import subprocess
+from pathlib import Path
+
+names = subprocess.check_output(
+    ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"]
+).split(b"\0")
+digest = hashlib.sha256()
+for name in sorted(set(names) - {b""}):
+    text = name.decode()
+    path = Path(text)
+    if path.is_file() and (
+        text.endswith(".go") or text in ("go.mod", "go.sum")
+        or text.startswith("test/scripts/")
+    ):
+        digest.update(name + b"\0" + path.read_bytes() + b"\0")
+print(digest.hexdigest())
+```
+
+Expected executable SHA256:
+`66bbfa18dccf14768d733a120e4a7a211efcb6943e8102adf1b6f9e104d4122b`.
+This binds the final public executable bytes to the actual tested candidate
+without publishing private guest identity, raw state or keys.

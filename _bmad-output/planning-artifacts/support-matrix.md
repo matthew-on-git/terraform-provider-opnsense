@@ -13,7 +13,7 @@ inputs:
 
 # Provider Support Matrix
 
-This matrix is the current source of truth for release positioning. This 2026-11-03 snapshot reconciles registered implementation, generated documentation, merged changes and published releases through v0.12.0; the current Trust continuation is pending review and live proof. Pending changes and appliance evidence are separate gates; historical digest-bound evidence is not re-attested by this documentation refresh.
+This matrix is the current source of truth for release positioning. This 2026-11-03 snapshot reconciles registered implementation, generated documentation, merged changes and published releases through v0.12.0; the Trust continuation remains a draft, with a non-skipped 26.7.8_2 live matrix now passed and broader capability/compatibility gates still open. Pending changes and appliance evidence are separate gates; historical digest-bound evidence is not re-attested by this documentation refresh.
 
 ## Summary
 
@@ -42,7 +42,7 @@ Data-source parity is tracked in [data-source-parity-plan.md](data-source-parity
 | IPv6 identity association / legacy track-interface assignments | v0.11.0 | [PR #77](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/77) adds adoption/updates of existing `idassoc6`/`track6` assignments and six delegation fields. Independent source/race/fixture review passed; live import/no-change-plan evidence remains contributor-reported, not independent activation/packet proof. See the detailed scope below. |
 | NAT port-forward category persistence | v0.10.1 | [PR #75](https://github.com/matthew-on-git/terraform-provider-opnsense/pull/75) resolves UUIDs to names for persisted writes while retaining UUID state; adds category-read permission. Regression, race and protocol/fixture coverage pass; no independent live-appliance validation was performed for this patch. |
 
-Published tags v0.9.0, v0.10.0, v0.10.1 and v0.11.0 resolve to their respective merge commits; GitHub release assets and Terraform Registry versions were checked. Published v0.12.0 adds the six-field Trust settings owner and lookup (113 resources/99 data sources). Its tag matches PR79 merge `4bd107fc769586d5904919c8e69562897a87e84d`, all16expected release assets are present, and Terraform Registry lists0.12.0; OpenTofu Registry did not list it at the checked checkpoint. The current continuation source tree adds Trust certificate lookup (113resources/100data sources,15resource-matching gaps); it is not yet published, and the complete Trust live action/settings matrix remains unexecuted.
+Published tags v0.9.0, v0.10.0, v0.10.1 and v0.11.0 resolve to their respective merge commits; GitHub release assets and Terraform Registry versions were checked. Published v0.12.0 adds the six-field Trust settings owner and lookup (113 resources/99 data sources). Its tag matches PR79 merge `4bd107fc769586d5904919c8e69562897a87e84d`, all16expected release assets are present, and Terraform Registry lists0.12.0; OpenTofu Registry did not list it at the checked checkpoint. The current continuation source tree adds Trust certificate lookup (113resources/100data sources,15resource-matching gaps); it is not yet published, and the complete Trust action/settings/adoption/destroy/restoration matrix passed on authentic 26.7.8_2; see the [digest-bound sanitized proof](../implementation-artifacts/31-0f-live-proof.json). Keyless provider support and broader firmware/OpenTofu proof remain open.
 
 ## IPv6 delegation: released scope and evidence
 

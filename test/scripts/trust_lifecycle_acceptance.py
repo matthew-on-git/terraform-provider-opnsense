@@ -123,7 +123,9 @@ def helper(runtime, kind, action, directory):
     require(value.get("isolated") is True, "isolation attestation missing")
     require(value.get("non_production") is True, "non-production attestation missing")
     require(value.get("reservation_current") is True, "reservation expired")
-    require(value.get("core_version") == "26.7.8", "exact source firmware required")
+    require(
+        value.get("core_version") == "26.7.8_2", "exact acceptance firmware required"
+    )
     (directory / (action + ".json")).write_text(json.dumps(value))
     return value
 
@@ -228,7 +230,9 @@ provider "opnsense" {}
     text += """
 data "opnsense_trust_cert" "observed" { id = opnsense_trust_cert.internal.id }
 data "opnsense_trust_ca" "observed" { id = opnsense_trust_ca.root.id }
-data "opnsense_trust_settings" "observed" {}
+data "opnsense_trust_settings" "observed" {
+  depends_on = [opnsense_trust_settings.observed]
+}
 resource "opnsense_trust_settings" "observed" {}
 """
     return text
@@ -331,6 +335,11 @@ def verify_adoption(runtime, directory, observed):
 
 def exercise_settings(runtime, directory, config, observed, apply, baseline):
     initial = observed["opnsense_trust_settings.observed"]
+    choice = baseline.get("cipher_choice")
+    require(
+        isinstance(choice, str) and choice and "," not in choice,
+        "oracle must supply an authoritative available CipherString choice",
+    )
     original = config.read_text()
     marker = 'resource "opnsense_trust_settings" "observed" {}'
     require(marker in original, "settings fixture marker missing")
@@ -374,19 +383,42 @@ def exercise_settings(runtime, directory, config, observed, apply, baseline):
         "install_crls",
         "fetch_crls",
         "enable_legacy_sect",
-        "enable_config_constraints",
     ):
         set_intent({field: True}, field + "-true")
         set_intent({field: False}, field + "-false")
         set_intent({field: initial[field]}, field + "-restore")
-    choice = baseline.get("cipher_choice")
-    require(
-        isinstance(choice, str) and choice and "," not in choice,
-        "oracle must supply an authoritative available CipherString choice",
+    # Released General.php requires at least one nonempty constraint when
+    # enabling constraints. Preserve the actual supported oracle selection;
+    # this is a fixture prerequisite, not a relaxation of firmware validation.
+    set_intent(
+        {"enable_config_constraints": True, "cipher_string": [choice]},
+        "enable_config_constraints-true",
+    )
+    set_intent(
+        {"enable_config_constraints": False, "cipher_string": [choice]},
+        "enable_config_constraints-false",
+    )
+    set_intent(
+        {
+            "enable_config_constraints": initial["enable_config_constraints"],
+            "cipher_string": initial["cipher_string"],
+        },
+        "enable_config_constraints-restore",
     )
     set_intent({"cipher_string": [choice]}, "cipher-selection")
-    set_intent({"cipher_string": []}, "cipher-empty-clear")
-    set_intent({"cipher_string": initial["cipher_string"]}, "cipher-restore")
+    # Clearing the last configured constraint must disable enforcement in the
+    # same update, including when the original baseline had it enabled.
+    set_intent(
+        {"enable_config_constraints": False, "cipher_string": []},
+        "cipher-empty-clear",
+    )
+    set_intent(
+        {
+            "enable_config_constraints": initial["enable_config_constraints"],
+            "cipher_string": initial["cipher_string"],
+        },
+        "cipher-restore",
+    )
     config.write_text(original)
     apply("settings-omitted-no-change")
 
