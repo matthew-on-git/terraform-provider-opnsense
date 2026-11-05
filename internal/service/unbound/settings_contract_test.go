@@ -98,6 +98,11 @@ func TestGeneralStrictNumericAndCacheDecoding(t *testing.T) {
 		{"numeric overflow", "serveexpiredttl", "100000000000000", true},
 		{"numeric malformed", "serveexpiredttl", "12ms", true},
 		{"cache valid uppercase", "msgcachesize", "4M", false},
+		{"message cache empty default", "msgcachesize", "", false},
+		{"rrset cache empty default", "rrsetcachesize", "", false},
+		{"rrset cache valid", "rrsetcachesize", "8m", false},
+		{"message cache null", "msgcachesize", json.RawMessage("null"), true},
+		{"rrset cache null", "rrsetcachesize", json.RawMessage("null"), true},
 		{"cache invalid suffix", "msgcachesize", "4mb", true},
 		{"cache invalid sign", "msgcachesize", "-4m", true},
 	}
