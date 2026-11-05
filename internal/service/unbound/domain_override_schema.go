@@ -37,7 +37,7 @@ func (r *domainOverrideResource) Schema(_ context.Context, _ resource.SchemaRequ
 			},
 			"domain": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "Domain to override (e.g., `example.com`).",
+				MarkdownDescription: "Domain to override (e.g., `example.com`). Use an empty string for global forwarding.",
 			},
 			"type": schema.StringAttribute{
 				Optional:            true,

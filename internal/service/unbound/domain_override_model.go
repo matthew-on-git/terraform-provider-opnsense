@@ -50,6 +50,14 @@ func (response *domainOverrideAPIResponse) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
 	}
+	domain, present := raw["domain"]
+	if !present || string(domain) == "null" {
+		return fmt.Errorf("missing forward domain")
+	}
+	var domainValue string
+	if err := json.Unmarshal(domain, &domainValue); err != nil {
+		return fmt.Errorf("invalid forward domain: %w", err)
+	}
 	type alias domainOverrideAPIResponse
 	var decoded alias
 	if value, ok := raw["type"]; !ok {
@@ -103,9 +111,6 @@ func (m *DomainOverrideResourceModel) toAPI(_ context.Context) *domainOverrideAP
 func (m *DomainOverrideResourceModel) fromAPI(_ context.Context, a *domainOverrideAPIResponse, uuid string) error {
 	if uuid == "" {
 		return fmt.Errorf("forward UUID is empty")
-	}
-	if a.Domain == "" {
-		return fmt.Errorf("forward domain is empty")
 	}
 	if a.Server == "" {
 		return fmt.Errorf("forward server is empty")
