@@ -1150,7 +1150,7 @@
       ],
       "field_evidence": {
         "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "No remaining buildable neighbor field gaps in advanced candidate; release and required live lifecycle proof remain pending.",
+        "baseline_only": "No remaining buildable neighbor field additions in this advanced candidate; current 26.7.8_2/os-frr 2.0_4 guarded live lifecycle passed. Adopted numeric-clear design and complete older-plugin/appliance/OpenTofu contract proof remain pending; no full-row parity or release is inferred.",
         "local_only": "none material",
         "lifecycle": "UUID-backed API create/read/update/delete with the domain reconfigure/apply action where required",
         "sensitive_write_only": "Optional Sensitive config-owned password input; never remote-adopted or exposed in lookup. Sensitive state is not encryption; remote secret drift cannot be proven."
@@ -1213,7 +1213,7 @@
       ],
       "field_evidence": {
         "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "AS-path/community/prefix-list set references and route-map ID semantics are not represented at equivalent depth locally",
+        "baseline_only": "Existing owners represent AS-path/community/prefix relationships and numeric sequence; current 26.7.8_2/os-frr 2.0_4 grouped policy-order, withdrawal and restored-positive controls passed. Complete row-level contract/older-plugin/appliance/OpenTofu proof remains pending; no duplicate policy owner is required.",
         "local_only": "none material",
         "lifecycle": "UUID-backed API create/read/update/delete with the domain reconfigure/apply action where required",
         "sensitive_write_only": "none"
@@ -2660,7 +2660,7 @@
       ],
       "field_evidence": {
         "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "BFD, authentication, connect timer, default route, multihop, route-reflector, weight, connected-check, and next-hop-self-all controls are absent locally",
+        "baseline_only": "All 19 public advanced neighbor fields are represented locally and checked against current-appliance lookup state; authentication is intentionally config-owned and never exposed by lookup. Complete older-plugin/appliance/OpenTofu contract proof remains pending.",
         "local_only": "none material",
         "lifecycle": "read-only API lookup; operational interface rows read live state rather than durable configuration",
         "sensitive_write_only": "none"
@@ -2723,7 +2723,7 @@
       ],
       "field_evidence": {
         "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "AS-path/community/prefix-list set references and route-map ID semantics are not represented at equivalent depth locally",
+        "baseline_only": "Existing owners represent AS-path/community/prefix relationships and numeric sequence; current 26.7.8_2/os-frr 2.0_4 grouped policy-order, withdrawal and restored-positive controls passed. Complete row-level contract/older-plugin/appliance/OpenTofu proof remains pending; no duplicate policy owner is required.",
         "local_only": "none material",
         "lifecycle": "read-only API lookup; operational interface rows read live state rather than durable configuration",
         "sensitive_write_only": "none"

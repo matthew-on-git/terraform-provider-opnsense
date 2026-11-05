@@ -333,3 +333,15 @@ and disposal, and a source-backed investigation of recurrent metadata stalls;
 do not resurrect retired targets, weaken discovery, skip final gates or treat
 another readiness check as a proven cure. Legacy appliance/OpenTofu execution
 and numeric-clear interface design remain separate open parent requirements.
+
+## Sequential merge acceptance — complete guarded PASS
+
+The fresh frozen candidate `d80cad813194c9ea84666472ba077a3f312f85e7` passed the complete 17-step matrix on OPNsense 26.7.8_2 / os-frr 2.0_4 / bgpd 10.7.1. Go PASS took 486.49s; the public wrapper and bounded parent supervisor both exited 0. Terraform deletion left all seven namespaces empty; independent immediate/final inventories agree. Original configuration, generated FRR, effective/rendered PF, routes and authentication-file presence/content restore exactly. Final source/runtime digests, secret scan, marker gates and host/container quiescence pass. Exact-owned guest/disk/marker/collector/oracle/tunnel/listeners were retired and independently verified absent.
+
+Machine-readable sanitized receipt: [31-0h-advanced-live-proof.json](31-0h-advanced-live-proof.json). Tested source SHA256: `118a9579f22bbfaa509ee6c45964f778f00910de4a8007841f82bd490052adbd`. Final evidence-only metadata may differ from that candidate; executable/test/runner bytes must remain identical and final-head CI is separate. Earlier failed, interrupted and Go-only runs above remain failures, not superseded retroactively.
+
+The isolated network deliberately denies arbitrary outbound traffic. Dropped DNS caused fresh setup-only firmware discovery timeouts; pkg fetch-bound trials and resolver-option trials did not establish readiness and remain retained as failures. Original pkg configuration was restored byte-for-byte. Configuring the existing resolver to explicitly REFUSE external DNS produced actual RCODE5/zero-answer replies and allowed the unchanged firmware API to return true installed-package metadata in 0.198s; three serial requests passed before acceptance. This is an explicit offline-lab network policy, not a mocked firmware endpoint, catalogue/version substitution, larger provider deadline or diagnosis of the historical 99%-CPU incident.
+
+A first provisioning restoration changed effective PF order only; original snapshots and that failed receipt remain retained. A full canonical post-activation baseline was captured before Terraform execution/freeze, and the second exact rehearsal passed all seven predicates. Frozen-baseline rewrite rejection and nine offline oracle counterexamples protect pre-write seals, successful probes and authentication-file presence. No hash was normalized or predicate dropped.
+
+This proves bounded current-appliance lifecycle/generated/policy/collector behavior. It does not close parent 31.0h: numeric-clear design, authentic older-plugin/appliance proof, OpenTofu execution, advanced authenticated sessions and operational IPv6 traffic remain outside this evidence. PF reload and disabled-template sync remain explicit lab operations. No production appliance was modified.
