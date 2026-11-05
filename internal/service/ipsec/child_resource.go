@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
@@ -22,13 +23,16 @@ var (
 
 // childReqOpts configures the OPNsense API endpoints for IPsec child SAs.
 var childReqOpts = opnsense.ReqOpts{
-	AddEndpoint:         "/api/ipsec/connections/add_child",
-	GetEndpoint:         "/api/ipsec/connections/get_child",
-	UpdateEndpoint:      "/api/ipsec/connections/set_child",
-	DeleteEndpoint:      "/api/ipsec/connections/del_child",
-	SearchEndpoint:      "/api/ipsec/connections/search_child",
-	ReconfigureEndpoint: "/api/ipsec/service/reconfigure",
-	Monad:               "child",
+	AddEndpoint:                 "/api/ipsec/connections/add_child",
+	GetEndpoint:                 "/api/ipsec/connections/get_child",
+	UpdateEndpoint:              "/api/ipsec/connections/set_child",
+	DeleteEndpoint:              "/api/ipsec/connections/del_child",
+	SearchEndpoint:              "/api/ipsec/connections/search_child",
+	ReconfigureEndpoint:         "/api/ipsec/service/reconfigure",
+	Monad:                       "child",
+	StrictMissingObjectResponse: true,
+	StrictReconfigureResponse:   true,
+	StrictDeleteResponse:        true,
 }
 
 // childResource implements the opnsense_ipsec_child resource.
@@ -69,34 +73,49 @@ func (r *childResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
-	apiReq := plan.toAPI(ctx)
+	apiReq := configuredIPsecRequest(ctx, req.Config, plan.toAPI(ctx), childAdvancedFields, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	uuid, err := opnsense.Add(ctx, r.client, childReqOpts, apiReq)
+	markIPsecActivation(ctx, resp.Private, uuid, err, &resp.Diagnostics)
+	if uuid != "" {
+		plan.ID = types.StringValue(uuid)
+		plan.clearUnknownAdvanced()
+		resp.Diagnostics.Append(resp.State.Set(context.WithoutCancel(ctx), &plan)...)
+	}
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error creating IPsec child SA",
-			fmt.Sprintf("Could not create IPsec child SA: %s", err),
-		)
+		if uuid != "" {
+			// A confirmed saved UUID must remain untainted in Terraform Core.
+			// The private marker retries activation, never the saved add.
+			resp.Diagnostics.AddWarning("Saved IPsec object requires activation", ipsecErrorMessage(err))
+		} else {
+			resp.Diagnostics.AddError("Error creating IPsec child SA", ipsecErrorMessage(err))
+		}
 		return
 	}
 
 	result, err := opnsense.Get[ipsecChildAPIResponse](ctx, r.client, childReqOpts, uuid)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error reading IPsec child SA after create",
-			fmt.Sprintf("Created child SA %s but could not read it back: %s", uuid, err),
+		resp.Diagnostics.AddWarning(
+			"Saved IPsec child SA requires refresh",
+			fmt.Sprintf("Created child SA %s but could not read it back: %s", uuid, ipsecErrorMessage(err)),
 		)
 		return
 	}
 
 	plan.fromAPI(ctx, result, uuid)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(resp.State.Set(context.WithoutCancel(ctx), &plan)...)
 }
 
 // Read refreshes the Terraform state from the OPNsense API.
 func (r *childResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state ChildResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if !resp.Diagnostics.HasError() {
+		recoverIPsecActivation(ctx, resp.Private, state.ID.ValueString(), r.client, childReqOpts, &resp.Diagnostics)
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -110,7 +129,7 @@ func (r *childResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		}
 		resp.Diagnostics.AddError(
 			"Error reading IPsec child SA",
-			fmt.Sprintf("Could not read IPsec child SA %s: %s", state.ID.ValueString(), err),
+			fmt.Sprintf("Could not read IPsec child SA %s: %s", state.ID.ValueString(), ipsecErrorMessage(err)),
 		)
 		return
 	}
@@ -133,14 +152,22 @@ func (r *childResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-	apiReq := plan.toAPI(ctx)
+	apiReq := configuredIPsecRequest(ctx, req.Config, plan.toAPI(ctx), childAdvancedFields, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	recoverIPsecActivation(ctx, resp.Private, state.ID.ValueString(), r.client, childReqOpts, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	id := state.ID.ValueString()
 
 	err := opnsense.Update(ctx, r.client, childReqOpts, apiReq, id)
+	markIPsecActivation(ctx, resp.Private, id, err, &resp.Diagnostics)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating IPsec child SA",
-			fmt.Sprintf("Could not update IPsec child SA %s: %s", id, err),
+			fmt.Sprintf("Could not update IPsec child SA %s: %s", id, ipsecErrorMessage(err)),
 		)
 		return
 	}
@@ -149,13 +176,13 @@ func (r *childResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading IPsec child SA after update",
-			fmt.Sprintf("Updated child SA %s but could not read it back: %s", id, err),
+			fmt.Sprintf("Updated child SA %s but could not read it back: %s", id, ipsecErrorMessage(err)),
 		)
 		return
 	}
 
 	plan.fromAPI(ctx, result, id)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(resp.State.Set(context.WithoutCancel(ctx), &plan)...)
 }
 
 // Delete removes an IPsec child SA from the OPNsense API.
@@ -167,6 +194,12 @@ func (r *childResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	}
 
 	err := opnsense.Delete(ctx, r.client, childReqOpts, state.ID.ValueString())
+	// Deletion supersedes the saved create/update. Its activation applies the
+	// final deleted state; never replay the superseded activation first.
+	if err == nil && resp.Private != nil {
+		resp.Diagnostics.Append(resp.Private.SetKey(context.WithoutCancel(ctx), ipsecActivationKey, nil)...)
+	}
+	markIPsecActivation(ctx, resp.Private, state.ID.ValueString(), err, &resp.Diagnostics)
 	if err != nil {
 		var notFoundErr *opnsense.NotFoundError
 		if errors.As(err, &notFoundErr) {
@@ -174,7 +207,7 @@ func (r *childResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		}
 		resp.Diagnostics.AddError(
 			"Error deleting IPsec child SA",
-			fmt.Sprintf("Could not delete IPsec child SA %s: %s", state.ID.ValueString(), err),
+			fmt.Sprintf("Could not delete IPsec child SA %s: %s", state.ID.ValueString(), ipsecErrorMessage(err)),
 		)
 	}
 }

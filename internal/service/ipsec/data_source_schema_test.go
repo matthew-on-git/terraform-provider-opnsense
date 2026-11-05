@@ -52,7 +52,7 @@ func TestConnectionDataSource_read(t *testing.T) {
 		if r.Method != http.MethodGet || r.URL.Path != connectionReqOpts.GetEndpoint+"/"+id {
 			t.Fatalf("unexpected request %s %s", r.Method, r.URL.Path)
 		}
-		_, _ = w.Write([]byte(`{"connection":{"enabled":"1","description":"site tunnel","remote_addrs":{"203.0.113.10":{"selected":1}},"version":[{"selected":0},{"selected":0},{"selected":1}],"proposals":{"aes256-sha256-modp2048":{"selected":1}},"unique":{"replace":{"selected":1}}}}`))
+		_, _ = w.Write([]byte(`{"connection":{"aggressive":"0","dpd_delay":"","dpd_timeout":"","over_time":"","pools":[],"keyingtries":"","local_addrs":[],"local_port":"","mobike":"1","reauth_time":"","rekey_time":"","remote_port":"","send_cert":"","send_certreq":"1","encap":"0","enabled":"1","description":"site tunnel","remote_addrs":{"203.0.113.10":{"selected":1}},"version":[{"selected":0},{"selected":0},{"selected":1}],"proposals":{"aes256-sha256-modp2048":{"selected":1}},"unique":{"replace":{"selected":1}}}}`))
 	}))
 	t.Cleanup(server.Close)
 

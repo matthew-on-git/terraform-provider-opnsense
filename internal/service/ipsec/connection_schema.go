@@ -65,4 +65,5 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			},
 		},
 	}
+	addIPsecResourceAttributes(resp.Schema.Attributes, connectionAdvancedFields)
 }

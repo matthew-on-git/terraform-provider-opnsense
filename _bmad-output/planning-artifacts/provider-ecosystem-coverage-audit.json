@@ -487,10 +487,10 @@
         "start_action"
       ],
       "field_evidence": {
-        "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "close/DPD actions, policy installation, request ID, SHA256-96, and rekey controls are absent locally",
+        "shared": "Pinned core 26.7.8 Swanctl.xml/ConnectionsController.php; existing connections-controller endpoints and UUID ownership; remote_addresses maps to remote_addrs, child audit names map to existing connection_id/local_ts/remote_ts/esp_proposals without changing their types.",
+        "baseline_only": "All 21 audited advanced controls are implemented and guarded-live verified on 26.7.8_2. Classification remains missing-buildable for explicitly deferred inherited legacy omission/read-completeness and unobservable proposal preference-order limitations, not for an unexecuted advanced lifecycle.",
         "local_only": "none material",
-        "lifecycle": "UUID-backed API create/read/update/delete with the domain reconfigure/apply action where required",
+        "lifecycle": "Offline protocol/race/Core controls and full guarded 26.7.8_2 disabled-object lifecycle/activation PASS at c03b2e0: persistent imports, all21lookups, omission/no-change, drift/repair, clears, Terraform deletion, zero leftovers, exact raw restoration and retirement. No negotiated IKE/traffic, older-firmware or OpenTofu execution claim. See implementation-artifacts/31-0g-live-proof.json.",
         "sensitive_write_only": "none on these rows; PSKs are owned by the separate sensitive ipsec_psk surface"
       },
       "source_refs": [
@@ -532,10 +532,10 @@
         "version"
       ],
       "field_evidence": {
-        "shared": "same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema",
-        "baseline_only": "DPD, ports, MOBIKE, lifetimes, local addresses, pools, certificate-send, encapsulation, and keying controls are absent locally",
+        "shared": "Pinned core 26.7.8 Swanctl.xml/ConnectionsController.php; existing connections-controller endpoints and UUID ownership; remote_addresses maps to remote_addrs, child audit names map to existing connection_id/local_ts/remote_ts/esp_proposals without changing their types.",
+        "baseline_only": "All 21 audited advanced controls are implemented and guarded-live verified on 26.7.8_2. Classification remains missing-buildable for explicitly deferred inherited legacy omission/read-completeness and unobservable proposal preference-order limitations, not for an unexecuted advanced lifecycle.",
         "local_only": "none material",
-        "lifecycle": "UUID-backed API create/read/update/delete with the domain reconfigure/apply action where required",
+        "lifecycle": "Offline protocol/race/Core controls and full guarded 26.7.8_2 disabled-object lifecycle/activation PASS at c03b2e0: persistent imports, all21lookups, omission/no-change, drift/repair, clears, Terraform deletion, zero leftovers, exact raw restoration and retirement. No negotiated IKE/traffic, older-firmware or OpenTofu execution claim. See implementation-artifacts/31-0g-live-proof.json.",
         "sensitive_write_only": "none on these rows; PSKs are owned by the separate sensitive ipsec_psk surface"
       },
       "source_refs": [

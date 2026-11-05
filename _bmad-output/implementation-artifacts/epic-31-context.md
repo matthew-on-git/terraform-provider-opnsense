@@ -60,3 +60,14 @@ Make the provider complete enough to be the default choice for an appliance, rep
 - Finish Trust lifecycle parity before advanced IPsec and remaining FRR/BGP parity, then live-interface lookups and retry settings. Trust settings shipped as a separate increment, not completion of CA/certificate lifecycle or disposable proof. Released FRR 2.0 compatibility is not the remaining advanced parity work.
 - Gateway groups, generic Kea option CRUD, and Kea DDNS settings have shipped. Ordered option linkage is separate research, not a reason to rebuild those surfaces.
 - Complete positioning, migration guidance, and adoption examples after parity, carrying explicit lookup exceptions forward. Release-credibility work follows separately; System-general remains upstream-blocked, while HASync model shape and PPPoE semantics remain research rather than invented provider resources.
+
+
+## Sequential release integration — 2026-11-04
+
+Supported Trust lifecycle/read work shipped in v0.14.0; its parent remains open
+for deferred keyless and compatibility boundaries. Retry controls shipped in
+v0.13.0. Advanced IPsec31.0g is now the active increment, targeting v0.15.0;
+its current21-control protocol evidence does not establish live activation.
+Keep remaining FRR/BGP31.0h after IPsec, then interface lookups and independent
+API-gated/adoption/readiness stories. Do not reimplement released increments or
+claim an entire parent complete from a bounded PR.

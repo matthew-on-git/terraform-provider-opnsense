@@ -13,4 +13,40 @@ Look up an existing IPsec child on OPNsense. Use this data source to read attrib
 
 {{tffile "examples/data-sources/opnsense_ipsec_child/data-source.tf"}}
 
+
+## Advanced policy (unreleased)
+
+This additive surface targets the released OPNsense **26.7.8** model. Existing
+UUID ownership, public names and string types remain unchanged. Numeric settings
+are decimal **strings** so blank and zero remain distinct; flags are booleans.
+Addresses, pools and proposals use comma-separated strings. Equivalent membership
+retains configured/prior CSV spelling and order to avoid textual drift. Selected-map
+GET responses expose **membership only**, not IKE/ESP proposal preference order.
+The prior read path also observed unordered selections; retaining CSV presentation
+is not proof of appliance preference-order fidelity. Child ESP proposals retain
+**all** selected members.
+
+`install_policies` maps to `policies`, and `request_id` maps to `reqid`.
+`request_id` accepts blank or `"1"` through `"65535"`. `rekey_time` accepts
+`"0"` through `"500000"` and **cannot be blank**; on creation, omission uses the
+server default `"3600"`. `close_action` accepts `none`, `trap`, or `start`;
+`dpd_action` accepts `clear`, `trap`, or `start`. Existing `start_action` also
+accepts the source model's combined `trap|start` option.
+
+Every advanced result is computed from authoritative GET data. Lookups never
+write or reconfigure, including when a managed resource has pending activation.
+Malformed policy responses fail instead of silently reporting empty settings.
+
+Authentication, keys, certificates and PSKs remain on their separate owners;
+these models/lookups contain no credentials or key material. Offline HTTP-backed
+framework protocol tests are evidence of the contract, **not live appliance
+lifecycle proof**. Isolated live acceptance remains outstanding; see
+[the guarded proof procedure](../ipsec-advanced-acceptance.md).
+
+### Pinned public source
+
+- [Swanctl.xml](https://github.com/opnsense/core/blob/96978001a8343669154e4492172ce0a07dac7e4b/src/opnsense/mvc/app/models/OPNsense/IPsec/Swanctl.xml)
+- [ConnectionsController.php](https://github.com/opnsense/core/blob/96978001a8343669154e4492172ce0a07dac7e4b/src/opnsense/mvc/app/controllers/OPNsense/IPsec/Api/ConnectionsController.php)
+- [BaseField.php omission semantics](https://github.com/opnsense/core/blob/96978001a8343669154e4492172ce0a07dac7e4b/src/opnsense/mvc/app/models/OPNsense/Base/FieldTypes/BaseField.php#L810-L830)
+
 {{ .SchemaMarkdown | trimspace }}
