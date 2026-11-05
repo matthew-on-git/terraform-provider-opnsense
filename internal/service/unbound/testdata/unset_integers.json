@@ -1,0 +1,645 @@
+{
+    "unbound": {
+        "general": {
+            "enabled": "1",
+            "port": "53",
+            "stats": "1",
+            "active_interface": {
+                "lan": {
+                    "value": "fixture_label_27",
+                    "selected": 0
+                },
+                "opt7": {
+                    "value": "fixture_label_34",
+                    "selected": 0
+                },
+                "opt6": {
+                    "value": "fixture_label_33",
+                    "selected": 0
+                },
+                "opt5": {
+                    "value": "fixture_label_32",
+                    "selected": 0
+                },
+                "opt4": {
+                    "value": "fixture_label_31",
+                    "selected": 0
+                },
+                "opt3": {
+                    "value": "fixture_label_30",
+                    "selected": 0
+                },
+                "opt1": {
+                    "value": "fixture_label_28",
+                    "selected": 0
+                },
+                "opt9": {
+                    "value": "fixture_label_35",
+                    "selected": 0
+                },
+                "opt2": {
+                    "value": "fixture_label_29",
+                    "selected": 0
+                },
+                "wan": {
+                    "value": "fixture_label_26",
+                    "selected": 0
+                }
+            },
+            "dnssec": "1",
+            "dns64": "0",
+            "dns64prefix": "2001:db8::10/96",
+            "noarecords": "0",
+            "regdhcp": "1",
+            "regdhcpdomain": "",
+            "regdhcpstatic": "1",
+            "noreglladdr6": "0",
+            "noregrecords": "0",
+            "txtsupport": "0",
+            "cacheflush": "1",
+            "safesearch": "0",
+            "local_zone_type": {
+                "transparent": {
+                    "value": "transparent",
+                    "selected": 1
+                },
+                "always_nxdomain": {
+                    "value": "always_nxdomain",
+                    "selected": 0
+                },
+                "always_refuse": {
+                    "value": "always_refuse",
+                    "selected": 0
+                },
+                "always_transparent": {
+                    "value": "always_transparent",
+                    "selected": 0
+                },
+                "deny": {
+                    "value": "deny",
+                    "selected": 0
+                },
+                "inform": {
+                    "value": "inform",
+                    "selected": 0
+                },
+                "inform_deny": {
+                    "value": "inform_deny",
+                    "selected": 0
+                },
+                "nodefault": {
+                    "value": "nodefault",
+                    "selected": 0
+                },
+                "refuse": {
+                    "value": "refuse",
+                    "selected": 0
+                },
+                "static": {
+                    "value": "static",
+                    "selected": 0
+                },
+                "typetransparent": {
+                    "value": "typetransparent",
+                    "selected": 0
+                }
+            },
+            "outgoing_interface": {
+                "lan": {
+                    "value": "fixture_label_27",
+                    "selected": 0
+                },
+                "opt7": {
+                    "value": "fixture_label_34",
+                    "selected": 0
+                },
+                "opt6": {
+                    "value": "fixture_label_33",
+                    "selected": 0
+                },
+                "opt5": {
+                    "value": "fixture_label_32",
+                    "selected": 0
+                },
+                "opt4": {
+                    "value": "fixture_label_31",
+                    "selected": 0
+                },
+                "opt3": {
+                    "value": "fixture_label_30",
+                    "selected": 0
+                },
+                "opt1": {
+                    "value": "fixture_label_28",
+                    "selected": 0
+                },
+                "opt9": {
+                    "value": "fixture_label_35",
+                    "selected": 0
+                },
+                "opt2": {
+                    "value": "fixture_label_29",
+                    "selected": 0
+                },
+                "wan": {
+                    "value": "fixture_label_26",
+                    "selected": 0
+                }
+            },
+            "enable_wpad": "0"
+        },
+        "advanced": {
+            "hideidentity": "0",
+            "hideversion": "1",
+            "prefetch": "0",
+            "prefetchkey": "1",
+            "dnssecstripped": "0",
+            "belownxdomain": "1",
+            "aggressivensec": "1",
+            "serveexpired": "0",
+            "serveexpiredreplyttl": "",
+            "serveexpiredttl": "",
+            "serveexpiredttlreset": "0",
+            "serveexpiredclienttimeout": "",
+            "qnameminstrict": "0",
+            "extendedstatistics": "1",
+            "logqueries": "0",
+            "logreplies": "0",
+            "logtagqueryreply": "0",
+            "logservfail": "0",
+            "loglocalactions": "0",
+            "logverbosity": [
+                {
+                    "value": "Level 0",
+                    "selected": 0
+                },
+                {
+                    "value": "Level 1 (Default)",
+                    "selected": 1
+                },
+                {
+                    "value": "Level 2",
+                    "selected": 0
+                },
+                {
+                    "value": "Level 3",
+                    "selected": 0
+                },
+                {
+                    "value": "Level 4",
+                    "selected": 0
+                },
+                {
+                    "value": "Level 5",
+                    "selected": 0
+                }
+            ],
+            "valloglevel": [
+                {
+                    "value": "Level 0 (Default)",
+                    "selected": 1
+                },
+                {
+                    "value": "Level 1",
+                    "selected": 0
+                },
+                {
+                    "value": "Level 2",
+                    "selected": 0
+                }
+            ],
+            "privatedomain": {
+                "": {
+                    "value": "",
+                    "selected": 1
+                }
+            },
+            "privateaddress": {
+                "0.0.0.0/8": {
+                    "value": "0.0.0.0/8",
+                    "selected": 1
+                },
+                "192.0.2.17/8": {
+                    "value": "192.0.2.17/8",
+                    "selected": 1
+                },
+                "192.0.2.18/10": {
+                    "value": "192.0.2.18/10",
+                    "selected": 1
+                },
+                "192.0.2.19/16": {
+                    "value": "192.0.2.19/16",
+                    "selected": 1
+                },
+                "192.0.2.20/12": {
+                    "value": "192.0.2.20/12",
+                    "selected": 1
+                },
+                "192.0.2.21/24": {
+                    "value": "192.0.2.21/24",
+                    "selected": 1
+                },
+                "192.0.2.22/16": {
+                    "value": "192.0.2.22/16",
+                    "selected": 1
+                },
+                "192.0.2.23/15": {
+                    "value": "192.0.2.23/15",
+                    "selected": 1
+                },
+                "192.0.2.24/24": {
+                    "value": "192.0.2.24/24",
+                    "selected": 1
+                },
+                "192.0.2.25/24": {
+                    "value": "192.0.2.25/24",
+                    "selected": 1
+                },
+                "192.0.2.26/24": {
+                    "value": "192.0.2.26/24",
+                    "selected": 1
+                },
+                "::1/128": {
+                    "value": "::1/128",
+                    "selected": 1
+                },
+                "2001:db8::1b/32": {
+                    "value": "2001:db8::1b/32",
+                    "selected": 1
+                },
+                "2001:db8::1c/8": {
+                    "value": "2001:db8::1c/8",
+                    "selected": 1
+                },
+                "2001:db8::1d/8": {
+                    "value": "2001:db8::1d/8",
+                    "selected": 1
+                },
+                "2001:db8::1e/10": {
+                    "value": "2001:db8::1e/10",
+                    "selected": 1
+                }
+            },
+            "insecuredomain": {
+                "": {
+                    "value": "",
+                    "selected": 1
+                }
+            },
+            "msgcachesize": "",
+            "rrsetcachesize": "",
+            "outgoingnumtcp": "",
+            "incomingnumtcp": "",
+            "numqueriesperthread": "",
+            "outgoingrange": "",
+            "jostletimeout": "",
+            "discardtimeout": "",
+            "cachemaxttl": "",
+            "cachemaxnegativettl": "",
+            "cacheminttl": "",
+            "infrahostttl": "",
+            "infrakeepprobing": "0",
+            "infracachenumhosts": "",
+            "unwantedreplythreshold": ""
+        },
+        "acls": {
+            "default_action": {
+                "allow": {
+                    "value": "Allow",
+                    "selected": 1
+                },
+                "deny": {
+                    "value": "Deny",
+                    "selected": 0
+                },
+                "refuse": {
+                    "value": "Refuse",
+                    "selected": 0
+                }
+            },
+            "acl": []
+        },
+        "dnsbl": {
+            "blocklist": []
+        },
+        "forwarding": {
+            "enabled": "0"
+        },
+        "dots": {
+            "dot": {
+                "ea86a607-ff13-551a-985a-723a51b1a532": {
+                    "enabled": "1",
+                    "type": {
+                        "dot": {
+                            "value": "fixture_label_62 over TLS",
+                            "selected": 1
+                        },
+                        "forward": {
+                            "value": "Forward",
+                            "selected": 0
+                        }
+                    },
+                    "domain": "",
+                    "server": "192.0.2.15",
+                    "port": "853",
+                    "verify": "domain2.example",
+                    "forward_tcp_upstream": "0",
+                    "forward_first": "0",
+                    "description": ""
+                },
+                "94a94a18-da3e-5000-ae29-06c92a35b09c": {
+                    "enabled": "1",
+                    "type": {
+                        "dot": {
+                            "value": "fixture_label_62 over TLS",
+                            "selected": 1
+                        },
+                        "forward": {
+                            "value": "Forward",
+                            "selected": 0
+                        }
+                    },
+                    "domain": "",
+                    "server": "192.0.2.14",
+                    "port": "853",
+                    "verify": "domain2.example",
+                    "forward_tcp_upstream": "0",
+                    "forward_first": "0",
+                    "description": ""
+                },
+                "bdf1a66c-37d4-5d2d-92a7-eadce5f68c89": {
+                    "enabled": "1",
+                    "type": {
+                        "dot": {
+                            "value": "fixture_label_62 over TLS",
+                            "selected": 1
+                        },
+                        "forward": {
+                            "value": "Forward",
+                            "selected": 0
+                        }
+                    },
+                    "domain": "",
+                    "server": "2001:db8::a",
+                    "port": "853",
+                    "verify": "domain2.example",
+                    "forward_tcp_upstream": "0",
+                    "forward_first": "0",
+                    "description": ""
+                },
+                "b6bf1409-afa9-5bce-b6f9-44d51f53c5ba": {
+                    "enabled": "1",
+                    "type": {
+                        "dot": {
+                            "value": "fixture_label_62 over TLS",
+                            "selected": 1
+                        },
+                        "forward": {
+                            "value": "Forward",
+                            "selected": 0
+                        }
+                    },
+                    "domain": "",
+                    "server": "2001:db8::c",
+                    "port": "853",
+                    "verify": "domain2.example",
+                    "forward_tcp_upstream": "0",
+                    "forward_first": "0",
+                    "description": ""
+                }
+            }
+        },
+        "hosts": {
+            "host": {
+                "5b3b7cde-35f5-55ea-9b15-daba7ddfce76": {
+                    "enabled": "1",
+                    "hostname": "fixture_label_44",
+                    "domain": "domain3.example",
+                    "rr": {
+                        "A": {
+                            "value": "A (IPv4 address)",
+                            "selected": 1
+                        },
+                        "AAAA": {
+                            "value": "AAAA (IPv6 address)",
+                            "selected": 0
+                        },
+                        "MX": {
+                            "value": "MX (mail server)",
+                            "selected": 0
+                        },
+                        "TXT": {
+                            "value": "TXT (text)",
+                            "selected": 0
+                        }
+                    },
+                    "mxprio": "",
+                    "mx": "",
+                    "ttl": "",
+                    "server": "192.0.2.31",
+                    "txtdata": "",
+                    "addptr": "1",
+                    "aliases": {
+                        "": {
+                            "value": "",
+                            "selected": 1
+                        }
+                    },
+                    "description": "fixture_label_45"
+                },
+                "650ae5cc-b2f4-5a86-9c4b-78225fc52319": {
+                    "enabled": "1",
+                    "hostname": "fixture_label_46",
+                    "domain": "domain1.example",
+                    "rr": {
+                        "A": {
+                            "value": "A (IPv4 address)",
+                            "selected": 1
+                        },
+                        "AAAA": {
+                            "value": "AAAA (IPv6 address)",
+                            "selected": 0
+                        },
+                        "MX": {
+                            "value": "MX (mail server)",
+                            "selected": 0
+                        },
+                        "TXT": {
+                            "value": "TXT (text)",
+                            "selected": 0
+                        }
+                    },
+                    "mxprio": "",
+                    "mx": "",
+                    "ttl": "",
+                    "server": "192.0.2.32",
+                    "txtdata": "",
+                    "addptr": "1",
+                    "aliases": {
+                        "domain4.example": {
+                            "value": "domain4.example",
+                            "selected": 1
+                        },
+                        "domain5.example": {
+                            "value": "domain5.example",
+                            "selected": 1
+                        },
+                        "domain6.example": {
+                            "value": "domain6.example",
+                            "selected": 1
+                        },
+                        "domain7.example": {
+                            "value": "domain7.example",
+                            "selected": 1
+                        },
+                        "domain8.example": {
+                            "value": "domain8.example",
+                            "selected": 1
+                        }
+                    },
+                    "description": "fixture_label_47"
+                },
+                "f0887dc1-2cd5-58b7-a7a3-fd3e171dcb88": {
+                    "enabled": "1",
+                    "hostname": "fixture_label_44",
+                    "domain": "domain1.example",
+                    "rr": {
+                        "A": {
+                            "value": "A (IPv4 address)",
+                            "selected": 1
+                        },
+                        "AAAA": {
+                            "value": "AAAA (IPv6 address)",
+                            "selected": 0
+                        },
+                        "MX": {
+                            "value": "MX (mail server)",
+                            "selected": 0
+                        },
+                        "TXT": {
+                            "value": "TXT (text)",
+                            "selected": 0
+                        }
+                    },
+                    "mxprio": "",
+                    "mx": "",
+                    "ttl": "",
+                    "server": "192.0.2.31",
+                    "txtdata": "",
+                    "addptr": "1",
+                    "aliases": {
+                        "": {
+                            "value": "",
+                            "selected": 1
+                        }
+                    },
+                    "description": "fixture_label_48"
+                }
+            }
+        },
+        "aliases": {
+            "alias": {
+                "dc68f27b-89f3-5f8a-8e73-9e675c354fc0": {
+                    "enabled": "1",
+                    "host": {
+                        "650ae5cc-b2f4-5a86-9c4b-78225fc52319": {
+                            "value": "domain9.example",
+                            "selected": 1
+                        },
+                        "f0887dc1-2cd5-58b7-a7a3-fd3e171dcb88": {
+                            "value": "domain10.example",
+                            "selected": 0
+                        },
+                        "5b3b7cde-35f5-55ea-9b15-daba7ddfce76": {
+                            "value": "domain11.example",
+                            "selected": 0
+                        }
+                    },
+                    "hostname": "fixture_label_49",
+                    "domain": "domain1.example",
+                    "description": "fixture_label_50"
+                },
+                "7f073573-423f-5237-8d5a-bd7c3fe84f93": {
+                    "enabled": "1",
+                    "host": {
+                        "650ae5cc-b2f4-5a86-9c4b-78225fc52319": {
+                            "value": "domain9.example",
+                            "selected": 1
+                        },
+                        "f0887dc1-2cd5-58b7-a7a3-fd3e171dcb88": {
+                            "value": "domain10.example",
+                            "selected": 0
+                        },
+                        "5b3b7cde-35f5-55ea-9b15-daba7ddfce76": {
+                            "value": "domain11.example",
+                            "selected": 0
+                        }
+                    },
+                    "hostname": "fixture_label_51",
+                    "domain": "domain1.example",
+                    "description": "fixture_label_52"
+                },
+                "e7db1052-0536-57e7-b996-9f394356470c": {
+                    "enabled": "1",
+                    "host": {
+                        "650ae5cc-b2f4-5a86-9c4b-78225fc52319": {
+                            "value": "domain9.example",
+                            "selected": 1
+                        },
+                        "f0887dc1-2cd5-58b7-a7a3-fd3e171dcb88": {
+                            "value": "domain10.example",
+                            "selected": 0
+                        },
+                        "5b3b7cde-35f5-55ea-9b15-daba7ddfce76": {
+                            "value": "domain11.example",
+                            "selected": 0
+                        }
+                    },
+                    "hostname": "fixture_label_53",
+                    "domain": "domain1.example",
+                    "description": "fixture_label_54"
+                },
+                "1d23a20f-7c40-5aca-a34f-b8e6bf509ada": {
+                    "enabled": "1",
+                    "host": {
+                        "650ae5cc-b2f4-5a86-9c4b-78225fc52319": {
+                            "value": "domain9.example",
+                            "selected": 1
+                        },
+                        "f0887dc1-2cd5-58b7-a7a3-fd3e171dcb88": {
+                            "value": "domain10.example",
+                            "selected": 0
+                        },
+                        "5b3b7cde-35f5-55ea-9b15-daba7ddfce76": {
+                            "value": "domain11.example",
+                            "selected": 0
+                        }
+                    },
+                    "hostname": "fixture_label_55",
+                    "domain": "domain1.example",
+                    "description": "fixture_label_56"
+                },
+                "ee94bc61-fba3-5bcb-8a9e-45f4ffb0e22f": {
+                    "enabled": "1",
+                    "host": {
+                        "650ae5cc-b2f4-5a86-9c4b-78225fc52319": {
+                            "value": "domain9.example",
+                            "selected": 1
+                        },
+                        "f0887dc1-2cd5-58b7-a7a3-fd3e171dcb88": {
+                            "value": "domain10.example",
+                            "selected": 0
+                        },
+                        "5b3b7cde-35f5-55ea-9b15-daba7ddfce76": {
+                            "value": "domain11.example",
+                            "selected": 0
+                        }
+                    },
+                    "hostname": "fixture_label_57",
+                    "domain": "domain1.example",
+                    "description": "fixture_label_58"
+                }
+            }
+        }
+    }
+}

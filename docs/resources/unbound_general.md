@@ -101,3 +101,6 @@ resource "opnsense_unbound_general" "resolver" {
 ```shell
 terraform import opnsense_unbound_general.resolver unbound-general
 ```
+
+Unset advanced integer settings are read as null and omitted from updates, preserving appliance defaults. Explicit zero remains a configured value.
+Empty cache-size and serve-expired tuning strings also retain their appliance-default representation.
