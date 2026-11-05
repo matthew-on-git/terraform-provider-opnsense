@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-05T00:39:47.107392+00:00",
+  "status": "PASS",
+  "candidate": "c03b2e05e23776fccf8a2e8b829581f04208db54",
+  "source_sha256": "eecd7abf9247645dd26d223e7ca4fd38d16816a32bb2c461aba724af96c0a8f2",
+  "firmware_package": "26.7.8_2",
+  "base_kernel_release": "26.7.8",
+  "kernel": "15.1-RELEASE-p6",
+  "source_equivalence": {
+    "commit": "96978001a8343669154e4492172ce0a07dac7e4b",
+    "installed_files_equal": [
+      "Swanctl.xml",
+      "Swanctl.php",
+      "ConnectionsController.php",
+      "BaseListField.php",
+      "BaseModel.php"
+    ]
+  },
+  "scope": {
+    "disabled_connection_and_child": true,
+    "advanced_connection_fields": 15,
+    "advanced_child_fields": 6,
+    "configured_steps": 11,
+    "persistent_both_owner_imports": true,
+    "all_21_lookup_assertions": true,
+    "import_journal_unchanged": true,
+    "omission_no_change": true,
+    "connection_and_child_drift_repair": true,
+    "true_false_flags_and_permitted_blank_zero_clears": true,
+    "terraform_child_then_parent_deletion": true,
+    "raw_missing_get_checks_both": true
+  },
+  "go_test_seconds": 23.657,
+  "wrapper_exit": 0,
+  "non_skipped_go_pass": true,
+  "immediate_owned_count": 0,
+  "immediate_unresolved_count": 0,
+  "final_owned_count": 0,
+  "final_unresolved_count": 0,
+  "exact_restoration": {
+    "config_sha256": {
+      "before": "1db6b7cca34970446da1633b89f000169d38176c28a7158517b268df78dcaf4a",
+      "after": "1db6b7cca34970446da1633b89f000169d38176c28a7158517b268df78dcaf4a",
+      "equal": true
+    },
+    "settings_sha256": {
+      "before": "e71362b03ba0cb5d253ac0f7cca7f03608e9b686d649079c7dda71e6ff7c09ee",
+      "after": "e71362b03ba0cb5d253ac0f7cca7f03608e9b686d649079c7dda71e6ff7c09ee",
+      "equal": true
+    },
+    "routes_sha256": {
+      "before": "dd3e227fee4626bbf414f71d38566577b3e7c68aeac1012009d0b32215f7bb9e",
+      "after": "dd3e227fee4626bbf414f71d38566577b3e7c68aeac1012009d0b32215f7bb9e",
+      "equal": true
+    },
+    "runtime_sha256": {
+      "before": "0fc56193c99a412efea5e51d499e68103f4f1f46b4ed2dc5dd7959abcf549132",
+      "after": "0fc56193c99a412efea5e51d499e68103f4f1f46b4ed2dc5dd7959abcf549132",
+      "equal": true
+    }
+  },
+  "source_runtime_receipt_digests_unchanged": true,
+  "independent_retirement": {
+    "owned_vm_absent": true,
+    "owned_disk_absent": true,
+    "owner_marker_absent": true,
+    "remote_listeners_absent": true,
+    "local_listeners_absent": true,
+    "oracle_and_tunnel_absent": true,
+    "acceptance_container_absent": true
+  },
+  "prior_failed_attempt": {
+    "preserved": true,
+    "go_passed": true,
+    "full_wrapper_exit": 1,
+    "cause": "Automatic owned-model persisted_at changed; strict initial metadata comparison refused restoration. Routes/runtime and zero checks passed.",
+    "recovery": "Source-backed metadata-only comparison; original raw configuration restored under inode lock and all four original actual hashes matched. Independent repair controls20/20 pass; full fresh retry required and completed."
+  },
+  "limitations": [
+    "Disabled-object save/read/import/drift/clear/delete plus real service activation; no negotiated IKE or packet-flow proof.",
+    "No auth, key, certificate or PSK objects exercised.",
+    "No older firmware or OpenTofu execution.",
+    "Inherited legacy omission/read-completeness and unobservable proposal preference order remain deferred."
+  ],
+  "release_boundary": "Pending PR82; proof is not merge, release or Registry publication."
+}

@@ -6,13 +6,19 @@ terraform {
   }
 }
 
-# Configure the OPNsense provider. Credentials may also be supplied via the
-# OPNSENSE_URI, OPNSENSE_API_KEY, OPNSENSE_API_SECRET, and OPNSENSE_ALLOW_INSECURE
-# environment variables (HCL values take priority).
+# Configure the OPNsense provider. Credentials and retry settings may also be
+# supplied via the OPNSENSE_URI, OPNSENSE_API_KEY, OPNSENSE_API_SECRET,
+# OPNSENSE_ALLOW_INSECURE, OPNSENSE_RETRIES, OPNSENSE_MIN_BACKOFF, and
+# OPNSENSE_MAX_BACKOFF environment variables (HCL values take priority).
 provider "opnsense" {
   uri        = "https://opnsense.example.com"
   api_key    = var.opnsense_api_key
   api_secret = var.opnsense_api_secret
+
+  # Optional retry tuning (whole seconds):
+  # retries     = 3
+  # min_backoff = 1
+  # max_backoff = 30
 }
 
 # Quickstart: a firewall alias and a rule that references it.

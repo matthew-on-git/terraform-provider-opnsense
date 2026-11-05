@@ -4,7 +4,7 @@
 
 ## Goal
 
-Make the provider complete enough for operators to standardize on it for an appliance, then translate verified coverage into trust and adoption. Close meaningful field, lifecycle, lookup, and configuration gaps before presenting broad coverage claims, migration guidance, and reusable adoption examples. Completeness means truthful support boundaries and dependable brownfield ownership, not merely a larger resource inventory.
+Make the provider complete enough to be the default choice for an appliance, replacing fragmented configuration ownership with trustworthy Terraform management across supported core and plugin APIs. Close verified coverage gaps, distinguish unsupported surfaces honestly, and turn proven completeness into adoption through clear positioning, migration guidance, and reusable examples.
 
 ## Stories
 
@@ -31,31 +31,45 @@ Make the provider complete enough for operators to standardize on it for an appl
 
 ## Requirements & Constraints
 
-- Compare ecosystem coverage at field, lookup, lifecycle, and sensitive-value semantics, not just names or counts. The established-provider comparison is pinned to v0.26.0. Account for differently named equivalents and intentional differences; rerun the deterministic audit after registration or schema changes.
-- Close safe lookup gaps or record explicit singleton/sensitive exceptions. The current planning audit identifies 16 resource-matching data-source gaps; this is a dated inventory, not a permanent total or permission to expose write-only secrets.
-- Support claims must distinguish implemented, released, real-appliance-proved, research-only, and upstream-limited behavior. Stable target-release APIs are the gate; upstream development branches and setup-wizard endpoints do not establish durable day-2 management semantics.
-- Real lifecycle evidence must establish authoritative read-back, import, no-change plans, drift detection/repair, update, deletion, and restoration where applicable. Unit/protocol success, Terraform Core behavior, disposable-appliance activation, release publication, and Registry availability are separate evidence levels.
-- Maintain one provider owner per appliance object/domain in steady state. Migration must not leave two providers managing the same object. Guidance must identify unsupported fields and ownership blockers before users transfer management.
-- Keep credentials out of logs and published examples; use sensitive/write-only behavior where appropriate and document sensitive state storage. Do not fabricate readable secrets or claim drift detection for values the API cannot return.
-- Use supported APIs only: no legacy-page scraping, direct XML edits, or API-ownership bypass. System-general settings remain upstream-blocked; HASync model shape and PPPoE semantics remain research-only. Ordered Kea linkage requires an authoritative order-preserving read API, not a raw XML workaround.
-- This epic does not authorize production firmware changes, routing changes, or appliance ownership cutovers. Public artifacts must stay consumer-neutral.
+- Completeness means supported functionality works through real plan/apply, import, and drift detection, not merely that resource names exist. Implement only verified API surfaces; expose remaining limitations and upstream blockers without inventing ownership.
+- Singleton and sensitive lookup gaps require explicit implementation or exception decisions. Historical planning inventory totals are not targets; audit the current registered implementation before adding or claiming coverage.
+- Every supported resource must support accurate read-back, idempotent operations, recoverable partial failures, and appropriate import semantics. A clean import and repeated unchanged apply must produce a no-change plan. Reconfigure failure must retain successfully persisted state and explain that appliance activation may be incomplete.
+- Protect credentials and private keys from diagnostics and logs; use safe sensitive/write-only handling where supported. Explain sensitive-state risks and recommend encrypted remote state. Default to verified HTTPS, with insecure mode an explicit opt-in; examples obtain credentials through environment variables or secret injection.
+- Retry controls must address transient API failures with configurable maximum retries and backoff without corrupting state during appliance unavailability. Protect the appliance with bounded read concurrency. Performance goals are a 60-second refresh for 50–100 resources, 10-second CRUD including reconfigure, and 5-second individual import.
+- Ship argument/attribute references, import guidance, and examples with each resource. Provider entry documentation must explain authentication, permissions, supported versions, prerequisites, support boundaries, and a usable quickstart. Positioning must distinguish demonstrated support from planned coverage.
+- Public material must remain consumer-neutral. Use documentation addresses and reserved example domains, never operator inventory, credentials, topology, or deployment plans. This epic does not authorize production firmware changes, routing changes, or ownership cutover.
 
 ## Technical Decisions
 
-- Preserve the safety contract: serialized mutations protect appliance configuration integrity; apply/reconfigure the affected service after changes and retain the appropriate firewall rollback safeguards. Populate state from authoritative API reads rather than request echoes, preserve recoverable state on partial failure, and distinguish successful persistence from failed activation.
-- Model real API semantics, including singleton versus UUID-backed objects, multivalue membership, selected values, and order where meaningful. Search-backed lookups must not silently truncate paginated results. Read-only lookup semantics must be safe independently of resource write behavior.
-- Keep upgrades compatible through deliberate plan modifiers, schema migration when required, and explicit handling of unavailable write-only values. Retry controls must configure transient-failure behavior without weakening mutation/state safety or appliance read-concurrency protection.
-- Resource documentation, import instructions, support boundaries, and composition examples ship with the supported surface. Provider-facing documentation must explain authentication, permissions, required plugins, minimum supported appliance versions, and encrypted state considerations.
+- Follow Terraform Plugin Framework lifecycle contracts and Protocol v6, preserving Terraform/OpenTofu core interoperability and automatic schema migration when schemas change.
+- All configuration mutations must be globally serialized to protect appliance configuration integrity. Mutations require the affected service's reconfigure operation; firewall filter changes require savepoint/apply/rollback safety rather than ordinary reconfigure.
+- Populate state from authoritative API reads after writes, not request echoes. Treat UUID references as dependency edges. Use replacement only for genuinely immutable attributes; preserve unreadable write-only values without claiming drift detection for them.
+- API success cannot be inferred from HTTP status alone: validation failures may arrive with HTTP 200, while missing UUIDs may return blank/default records. Surface field-level validation and permission/plugin/version guidance; remove genuinely deleted managed resources from state. Search/list lookups must consume pagination completely.
+- Preserve API semantics when translating booleans, selected values, multi-selects, lists, and UUIDs. Ordered Kea generic-option linkage remains gated on an authoritative order-preserving read API; raw XML is not an authorized workaround.
+- Resource documentation is generated from schemas, templates, and example HCL. Validate full create/read/import/update/delete lifecycles against real OPNsense; keep unit/protocol evidence, disposable-appliance proof, release publication, and Registry availability distinct.
 
 ## UX & Interaction Patterns
 
-- Position the provider around broad, modern appliance management, brownfield import, and release-gated support. Avoid competitive rhetoric and unsupported claims of total coverage.
-- Guide brownfield users through dependency-aware import, cross-resource references, and a no-change plan before ownership transfer. Examples should demonstrate realistic composition rather than isolated resources.
-- Diagnostics should identify the failed operation, API validation field or permission requirement, and a useful recovery action. Distinguish connectivity, TLS, authentication, unavailable endpoints, and missing plugins.
+- Adoption proceeds from discovering actual coverage to configuring credentials, importing existing objects, reviewing a no-change plan, and then managing changes through reviewable plan/apply.
+- Migration guidance must order independent objects before linked resources and preserve cross-resource references. Each import should be followed by plan verification before advancing; do not imply an automatic production ownership handoff.
+- Composition examples should demonstrate meaningful end-to-end stacks such as HAProxy with ACME, BGP peering, and firewall baselines. Diagnostics and plan output must let operators distinguish in-place updates, replacement, validation failure, and persisted-but-not-activated changes.
 
 ## Cross-Story Dependencies
 
-- Audit findings drive parity work; complete remaining Trust, IPsec, FRR/BGP, interface-lookup, and retry gaps before final positioning, migration, and adoption examples. Trust settings alone do not close certificate/CA lifecycle work.
-- FRR 2.0 compatibility is already released; advanced FRR/BGP parity remains separate. Gateway-group ownership and Kea generic-option/DDNS ownership are also shipped; preserve their limitations and avoid implementing duplicate owners. Ordered option linkage remains a separate API gate.
-- Completed interface-assignment adoption requires OPNsense 26.7.6+; its bounded lifecycle proof does not imply PPPoE support or blanket proof for every interface mode.
-- The acceptance-proof, preflight/version-diagnostic, and v1-stability work in Epic 32 builds on this epic. Breadth or successful parity increments alone do not establish v1 readiness.
+- Prior data-source, Registry hardening, buildable-gap, and HAProxy/ACME tracks are completed/historical unless regression evidence requires reopening. Assignment/IP support is also complete and requires OPNsense 26.7.6+; do not repeat those implementations.
+- Finish Trust lifecycle parity before advanced IPsec and remaining FRR/BGP parity, then live-interface lookups and retry settings. Trust settings shipped as a separate increment, not completion of CA/certificate lifecycle or disposable proof. Released FRR 2.0 compatibility is not the remaining advanced parity work.
+- Gateway groups, generic Kea option CRUD, and Kea DDNS settings have shipped. Ordered option linkage is separate research, not a reason to rebuild those surfaces.
+- Complete positioning, migration guidance, and adoption examples after parity, carrying explicit lookup exceptions forward. Release-credibility work follows separately; System-general remains upstream-blocked, while HASync model shape and PPPoE semantics remain research rather than invented provider resources.
+
+
+## Sequential release integration — 2026-11-04
+
+Supported Trust lifecycle/read work shipped in v0.14.0, retry controls in v0.13.0,
+and the bounded21-control IPsec increment in v0.15.0. Trust and IPsec retain their
+explicit deferred capability/compatibility and inherited legacy limitations;
+their shipped increments must not be repeated. IPsec's complete guarded26.7.8_2
+lifecycle/activation proof is recorded separately from negotiated IKE/traffic.
+Remaining FRR/BGP31.0h is now the active increment, targeting v0.16.0; prior
+partial/failed or Go-only attempts do not establish full guarded-runner acceptance.
+Complete that source-backed validation before interface lookups and independent
+API-gated/adoption/readiness work. No parent-family or v1 completion is implied.

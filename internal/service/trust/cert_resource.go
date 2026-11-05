@@ -5,8 +5,9 @@ package trust
 
 import (
 	"context"
-	"errors"
-	"fmt"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -18,15 +19,6 @@ var (
 	_ resource.Resource                = &certResource{}
 	_ resource.ResourceWithImportState = &certResource{}
 )
-
-var certReqOpts = opnsense.ReqOpts{
-	AddEndpoint:    "/api/trust/cert/add",
-	GetEndpoint:    "/api/trust/cert/get",
-	UpdateEndpoint: "/api/trust/cert/set",
-	DeleteEndpoint: "/api/trust/cert/del",
-	SearchEndpoint: "/api/trust/cert/search",
-	Monad:          "cert",
-}
 
 type certResource struct{ client *opnsense.Client }
 
@@ -54,17 +46,50 @@ func (r *certResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	uuid, err := opnsense.Add(ctx, r.client, certReqOpts, plan.toAPI(ctx))
-	if err != nil {
-		resp.Diagnostics.AddError("Error creating certificate", fmt.Sprintf("%s", err))
+	if plan.OperationToken.IsUnknown() {
+		resp.Diagnostics.AddError("Invalid Trust operation", errUnknownIntent.Error())
 		return
 	}
-	result, err := opnsense.Get[certAPIResponse](ctx, r.client, certReqOpts, uuid)
-	if err != nil {
-		resp.Diagnostics.AddError("Error reading certificate after create", fmt.Sprintf("%s", err))
+	if !trustConfigKnown(req.Config, &resp.Diagnostics) {
 		return
 	}
-	plan.fromAPI(ctx, result, uuid)
+	payload, err := plan.payload()
+	if err == nil {
+		err = trustAction(payload, "cert", true, true)
+	}
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Trust operation", err.Error())
+		return
+	}
+	if err = r.client.LockMutex(ctx); err != nil {
+		resp.Diagnostics.AddError("Trust lock unavailable", "No mutation attempted.")
+		return
+	}
+	defer r.client.UnlockMutex()
+	id, key, err := trustWrite(ctx, r.client, "cert", "add", "", payload)
+	if err != nil {
+		resp.Diagnostics.AddError("Trust create failed", err.Error())
+		return
+	}
+	plan.OperationStatus = types.StringValue("saved")
+	plan.ID = types.StringValue(id)
+	plan.GeneratedPrivateKey = types.StringNull()
+	if key != "" {
+		plan.GeneratedPrivateKey = types.StringValue(key)
+	}
+	if payload["action"] == "internal" && payload["private_key_location"] == "local" && key == "" {
+		resp.Diagnostics.AddWarning("One-time key unavailable", "Object was saved but add did not return the local-only key. The confirmed UUID is retained; lookup cannot recover this key and creation must not be replayed automatically.")
+	}
+	// Save confirmed identity and one-time material before fallible readback.
+	saved := plan
+	saved.retainKnownState(nil)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &saved)...)
+	record, err := trustRecord(ctx, r.client, "cert", id)
+	if err != nil {
+		resp.Diagnostics.AddWarning("Trust object saved; readback failed", "Confirmed UUID and any available one-time key are retained without tainting the resource. Refresh to recover observations; creation is not replayed.")
+		return
+	}
+	plan.fromRecord(record, id)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -74,17 +99,16 @@ func (r *certResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	result, err := opnsense.Get[certAPIResponse](ctx, r.client, certReqOpts, state.ID.ValueString())
-	if err != nil {
-		var nf *opnsense.NotFoundError
-		if errors.As(err, &nf) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Error reading certificate", fmt.Sprintf("%s", err))
+	record, err := trustRecord(ctx, r.client, "cert", state.ID.ValueString())
+	if err == errTrustMissing {
+		resp.State.RemoveResource(ctx)
 		return
 	}
-	state.fromAPI(ctx, result, state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Trust read failed", err.Error())
+		return
+	}
+	state.fromRecord(record, state.ID.ValueString())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -95,17 +119,92 @@ func (r *certResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	id := state.ID.ValueString()
-	if err := opnsense.Update(ctx, r.client, certReqOpts, plan.toAPI(ctx), id); err != nil {
-		resp.Diagnostics.AddError("Error updating certificate", fmt.Sprintf("%s", err))
+	if plan.OperationToken.IsUnknown() {
+		resp.Diagnostics.AddError("Invalid Trust operation", errUnknownIntent.Error())
 		return
 	}
-	result, err := opnsense.Get[certAPIResponse](ctx, r.client, certReqOpts, id)
+	if !trustConfigKnown(req.Config, &resp.Diagnostics) {
+		return
+	}
+	payload, err := plan.payload()
 	if err != nil {
-		resp.Diagnostics.AddError("Error reading certificate after update", fmt.Sprintf("%s", err))
+		resp.Diagnostics.AddError("Invalid Trust operation", err.Error())
 		return
 	}
-	plan.fromAPI(ctx, result, id)
+	// Removal/empty intent is never an affirmative cryptographic request.
+	explicit := (plan.Action.ValueString() != "" && !plan.Action.Equal(state.Action)) || (plan.OperationToken.ValueString() != "" && !plan.OperationToken.Equal(state.OperationToken))
+	if plan.Action.ValueString() == "" && explicit {
+		resp.Diagnostics.AddError("Explicit Trust action required", "A new operation_token requires a nonempty action. Omitted action defaults apply only to creation.")
+		return
+	}
+	if !explicit && plan.changedOperationInputs(&state) {
+		resp.Diagnostics.AddError("Explicit Trust operation required", "Generation or PEM inputs changed. Change action or operation_token deliberately; description-only updates never perform lifecycle operations.")
+		return
+	}
+	if !explicit && plan.Description.Equal(state.Description) {
+		plan.retainKnownState(&state)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+		return
+	}
+	if err = r.client.LockMutex(ctx); err != nil {
+		resp.Diagnostics.AddError("Trust lock unavailable", "No mutation attempted.")
+		return
+	}
+	defer r.client.UnlockMutex()
+	id := state.ID.ValueString()
+	if explicit && (payload["action"] == "reissue" || payload["action"] == "sign_csr" || payload["action"] == "import_csr") {
+		current, readErr := trustRecord(ctx, r.client, "cert", id)
+		if readErr != nil {
+			resp.Diagnostics.AddError("Trust transition blocked", "Cannot read existing signing material safely.")
+			return
+		}
+		if err = hydrateTrustTransition(payload, current); err != nil {
+			resp.Diagnostics.AddError("Invalid Trust transition", err.Error())
+			return
+		}
+	}
+	if !explicit { // Metadata writes must not retransmit retained local-only keys.
+		delete(payload, "crt_payload")
+		delete(payload, "prv_payload")
+		delete(payload, "csr_payload")
+	}
+	if plan.GeneratedPrivateKey.IsUnknown() || plan.GeneratedPrivateKey.IsNull() {
+		plan.GeneratedPrivateKey = state.GeneratedPrivateKey
+	}
+	if err = trustAction(payload, "cert", false, explicit); err != nil {
+		resp.Diagnostics.AddError("Invalid Trust operation", err.Error())
+		return
+	}
+	// Persist attempted intent, not request echoes, before crossing the
+	// non-idempotent boundary. A lost response must not replay on next apply.
+	plan.OperationStatus = state.OperationStatus
+	if explicit {
+		attempted := state
+		attempted.Action = plan.Action
+		attempted.OperationToken = plan.OperationToken
+		attempted.OperationStatus = types.StringValue("unknown")
+		resp.Diagnostics.Append(resp.State.Set(ctx, &attempted)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if _, _, err = trustWrite(ctx, r.client, "cert", "set", id, payload); err != nil {
+		resp.Diagnostics.AddError("Trust update failed", err.Error()+" Explicit attempted intent is retained as unknown; refresh to reconcile and use a new operation_token only for a deliberate retry.")
+		return
+	}
+	if explicit {
+		plan.OperationStatus = types.StringValue("saved")
+	}
+	plan.ID = state.ID
+	saved := plan
+	saved.retainKnownState(&state)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &saved)...)
+	record, err := trustRecord(ctx, r.client, "cert", id)
+	if err != nil {
+		resp.Diagnostics.AddError("Trust object saved; readback failed", "Managed identity and available key retained; refresh before another explicit operation.")
+		return
+	}
+	plan.fromRecord(record, id)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -115,15 +214,27 @@ func (r *certResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if err := opnsense.Delete(ctx, r.client, certReqOpts, state.ID.ValueString()); err != nil {
-		var nf *opnsense.NotFoundError
-		if errors.As(err, &nf) {
+	if err := r.client.LockMutex(ctx); err != nil {
+		resp.Diagnostics.AddError("Trust lock unavailable", "No mutation attempted.")
+		return
+	}
+	defer r.client.UnlockMutex()
+	if _, _, err := trustWrite(ctx, r.client, "cert", "del", state.ID.ValueString(), nil); err != nil {
+		// A committed delete may lose its response, or the object may have
+		// disappeared after refresh. Only affirmative absence proves completion.
+		probeCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+		defer cancel()
+		if _, readErr := trustRecord(probeCtx, r.client, "cert", state.ID.ValueString()); readErr == errTrustMissing {
 			return
 		}
-		resp.Diagnostics.AddError("Error deleting certificate", fmt.Sprintf("%s", err))
+		resp.Diagnostics.AddError("Trust delete failed", err.Error()+" Authoritative absence was not confirmed; managed state retained.")
 	}
 }
 
 func (r *certResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	if !trustSafeID(req.ID) {
+		resp.Diagnostics.AddError("Invalid Trust identity", "Expected an appliance object identifier without path or query characters.")
+		return
+	}
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

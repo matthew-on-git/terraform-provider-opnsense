@@ -38,9 +38,10 @@ func (d *childDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 			"local_ts":      dsschema.StringAttribute{Computed: true, MarkdownDescription: "Local traffic selectors."},
 			"remote_ts":     dsschema.StringAttribute{Computed: true, MarkdownDescription: "Remote traffic selectors."},
 			"esp_proposals": dsschema.StringAttribute{Computed: true, MarkdownDescription: "ESP proposals. Defaults to 'default'."},
-			"start_action":  dsschema.StringAttribute{Computed: true, MarkdownDescription: "Action on startup: 'none', 'trap', 'start', or 'route'. Defaults to 'start'."},
+			"start_action":  dsschema.StringAttribute{Computed: true, MarkdownDescription: "Action on startup: 'none', 'trap', 'start', 'route', or 'trap|start'. Defaults to 'start'."},
 		},
 	}
+	addIPsecLookupAttributes(resp.Schema.Attributes, childAdvancedFields)
 }
 
 func (d *childDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -64,7 +65,7 @@ func (d *childDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	id := config.ID.ValueString()
 	result, err := opnsense.Get[ipsecChildAPIResponse](ctx, d.client, childReqOpts, id)
 	if err != nil {
-		resp.Diagnostics.AddError("Error reading IPsec child", fmt.Sprintf("Could not read IPsec child %s: %s", id, err))
+		resp.Diagnostics.AddError("Error reading IPsec child", fmt.Sprintf("Could not read IPsec child %s: %s", id, ipsecErrorMessage(err)))
 		return
 	}
 	config.fromAPI(ctx, result, id)

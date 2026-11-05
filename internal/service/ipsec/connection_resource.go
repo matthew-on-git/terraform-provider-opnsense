@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/matthew-on-git/terraform-provider-opnsense/pkg/opnsense"
 )
@@ -22,13 +23,16 @@ var (
 
 // connectionReqOpts configures the OPNsense API endpoints for IPsec connections.
 var connectionReqOpts = opnsense.ReqOpts{
-	AddEndpoint:         "/api/ipsec/connections/add_connection",
-	GetEndpoint:         "/api/ipsec/connections/get_connection",
-	UpdateEndpoint:      "/api/ipsec/connections/set_connection",
-	DeleteEndpoint:      "/api/ipsec/connections/del_connection",
-	SearchEndpoint:      "/api/ipsec/connections/search_connection",
-	ReconfigureEndpoint: "/api/ipsec/service/reconfigure",
-	Monad:               "connection",
+	AddEndpoint:                 "/api/ipsec/connections/add_connection",
+	GetEndpoint:                 "/api/ipsec/connections/get_connection",
+	UpdateEndpoint:              "/api/ipsec/connections/set_connection",
+	DeleteEndpoint:              "/api/ipsec/connections/del_connection",
+	SearchEndpoint:              "/api/ipsec/connections/search_connection",
+	ReconfigureEndpoint:         "/api/ipsec/service/reconfigure",
+	Monad:                       "connection",
+	StrictMissingObjectResponse: true,
+	StrictReconfigureResponse:   true,
+	StrictDeleteResponse:        true,
 }
 
 // connectionResource implements the opnsense_ipsec_connection resource.
@@ -69,34 +73,49 @@ func (r *connectionResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	apiReq := plan.toAPI(ctx)
+	apiReq := configuredIPsecRequest(ctx, req.Config, plan.toAPI(ctx), connectionAdvancedFields, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	uuid, err := opnsense.Add(ctx, r.client, connectionReqOpts, apiReq)
+	markIPsecActivation(ctx, resp.Private, uuid, err, &resp.Diagnostics)
+	if uuid != "" {
+		plan.ID = types.StringValue(uuid)
+		plan.clearUnknownAdvanced()
+		resp.Diagnostics.Append(resp.State.Set(context.WithoutCancel(ctx), &plan)...)
+	}
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error creating IPsec connection",
-			fmt.Sprintf("Could not create IPsec connection: %s", err),
-		)
+		if uuid != "" {
+			// A confirmed saved UUID must remain untainted in Terraform Core.
+			// The private marker retries activation, never the saved add.
+			resp.Diagnostics.AddWarning("Saved IPsec object requires activation", ipsecErrorMessage(err))
+		} else {
+			resp.Diagnostics.AddError("Error creating IPsec connection", ipsecErrorMessage(err))
+		}
 		return
 	}
 
 	result, err := opnsense.Get[ipsecConnectionAPIResponse](ctx, r.client, connectionReqOpts, uuid)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error reading IPsec connection after create",
-			fmt.Sprintf("Created connection %s but could not read it back: %s", uuid, err),
+		resp.Diagnostics.AddWarning(
+			"Saved IPsec connection requires refresh",
+			fmt.Sprintf("Created connection %s but could not read it back: %s", uuid, ipsecErrorMessage(err)),
 		)
 		return
 	}
 
 	plan.fromAPI(ctx, result, uuid)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(resp.State.Set(context.WithoutCancel(ctx), &plan)...)
 }
 
 // Read refreshes the Terraform state from the OPNsense API.
 func (r *connectionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state ConnectionResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if !resp.Diagnostics.HasError() {
+		recoverIPsecActivation(ctx, resp.Private, state.ID.ValueString(), r.client, connectionReqOpts, &resp.Diagnostics)
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -110,7 +129,7 @@ func (r *connectionResource) Read(ctx context.Context, req resource.ReadRequest,
 		}
 		resp.Diagnostics.AddError(
 			"Error reading IPsec connection",
-			fmt.Sprintf("Could not read IPsec connection %s: %s", state.ID.ValueString(), err),
+			fmt.Sprintf("Could not read IPsec connection %s: %s", state.ID.ValueString(), ipsecErrorMessage(err)),
 		)
 		return
 	}
@@ -133,14 +152,22 @@ func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	apiReq := plan.toAPI(ctx)
+	apiReq := configuredIPsecRequest(ctx, req.Config, plan.toAPI(ctx), connectionAdvancedFields, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	recoverIPsecActivation(ctx, resp.Private, state.ID.ValueString(), r.client, connectionReqOpts, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	id := state.ID.ValueString()
 
 	err := opnsense.Update(ctx, r.client, connectionReqOpts, apiReq, id)
+	markIPsecActivation(ctx, resp.Private, id, err, &resp.Diagnostics)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating IPsec connection",
-			fmt.Sprintf("Could not update IPsec connection %s: %s", id, err),
+			fmt.Sprintf("Could not update IPsec connection %s: %s", id, ipsecErrorMessage(err)),
 		)
 		return
 	}
@@ -149,13 +176,13 @@ func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading IPsec connection after update",
-			fmt.Sprintf("Updated connection %s but could not read it back: %s", id, err),
+			fmt.Sprintf("Updated connection %s but could not read it back: %s", id, ipsecErrorMessage(err)),
 		)
 		return
 	}
 
 	plan.fromAPI(ctx, result, id)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(resp.State.Set(context.WithoutCancel(ctx), &plan)...)
 }
 
 // Delete removes an IPsec connection from the OPNsense API.
@@ -167,6 +194,12 @@ func (r *connectionResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	err := opnsense.Delete(ctx, r.client, connectionReqOpts, state.ID.ValueString())
+	// Deletion supersedes the saved create/update. Its activation applies the
+	// final deleted state; never replay the superseded activation first.
+	if err == nil && resp.Private != nil {
+		resp.Diagnostics.Append(resp.Private.SetKey(context.WithoutCancel(ctx), ipsecActivationKey, nil)...)
+	}
+	markIPsecActivation(ctx, resp.Private, state.ID.ValueString(), err, &resp.Diagnostics)
 	if err != nil {
 		var notFoundErr *opnsense.NotFoundError
 		if errors.As(err, &notFoundErr) {
@@ -174,7 +207,7 @@ func (r *connectionResource) Delete(ctx context.Context, req resource.DeleteRequ
 		}
 		resp.Diagnostics.AddError(
 			"Error deleting IPsec connection",
-			fmt.Sprintf("Could not delete IPsec connection %s: %s", state.ID.ValueString(), err),
+			fmt.Sprintf("Could not delete IPsec connection %s: %s", state.ID.ValueString(), ipsecErrorMessage(err)),
 		)
 	}
 }

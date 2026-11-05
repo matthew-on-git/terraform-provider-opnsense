@@ -21,8 +21,8 @@ func TestDataSources_schemaIDs(t *testing.T) {
 	t.Parallel()
 
 	constructors := DataSources()
-	if len(constructors) != 2 {
-		t.Fatalf("expected 2 trust data sources, got %d", len(constructors))
+	if len(constructors) != 3 {
+		t.Fatalf("expected 3 trust data sources, got %d", len(constructors))
 	}
 	assertRequiredID(t, constructors[0]())
 }
@@ -35,7 +35,7 @@ func TestCADataSource_read(t *testing.T) {
 		if r.Method != http.MethodGet || r.URL.Path != caReqOpts.GetEndpoint+"/"+id {
 			t.Fatalf("unexpected request %s %s", r.Method, r.URL.Path)
 		}
-		_, _ = w.Write([]byte(`{"ca":{"refid":"ref1","descr":"Root CA","commonname":"Example Root","country":{"US":{"value":"United States","selected":1}},"lifetime":"3650","crt_payload":"-----BEGIN CERTIFICATE-----","valid_from":"2026-01-01","valid_to":"2036-01-01"}}`))
+		_, _ = w.Write([]byte(`{"ca":{"refid":"ref1","descr":"Root CA","commonname":"Example Root","country":{"US":{"value":"United States","selected":1}},"lifetime":"3650","crt_payload":"-----BEGIN CERTIFICATE-----","prv_payload":"","valid_from":"1767225600","valid_to":"2082758400"}}`))
 	}))
 	t.Cleanup(server.Close)
 
@@ -43,14 +43,14 @@ func TestCADataSource_read(t *testing.T) {
 	ds := newCADataSource()
 	configureDataSource(t, ds, client)
 	schema := dataSourceSchema(t, ds)
-	req := datasource.ReadRequest{Config: modelConfig(t, schema, &CAResourceModel{ID: types.StringValue(id)})}
+	req := datasource.ReadRequest{Config: modelConfig(t, schema, &trustReadModel{ID: types.StringValue(id)})}
 	resp := datasource.ReadResponse{State: tfsdk.State{Schema: schema}}
 
 	ds.Read(context.Background(), req, &resp)
 	if resp.Diagnostics.HasError() {
 		t.Fatalf("read diagnostics: %v", resp.Diagnostics)
 	}
-	var state CAResourceModel
+	var state trustReadModel
 	if diags := resp.State.Get(context.Background(), &state); diags.HasError() {
 		t.Fatalf("state diagnostics: %v", diags)
 	}

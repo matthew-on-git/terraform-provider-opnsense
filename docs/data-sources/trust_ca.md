@@ -2,12 +2,20 @@
 page_title: "opnsense_trust_ca Data Source - opnsense"
 subcategory: "Trust"
 description: |-
-  Look up an existing trust CA on OPNsense.
+  Read an existing Trust certificate authority by UUID.
 ---
 
 # opnsense_trust_ca (Data Source)
 
-Look up an existing trust CA on OPNsense by UUID without importing it into Terraform management.
+Read a Trust CA by UUID without importing it into Terraform management. Returned
+public certificate/subject/validity fields reflect API observations. Returned
+private material is Sensitive but stored in Terraform state; protect state and
+API read permissions accordingly.
+
+The API editor infers action and supplies generation template defaults.
+Neither is original creation provenance; editor lifetime must not be treated as
+actual certificate validity. This lookup does not generate, import, update,
+activate or delete an object.
 
 ## Example Usage
 
@@ -27,15 +35,37 @@ output "trust_ca_id" {
 
 ### Required
 
-- `id` (String) UUID to look up.
+- `id` (String) UUID of the existing object to read; lookup never imports or mutates it.
 
 ### Read-Only
 
-- `certificate` (String) Certificate payload returned by OPNsense.
-- `common_name` (String) Common name.
-- `country` (String) Country code.
-- `description` (String) Description of the certificate authority.
-- `lifetime` (Number) Certificate authority lifetime in days.
-- `refid` (String) OPNsense reference ID.
-- `valid_from` (String) Certificate validity start.
-- `valid_to` (String) Certificate validity end.
+- `altnames_dns` (String) altnames dns.
+- `altnames_email` (String) altnames email.
+- `altnames_ip` (String) altnames ip.
+- `altnames_uri` (String) altnames uri.
+- `ca_ref` (String) Returned issuing CA reference identifier, distinct from its UUID; null when absent.
+- `cert_type` (String) Released certificate profile: usr_cert, server_cert, combined_server_client or v3_ca. Not EKU purpose.
+- `certificate` (String) certificate.
+- `city` (String) Subject locality returned by the appliance.
+- `common_name` (String) Subject common name returned by the appliance.
+- `country` (String) Two-letter subject country code returned by the appliance.
+- `csr` (String) Returned PEM certificate signing request; null when absent.
+- `description` (String) Human-readable description returned by the appliance.
+- `digest` (String) Digest observed in the API editor; a CSR-only editor may report a template default.
+- `email` (String) Subject email address returned by the appliance.
+- `in_use` (Boolean) Whether the certificate is referenced by services.
+- `is_user` (Boolean) Whether the subject matches an appliance user.
+- `key_type` (String) Key type observed in the API editor; a CSR-only editor may report a template default.
+- `lifetime` (Number) Volatile editor default in days, NOT actual certificate validity. Use valid_from and valid_to.
+- `ocsp_uri` (String) API-reconstructed OCSP responder URL.
+- `organization` (String) Subject organization returned by the appliance.
+- `organizational_unit` (String) Subject organizational unit returned by the appliance.
+- `private_key` (String, Sensitive) private key.
+- `purpose` (String) API-derived RFC 3280 EKU purpose, not generation intent or certificate profile.
+- `refcount` (String) CA reference count reported by the appliance.
+- `refid` (String) OPNsense reference identifier used by linked resources, distinct from the UUID.
+- `serial` (String) CA signing serial counter, not necessarily certificate serial number.
+- `state` (String) Subject state or province returned by the appliance.
+- `subject` (String) API-reconstructed subject distinguished name.
+- `valid_from` (String) Actual validity start returned by the API as a numeric Unix timestamp or string; not the volatile lifetime default.
+- `valid_to` (String) Actual validity end returned by the API as a numeric Unix timestamp or string.
