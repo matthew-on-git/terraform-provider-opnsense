@@ -313,23 +313,26 @@ func bgpCreate[M, A, P any](ctx context.Context, c *opnsense.Client, opts opnsen
 	reflect.ValueOf(&plan).Elem().FieldByName("ID").Set(reflect.ValueOf(types.StringValue(id)))
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	resp.Diagnostics.Append(markBGP(ctx, resp.Private, `"mutation"`)...)
+	// Once identity is confirmed and persisted, errors would taint this new
+	// Core resource and force replacement on retry. Preserve ownership and the
+	// pending marker; refresh can recover without replaying the saved create.
 	if err != nil {
-		resp.Diagnostics.AddError("BGP saved; activation pending", frrDiagnostic(err))
+		resp.Diagnostics.AddWarning("BGP saved; activation pending", frrDiagnostic(err))
 		return
 	}
 	result, err := opnsense.Get[A](ctx, c, strictBGPOpts(opts), id)
 	if err != nil {
-		resp.Diagnostics.AddError("BGP saved; read-back pending", frrDiagnostic(err))
+		resp.Diagnostics.AddWarning("BGP saved; read-back pending", frrDiagnostic(err))
 		return
 	}
 	if err := validateBGPResponse(result, capability); err != nil {
-		resp.Diagnostics.AddError("Invalid FRR read-back", frrDiagnostic(err))
+		resp.Diagnostics.AddWarning("BGP saved; invalid FRR read-back", frrDiagnostic(err))
 		return
 	}
 	current := plan
 	from(&current, result, id)
 	if err := normalizeBGPRead(ctx, c, capability, &plan, &current); err != nil {
-		resp.Diagnostics.AddError("BGP saved; policy read-back failed", frrDiagnostic(err))
+		resp.Diagnostics.AddWarning("BGP saved; policy read-back failed", frrDiagnostic(err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &current)...)

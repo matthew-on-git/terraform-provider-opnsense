@@ -50,6 +50,7 @@ type frrObservation struct {
 	Identity             struct{ Name, UUID string } `json:"identity"`
 	Core, Plugin, Daemon frrCommand
 	Config               frrCommand `json:"frr_config"`
+	Authentication       frrCommand `json:"sa_policies"`
 	PF                   frrCommand `json:"pf_rules"`
 	AllPF                frrCommand `json:"pf_all_rules"`
 	Rendered             frrCommand `json:"pf_rendered"`
@@ -1191,60 +1192,134 @@ func frrAdvancedLiveCheck(t *testing.T, s *terraform.State) error {
 		return err
 	}
 	observation := frrObserve(t)
-	config := observation.Config.Stdout
-	for _, fragment := range []string{"neighbor 2001:db8::34 remote-as external", "neighbor 2001:db8::34 local-as 64513", "neighbor 2001:db8::34 weight 0", "neighbor 2001:db8::34 interface vtnet0", "neighbor 2001:db8::34 bfd strict", "neighbor 2001:db8::34 ebgp-multihop 255", "neighbor 2001:db8::34 timers connect 30", "neighbor 2001:db8::34 attribute-unchanged as-path", "neighbor 2001:db8::34 capability dynamic", "neighbor 2001:db8::34 disable-connected-check"} {
-		if !strings.Contains(config, fragment) {
-			return fmt.Errorf("advanced generated transport/listen settings incomplete")
-		}
-	}
-	af := ""
-	reflectorCount := 0
-	for _, line := range strings.Split(config, "\n") {
-		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "address-family ") {
-			af = strings.TrimPrefix(line, "address-family ")
-		}
-		if line == "exit-address-family" {
-			af = ""
-		}
-		if line == "neighbor 2001:db8::35 route-reflector-client" {
-			reflectorCount++
-			if af != "ipv6 unicast" {
-				return fmt.Errorf("reflector escaped IPv6 address family")
-			}
-		}
-		if strings.HasPrefix(line, "neighbor 2001:db8::34 ") && (strings.Contains(line, "next-hop-self") || strings.Contains(line, "route-reflector-client") || strings.Contains(line, "soft-reconfiguration") || strings.Contains(line, "default-originate") || strings.Contains(line, "as-override") || strings.Contains(line, "remove-private-AS") || strings.Contains(line, "allowas-in")) {
-			if af != "ipv6 unicast" {
-				return fmt.Errorf("advanced AF flag escaped selected IPv6 family")
-			}
-		}
-	}
-	if reflectorCount != 1 {
-		return fmt.Errorf("reflector AF setting missing or duplicated")
-	}
-	for _, capability := range []string{"extended-nexthop", "dynamic", "fqdn", "link-local"} {
-		if !strings.Contains(config, "neighbor 2001:db8::34 capability "+capability+"\n") {
-			return fmt.Errorf("configured capability missing from generated settings")
-		}
-	}
 	group := s.RootModule().Resources["opnsense_quagga_bgp_peergroup.unused"]
-	if group == nil {
+	if group == nil || group.Primary == nil {
 		return fmt.Errorf("listen-range owner missing")
 	}
-	for _, prefix := range []string{"192.0.2.0/24", "2001:db8:31::/64"} {
-		if !strings.Contains(config, "bgp listen range "+prefix+" peer-group "+group.Primary.Attributes["name"]+"\n") {
-			return fmt.Errorf("listen range not bound to intended peer-group")
-		}
+	if observation.Authentication.Status != 0 {
+		return fmt.Errorf("advanced authentication observation failed")
 	}
-	for _, suffix := range []string{"next-hop-self all", "soft-reconfiguration inbound", "default-originate", "as-override", "remove-private-AS all replace-AS", "allowas-in origin"} {
-		if !strings.Contains(config, "neighbor 2001:db8::34 "+suffix) {
-			return fmt.Errorf("advanced generated AF settings incomplete")
-		}
-	}
-	if !strings.Contains(config, "neighbor 2001:db8::35 remote-as internal") || !strings.Contains(config, "neighbor 2001:db8::35 route-reflector-client") {
-		return fmt.Errorf("mode-only iBGP reflector generation incomplete")
+	if err := frrAdvancedGeneratedProof(observation.Config.Stdout, observation.Authentication.Stdout, owner.Primary.ID, group.Primary.Attributes["name"], owner.Primary.Attributes["password"], owner.Primary.Attributes["local_ip"]); err != nil {
+		return err
 	}
 	t.Log("FRR_ADVANCED public_fields=19 password_lookup=false numeric_zero=true generated_transport=true generated_ipv6=true listen_ranges=2 identity_stable=true")
+	return nil
+}
+
+// Commands and authentication sections follow the released bgpd.conf and
+// sa_policies.conf templates at 5ac2959c8514b4f60e94d65439be5f629f10521f.
+// localip supplies TCP-MD5 policy endpoints, not an IPv6 update-source command.
+// Never include observed/expected command text or credentials in errors.
+func frrAdvancedGeneratedProof(config, authentication, uuid, group, password, localIP string) error {
+	type command struct{ prefix, line, family string }
+	peer := "neighbor 2001:db8::34 "
+	reflector := "neighbor 2001:db8::35 "
+	commands := []command{
+		{peer + "remote-as", peer + "remote-as external", ""},
+		{peer + "local-as", peer + "local-as 64513", ""},
+		{peer + "password", peer + "password " + password, ""},
+		{peer + "weight", peer + "weight 0", ""},
+		{peer + "interface", peer + "interface vtnet0", ""},
+		// The released strict-BFD branch emits the plain command twice.
+		{peer + "bfd", peer + "bfd", ""},
+		{peer + "bfd", peer + "bfd strict", ""},
+		{peer + "ebgp-multihop", peer + "ebgp-multihop 255", ""},
+		{peer + "timers connect", peer + "timers connect 30", ""},
+		{peer + "attribute-unchanged", peer + "attribute-unchanged as-path", ""},
+		{peer + "disable-connected-check", peer + "disable-connected-check", ""},
+		{peer + "activate", peer + "activate", "ipv6 unicast"},
+		{reflector + "remote-as", reflector + "remote-as internal", ""},
+		{reflector + "route-reflector-client", reflector + "route-reflector-client", "ipv6 unicast"},
+		{reflector + "activate", reflector + "activate", "ipv6 unicast"},
+	}
+	for _, suffix := range []string{"next-hop-self all", "soft-reconfiguration inbound", "default-originate", "as-override", "remove-private-AS all replace-AS", "allowas-in origin"} {
+		commands = append(commands, command{peer + strings.Fields(suffix)[0], peer + suffix, "ipv6 unicast"})
+	}
+	for _, capability := range []string{"extended-nexthop", "dynamic", "fqdn", "link-local"} {
+		commands = append(commands, command{peer + "capability " + capability, peer + "capability " + capability, ""})
+	}
+	for _, prefix := range []string{"192.0.2.0/24", "2001:db8:31::/64"} {
+		commands = append(commands, command{"bgp listen range " + prefix, "bgp listen range " + prefix + " peer-group " + group, ""})
+	}
+	counts := make([]int, len(commands))
+	family := ""
+	for _, raw := range strings.Split(config, "\n") {
+		line := strings.Join(strings.Fields(raw), " ")
+		if strings.HasPrefix(line, "address-family ") {
+			family = strings.TrimPrefix(line, "address-family ")
+		}
+		if line == "exit-address-family" {
+			family = ""
+		}
+		// The IPv6 transport uses interface, never update-source. The advanced
+		// neighbor is not a reflector; only the separate iBGP fixture is one.
+		if line == peer+"update-source" || strings.HasPrefix(line, peer+"update-source ") || line == peer+"route-reflector-client" || strings.HasPrefix(line, peer+"route-reflector-client ") {
+			return fmt.Errorf("advanced generated unexpected transport or reflector command")
+		}
+		matchedPrefix, matchedCommand := false, false
+		for i, expected := range commands {
+			if line != expected.prefix && !strings.HasPrefix(line, expected.prefix+" ") {
+				continue
+			}
+			matchedPrefix = true
+			if line == expected.line && family == expected.family {
+				counts[i]++
+				matchedCommand = true
+			}
+		}
+		if matchedPrefix && !matchedCommand {
+			return fmt.Errorf("advanced generated command value or family mismatch")
+		}
+	}
+	for i, count := range counts {
+		want := 1
+		if commands[i].line == peer+"bfd" {
+			want = 2
+		}
+		if count != want {
+			return fmt.Errorf("advanced generated command missing or duplicated")
+		}
+	}
+	if uuid == "" || password == "" || localIP == "" {
+		return fmt.Errorf("advanced authentication expected input missing")
+	}
+	sections := map[string]map[string]string{}
+	section := ""
+	for _, raw := range strings.Split(authentication, "\n") {
+		line := strings.TrimSpace(raw)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
+			section = strings.TrimSuffix(strings.TrimPrefix(line, "["), "]")
+			if section != "policy_"+uuid+"_in" && section != "policy_"+uuid+"_out" {
+				continue
+			}
+			if _, exists := sections[section]; exists {
+				return fmt.Errorf("advanced authentication section duplicated")
+			}
+			sections[section] = map[string]string{}
+			continue
+		}
+		fields, tracked := sections[section]
+		if !tracked {
+			continue
+		}
+		key, value, valid := strings.Cut(line, "=")
+		if _, duplicate := fields[key]; !valid || duplicate {
+			return fmt.Errorf("advanced authentication field malformed or duplicated")
+		}
+		fields[key] = value
+	}
+	for _, direction := range []string{"in", "out"} {
+		want := map[string]string{"src": "2001:db8::34", "dst": localIP, "protocol": "tcp", "spi": "0x1000", "aalgo": "tcp-md5", "key": password}
+		if direction == "out" {
+			want["src"], want["dst"] = want["dst"], want["src"]
+		}
+		if !reflect.DeepEqual(sections["policy_"+uuid+"_"+direction], want) {
+			return fmt.Errorf("advanced authentication policy mismatch")
+		}
+	}
 	return nil
 }
 

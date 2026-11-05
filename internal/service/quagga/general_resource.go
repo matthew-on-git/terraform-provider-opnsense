@@ -95,6 +95,10 @@ func (r *generalResource) Create(ctx context.Context, req resource.CreateRequest
 			plan.ID = types.StringValue(generalID)
 			resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 			resp.Diagnostics.Append(markBGP(ctx, resp.Private, `"mutation"`)...)
+			// A confirmed saved singleton must not be tainted by Core and
+			// rewritten on retry. Retain its pending marker for refresh.
+			resp.Diagnostics.AddWarning("Saved FRR general settings; activation pending", frrDiagnostic(err))
+			return
 		}
 		resp.Diagnostics.AddError("Error applying FRR general settings", frrDiagnostic(err))
 		return
@@ -104,11 +108,11 @@ func (r *generalResource) Create(ctx context.Context, req resource.CreateRequest
 	resp.Diagnostics.Append(markBGP(ctx, resp.Private, `"mutation"`)...)
 	result, err := getFRRSingleton[generalAPIResponse](ctx, r.client, generalReqOpts)
 	if err != nil {
-		resp.Diagnostics.AddError("Error reading FRR general settings after apply", frrDiagnostic(err))
+		resp.Diagnostics.AddWarning("Saved FRR general settings; read-back pending", frrDiagnostic(err))
 		return
 	}
 	if err := validateBGPResponse(result, frrCapability{}); err != nil {
-		resp.Diagnostics.AddError("Invalid FRR singleton read-back", frrDiagnostic(err))
+		resp.Diagnostics.AddWarning("Saved FRR singleton; invalid read-back", frrDiagnostic(err))
 		return
 	}
 	plan.fromAPI(ctx, result, generalID)

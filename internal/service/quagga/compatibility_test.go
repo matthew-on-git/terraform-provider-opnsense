@@ -158,7 +158,7 @@ func TestFRRGroupedMembershipIdentityAndSingleSelect(t *testing.T) {
 }
 
 func TestFRRStrictOwnerSelectorDecoding(t *testing.T) {
-	for _, raw := range []string{`null`, `["id"]`, `{"id":{"selected":2}}`, `{"id":{}}`, `12`, `true`} {
+	for _, raw := range []string{`null`, `["id"]`, `{"id":{"selected":2}}`, `{"id":{}}`, `12`, `true`, `{"dynamic,fqdn":{"selected":1}}`, `{"192.0.2.0/24,2001:db8::/64":{"selected":"1"}}`} {
 		var v frrSelectedMapList
 		if json.Unmarshal([]byte(raw), &v) == nil {
 			t.Fatalf("accepted malformed selector %s", raw)
@@ -318,6 +318,21 @@ func TestFRROwnedNullScalarsAndRecoverySelectorIdentity(t *testing.T) {
 	} {
 		if exactBGPPayload(map[string]json.RawMessage{tc.key: json.RawMessage(tc.got)}, map[string]string{tc.key: tc.want}) != tc.ok {
 			t.Fatalf("incorrect recovery identity for %s", tc.key)
+		}
+	}
+}
+
+func TestFRRScalarCSVSelectorsRemainValid(t *testing.T) {
+	for _, tc := range []struct {
+		raw  string
+		want []string
+	}{
+		{`"dynamic,fqdn"`, []string{"dynamic", "fqdn"}},
+		{`"192.0.2.0/24,2001:db8::/64"`, []string{"192.0.2.0/24", "2001:db8::/64"}},
+	} {
+		var got frrSelectedMapList
+		if err := json.Unmarshal([]byte(tc.raw), &got); err != nil || strings.Join(got, "|") != strings.Join(tc.want, "|") {
+			t.Fatalf("scalar CSV selection = %v, error = %v; want %v", got, err, tc.want)
 		}
 	}
 }

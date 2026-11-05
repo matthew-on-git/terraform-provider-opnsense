@@ -120,29 +120,41 @@ func TestProtocolAdvancedInvalidIntentHasNoWrites(t *testing.T) {
 	}
 }
 
-func TestProtocolListenRangesCSVMemberHasNoWrites(t *testing.T) {
-	writes := 0
-	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" {
-			writes++
-		}
-		if !frrFixture(w, r) {
-			t.Error("invalid set reached API", r.URL.Path)
-		}
-	}))
-	defer api.Close()
-	server, schemas := frrProtocolServer(t, api.URL)
-	name := "opnsense_quagga_bgp_peergroup"
-	schema := schemas.ResourceSchemas[name]
-	config := frrProtocolValue(t, schema, map[string]any{"name": "fixture", "listen_ranges": []string{"192.0.2.0/24,2001:db8::/64"}})
-	null := &tfprotov6.DynamicValue{JSON: []byte("null")}
-	plan, err := server.PlanResourceChange(context.Background(), &tfprotov6.PlanResourceChangeRequest{TypeName: name, PriorState: null, ProposedNewState: config, Config: config})
-	if err != nil {
-		t.Fatal(err)
-	}
-	applied, err := server.ApplyResourceChange(context.Background(), &tfprotov6.ApplyResourceChangeRequest{TypeName: name, PriorState: null, PlannedState: plan.PlannedState, Config: config})
-	if err != nil || !frrProtocolErrors(applied.Diagnostics) || writes != 0 {
-		t.Fatal("CSV set member mutated appliance")
+func TestProtocolInvalidListenRangesHaveNoWrites(t *testing.T) {
+	for _, tc := range []struct{ name, value string }{
+		{"CSV member", "192.0.2.0/24,2001:db8::/64"},
+		{"malformed IPv4", "192.0.2.0/33"},
+		{"malformed IPv6", "2001:db8::/129"},
+		{"IPv4 host bits", "192.0.2.1/24"},
+		{"IPv6 host bits", "2001:db8::1/64"},
+		{"IPv4 host only", "192.0.2.1"},
+		{"IPv6 host only", "2001:db8::1"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			writes := 0
+			api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != "GET" {
+					writes++
+				}
+				if !frrFixture(w, r) {
+					t.Error("invalid set reached API", r.URL.Path)
+				}
+			}))
+			defer api.Close()
+			server, schemas := frrProtocolServer(t, api.URL)
+			name := "opnsense_quagga_bgp_peergroup"
+			schema := schemas.ResourceSchemas[name]
+			config := frrProtocolValue(t, schema, map[string]any{"name": "fixture", "listen_ranges": []string{tc.value}})
+			null := &tfprotov6.DynamicValue{JSON: []byte("null")}
+			plan, err := server.PlanResourceChange(context.Background(), &tfprotov6.PlanResourceChangeRequest{TypeName: name, PriorState: null, ProposedNewState: config, Config: config})
+			if err != nil {
+				t.Fatal(err)
+			}
+			applied, err := server.ApplyResourceChange(context.Background(), &tfprotov6.ApplyResourceChangeRequest{TypeName: name, PriorState: null, PlannedState: plan.PlannedState, Config: config})
+			if err != nil || !frrProtocolErrors(applied.Diagnostics) || writes != 0 {
+				t.Fatal("invalid listen range mutated appliance")
+			}
+		})
 	}
 }
 

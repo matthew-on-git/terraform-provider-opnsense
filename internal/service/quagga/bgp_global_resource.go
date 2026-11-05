@@ -92,6 +92,10 @@ func (r *bgpGlobalResource) Create(ctx context.Context, req resource.CreateReque
 			plan.ID = types.StringValue(bgpGlobalID)
 			resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 			resp.Diagnostics.Append(markBGP(ctx, resp.Private, `"mutation"`)...)
+			// A confirmed saved singleton must not be tainted by Core and
+			// rewritten on retry. Retain its pending marker for refresh.
+			resp.Diagnostics.AddWarning("Saved BGP global settings; activation pending", frrDiagnostic(err))
+			return
 		}
 		resp.Diagnostics.AddError("Error applying BGP global settings", frrDiagnostic(err))
 		return
@@ -101,11 +105,11 @@ func (r *bgpGlobalResource) Create(ctx context.Context, req resource.CreateReque
 	resp.Diagnostics.Append(markBGP(ctx, resp.Private, `"mutation"`)...)
 	result, err := getFRRSingleton[bgpGlobalAPIResponse](ctx, r.client, bgpGlobalReqOpts)
 	if err != nil {
-		resp.Diagnostics.AddError("Error reading BGP global settings after apply", frrDiagnostic(err))
+		resp.Diagnostics.AddWarning("Saved BGP global settings; read-back pending", frrDiagnostic(err))
 		return
 	}
 	if err := validateBGPResponse(result, frrCapability{}); err != nil {
-		resp.Diagnostics.AddError("Invalid FRR singleton read-back", frrDiagnostic(err))
+		resp.Diagnostics.AddWarning("Saved FRR singleton; invalid read-back", frrDiagnostic(err))
 		return
 	}
 	plan.fromAPI(ctx, result, bgpGlobalID)

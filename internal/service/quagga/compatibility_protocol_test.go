@@ -214,8 +214,8 @@ func testFRRSavedCreateRecovery(t *testing.T, stage string) {
 		t.Fatal(err, plan.Diagnostics)
 	}
 	applied, err := server.ApplyResourceChange(context.Background(), &tfprotov6.ApplyResourceChangeRequest{TypeName: name, PriorState: null, PlannedState: plan.PlannedState, Config: config, PlannedPrivate: plan.PlannedPrivate})
-	if err != nil || !frrProtocolErrors(applied.Diagnostics) || len(applied.Private) == 0 {
-		t.Fatal("saved reload failure lost private state", err, applied.Diagnostics)
+	if err != nil || frrProtocolErrors(applied.Diagnostics) || len(applied.Diagnostics) == 0 || len(applied.Private) == 0 {
+		t.Fatal("saved reload failure did not retain warning-only recovery state", err, applied.Diagnostics)
 	}
 	diagJSON, _ := json.Marshal(applied.Diagnostics)
 	if strings.Contains(string(diagJSON), "fixture-secret") {
@@ -516,8 +516,8 @@ func TestProtocolFRRAmbiguousCreateUniqueIdentityRecovery(t *testing.T) {
 		t.Fatal(err, plan.Diagnostics)
 	}
 	applied, err := server.ApplyResourceChange(context.Background(), &tfprotov6.ApplyResourceChangeRequest{TypeName: name, PriorState: null, PlannedState: plan.PlannedState, Config: config, PlannedPrivate: plan.PlannedPrivate})
-	if err != nil || !frrProtocolErrors(applied.Diagnostics) || len(applied.Private) == 0 {
-		t.Fatal("ambiguous saved create did not retain proven identity", err, applied.Diagnostics)
+	if err != nil || frrProtocolErrors(applied.Diagnostics) || len(applied.Diagnostics) == 0 || len(applied.Private) == 0 {
+		t.Fatal("uniquely proven saved create did not retain warning-only recovery state", err, applied.Diagnostics)
 	}
 	fresh, _ := frrProtocolServer(t, api.URL)
 	recovered, err := fresh.ReadResource(context.Background(), &tfprotov6.ReadResourceRequest{TypeName: name, CurrentState: applied.NewState, Private: applied.Private})
@@ -608,7 +608,7 @@ func TestProtocolFRRSingletonSavedSettingsRestartRecovery(t *testing.T) {
 					t.Fatal(err, plan.Diagnostics)
 				}
 				applied, err := server.ApplyResourceChange(context.Background(), &tfprotov6.ApplyResourceChangeRequest{TypeName: name, PriorState: null, PlannedState: plan.PlannedState, Config: config, PlannedPrivate: plan.PlannedPrivate})
-				if err != nil || !frrProtocolErrors(applied.Diagnostics) || len(applied.Private) == 0 {
+				if err != nil || frrProtocolErrors(applied.Diagnostics) || len(applied.Diagnostics) == 0 || len(applied.Private) == 0 {
 					t.Fatal("saved singleton settings lost recovery state", err, applied.Diagnostics)
 				}
 				fail = false

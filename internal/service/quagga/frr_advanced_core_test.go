@@ -151,9 +151,35 @@ data "opnsense_quagga_bgp_peergroup" "read" { id = opnsense_quagga_bgp_peergroup
 	if adopted == omitted || regexp.MustCompile(`(?m)^ (?:weight|multihop|attribute_unchanged|capabilities) =`).MatchString(adopted) {
 		t.Fatal("adoption control retained advanced assignments")
 	}
+	rangesOmitted := strings.Replace(omitted, ` listen_ranges = ["192.0.2.0/24", "2001:db8::/64"]`, "", 1)
+	rangesUpdated := strings.Replace(rangesOmitted, ` name = "fixture"`, ` name = "renamed"`, 1)
+	checkRanges := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr("opnsense_quagga_bgp_peergroup.group", "listen_ranges.#", "2"),
+		resource.TestCheckTypeSetElemAttr("opnsense_quagga_bgp_peergroup.group", "listen_ranges.*", "192.0.2.0/24"),
+		resource.TestCheckTypeSetElemAttr("opnsense_quagga_bgp_peergroup.group", "listen_ranges.*", "2001:db8::/64"),
+		resource.TestCheckResourceAttr("data.opnsense_quagga_bgp_peergroup.read", "listen_ranges.#", "2"),
+		resource.TestCheckTypeSetElemAttr("data.opnsense_quagga_bgp_peergroup.read", "listen_ranges.*", "192.0.2.0/24"),
+		resource.TestCheckTypeSetElemAttr("data.opnsense_quagga_bgp_peergroup.read", "listen_ranges.*", "2001:db8::/64"),
+	)
 	updated := strings.ReplaceAll(omitted, `attribute_unchanged = "as-path"`, `attribute_unchanged = ""`)
 	updated = strings.ReplaceAll(updated, `listen_ranges = ["192.0.2.0/24", "2001:db8::/64"]`, `listen_ranges = []`)
+	updated = strings.Replace(updated, `capabilities = ["dynamic","fqdn"]`, `capabilities = []`, 1)
+	checkCapabilitiesCleared := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr("opnsense_quagga_bgp_neighbor.peer", "capabilities.#", "0"),
+		resource.TestCheckResourceAttr("data.opnsense_quagga_bgp_neighbor.read", "capabilities.#", "0"),
+	)
 	cleared := strings.Replace(updated, " capabilities =", " password = \"\"\n capabilities =", 1)
+	numeric := strings.Replace(updated, ` remote_as_mode = "external"`, " remote_as_mode = \"\"\n remote_as = 64514", 1)
+	modeOnly := updated
+	inherited := strings.Replace(updated, ` remote_as_mode = "external"`, " remote_as_mode = \"\"\n peer_group = opnsense_quagga_bgp_peergroup.group.id", 1)
+	checkAS := func(mode, numericAS string) resource.TestCheckFunc {
+		return resource.ComposeAggregateTestCheckFunc(
+			resource.TestCheckResourceAttr("opnsense_quagga_bgp_neighbor.peer", "remote_as_mode", mode),
+			resource.TestCheckResourceAttr("data.opnsense_quagga_bgp_neighbor.read", "remote_as_mode", mode),
+			resource.TestCheckResourceAttr("opnsense_quagga_bgp_neighbor.peer", "remote_as", numericAS),
+			resource.TestCheckResourceAttr("data.opnsense_quagga_bgp_neighbor.read", "remote_as", numericAS),
+		)
+	}
 	resource.UnitTest(t, resource.TestCase{ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories, Steps: []resource.TestStep{
 		{Config: config, Check: resource.ComposeAggregateTestCheckFunc(resource.TestCheckResourceAttr("opnsense_quagga_bgp_neighbor.peer", "weight", "0"), resource.TestCheckResourceAttr("opnsense_quagga_bgp_neighbor.peer", "password", "configured-test-input"), resource.TestCheckResourceAttr("data.opnsense_quagga_bgp_neighbor.read", "attribute_unchanged", "as-path"))},
 		{ResourceName: "opnsense_quagga_bgp_neighbor.peer", ImportState: true, ImportStateVerify: true, ImportStateVerifyIgnore: []string{"password"}},
@@ -166,8 +192,13 @@ data "opnsense_quagga_bgp_peergroup" "read" { id = opnsense_quagga_bgp_peergroup
 			}
 			return nil
 		}},
+		{Config: rangesOmitted, Check: checkRanges, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
+		{Config: rangesUpdated, Check: resource.ComposeAggregateTestCheckFunc(checkRanges, resource.TestCheckResourceAttr("opnsense_quagga_bgp_peergroup.group", "name", "renamed"))},
+		{Config: rangesUpdated, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
+		{Config: adopted},
 		{Config: adopted, Check: resource.ComposeAggregateTestCheckFunc(resource.TestCheckResourceAttr("opnsense_quagga_bgp_neighbor.peer", "weight", "0"), resource.TestCheckResourceAttr("opnsense_quagga_bgp_neighbor.peer", "multihop", "false"), resource.TestCheckResourceAttr("opnsense_quagga_bgp_neighbor.peer", "attribute_unchanged", "as-path"), resource.TestCheckResourceAttr("opnsense_quagga_bgp_neighbor.peer", "capabilities.#", "2")), ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
-		{PreConfig: func() { mu.Lock(); object["attributeunchanged"] = "med"; mu.Unlock() }, Config: updated, Check: resource.TestCheckResourceAttr("opnsense_quagga_bgp_neighbor.peer", "attribute_unchanged", "")},
+		{PreConfig: func() { mu.Lock(); object["attributeunchanged"] = "med"; mu.Unlock() }, Config: updated, Check: resource.ComposeAggregateTestCheckFunc(resource.TestCheckResourceAttr("opnsense_quagga_bgp_neighbor.peer", "attribute_unchanged", ""), checkCapabilitiesCleared)},
+		{Config: updated, Check: checkCapabilitiesCleared, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
 		{Config: cleared, Check: func(_ *terraform.State) error {
 			mu.Lock()
 			defer mu.Unlock()
@@ -177,6 +208,21 @@ data "opnsense_quagga_bgp_peergroup" "read" { id = opnsense_quagga_bgp_peergroup
 			return nil
 		}},
 		{Config: cleared, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
+		{Config: numeric, Check: checkAS("", "64514")},
+		// Removing numeric configuration is not a numeric clear: the retained
+		// stored AS remains public while the configured mode takes precedence.
+		{Config: modeOnly, Check: checkAS("external", "64514")},
+		{Config: modeOnly, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
+		// Inheritance requires an actually unset appliance AS. Simulate that
+		// external clear before refresh; do not invent a provider clear sentinel.
+		{PreConfig: func() { mu.Lock(); object["remoteas"] = ""; mu.Unlock() }, Config: inherited, Check: resource.ComposeAggregateTestCheckFunc(
+			resource.TestCheckNoResourceAttr("opnsense_quagga_bgp_neighbor.peer", "remote_as"),
+			resource.TestCheckNoResourceAttr("data.opnsense_quagga_bgp_neighbor.read", "remote_as"),
+			resource.TestCheckResourceAttr("opnsense_quagga_bgp_neighbor.peer", "remote_as_mode", ""),
+			resource.TestCheckResourceAttr("opnsense_quagga_bgp_neighbor.peer", "peer_group", id),
+			resource.TestCheckResourceAttr("data.opnsense_quagga_bgp_neighbor.read", "peer_group", id),
+		)},
+		{Config: inherited, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}},
 	}})
 	mu.Lock()
 	defer mu.Unlock()

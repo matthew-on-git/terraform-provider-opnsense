@@ -58,6 +58,9 @@ func decodeFRRSelection(raw []byte) ([]string, error) {
 			return nil, fmt.Errorf("FRR selector contains malformed selected flag")
 		}
 		if selection == "1" && key != "" {
+			if strings.Contains(key, ",") {
+				return nil, fmt.Errorf("FRR selector map key must contain one member, not CSV")
+			}
 			selected = append(selected, key)
 		}
 	}

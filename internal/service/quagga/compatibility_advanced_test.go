@@ -185,3 +185,28 @@ func TestAdvancedInterfaceProofRejectsMetadata(t *testing.T) {
 		}
 	}
 }
+
+// Map keys represent individual members; only scalar selectors may encode CSV.
+func TestAdvancedReadRejectsCSVMapMembers(t *testing.T) {
+	for _, tc := range []struct {
+		name, raw string
+		response  any
+	}{
+		{"capabilities", `{"capabilities":{"dynamic,fqdn":{"selected":1}}}`, &bgpNeighborAPIResponse{}},
+		{"listenranges", `{"listenranges":{"192.0.2.0/24,2001:db8::/64":{"selected":1}}}`, &bgpPeerGroupAPIResponse{}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := json.Unmarshal([]byte(tc.raw), tc.response); err == nil {
+				t.Fatal("CSV map member entered advanced response")
+			}
+		})
+	}
+	var neighbor bgpNeighborAPIResponse
+	if err := json.Unmarshal([]byte(`{"capabilities":"dynamic,fqdn"}`), &neighbor); err != nil || len(neighbor.Capabilities) != 2 {
+		t.Fatal("valid scalar capability CSV rejected", err)
+	}
+	var group bgpPeerGroupAPIResponse
+	if err := json.Unmarshal([]byte(`{"listenranges":"192.0.2.0/24,2001:db8::/64"}`), &group); err != nil || len(group.ListenRanges) != 2 {
+		t.Fatal("valid scalar listen-range CSV rejected", err)
+	}
+}
