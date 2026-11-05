@@ -189,9 +189,9 @@ Use one provider per appliance and object domain in steady state. Never configur
 - **Domain / local mapping:** IPsec / `ipsec_child`
 - **Baseline fields:** close_action, description, dpd_action, enabled, id, install_policies, ipsec_connection, local_networks, mode, proposals, rekey_time, remote_networks, request_id, sha256_96, start_action
 - **Shared semantics:** Pinned core 26.7.8 Swanctl.xml/ConnectionsController.php; existing connections-controller endpoints and UUID ownership; remote_addresses maps to remote_addrs, child audit names map to existing connection_id/local_ts/remote_ts/esp_proposals without changing their types.
-- **Baseline-only:** All audited advanced controls are implemented on the existing owner; live disposable lifecycle proof is still outstanding, so classification remains missing-buildable.
+- **Baseline-only:** All 21 audited advanced controls are implemented and guarded-live verified on 26.7.8_2. Classification remains missing-buildable for explicitly deferred inherited legacy omission/read-completeness and unobservable proposal preference-order limitations, not for an unexecuted advanced lifecycle.
 - **Local-only:** none material
-- **Lifecycle:** Offline HTTP-backed actual framework PlanResourceChange/ApplyResourceChange, import, lookup, omission, clears, drift, failure recovery and deletion tests; live lifecycle not executed (zero writes), guarded acceptance remains required.
+- **Lifecycle:** Offline protocol/race/Core controls and full guarded 26.7.8_2 disabled-object lifecycle/activation PASS at c03b2e0: persistent imports, all21lookups, omission/no-change, drift/repair, clears, Terraform deletion, zero leftovers, exact raw restoration and retirement. No negotiated IKE/traffic, older-firmware or OpenTofu execution claim. See implementation-artifacts/31-0g-live-proof.json.
 - **Sensitive/write-only:** none on these rows; PSKs are owned by the separate sensitive ipsec_psk surface
 - **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/resources/ipsec_child.md; docs/resources/ipsec_child.md
 - **Follow-up:** `_bmad-output/implementation-artifacts/31-0g-ipsec-field-parity.md`
@@ -201,9 +201,9 @@ Use one provider per appliance and object domain in steady state. Never configur
 - **Domain / local mapping:** IPsec / `ipsec_connection`
 - **Baseline fields:** aggressive, description, dpd_delay, dpd_timeout, enabled, id, ike_lifetime, ip_pools, keying_tries, local_addresses, local_port, mobike, proposals, reauthentication_time, rekey_time, remote_addresses, remote_port, send_certificate, send_certificate_request, udp_encapsulation, unique, version
 - **Shared semantics:** Pinned core 26.7.8 Swanctl.xml/ConnectionsController.php; existing connections-controller endpoints and UUID ownership; remote_addresses maps to remote_addrs, child audit names map to existing connection_id/local_ts/remote_ts/esp_proposals without changing their types.
-- **Baseline-only:** All audited advanced controls are implemented on the existing owner; live disposable lifecycle proof is still outstanding, so classification remains missing-buildable.
+- **Baseline-only:** All 21 audited advanced controls are implemented and guarded-live verified on 26.7.8_2. Classification remains missing-buildable for explicitly deferred inherited legacy omission/read-completeness and unobservable proposal preference-order limitations, not for an unexecuted advanced lifecycle.
 - **Local-only:** none material
-- **Lifecycle:** Offline HTTP-backed actual framework PlanResourceChange/ApplyResourceChange, import, lookup, omission, clears, drift, failure recovery and deletion tests; live lifecycle not executed (zero writes), guarded acceptance remains required.
+- **Lifecycle:** Offline protocol/race/Core controls and full guarded 26.7.8_2 disabled-object lifecycle/activation PASS at c03b2e0: persistent imports, all21lookups, omission/no-change, drift/repair, clears, Terraform deletion, zero leftovers, exact raw restoration and retirement. No negotiated IKE/traffic, older-firmware or OpenTofu execution claim. See implementation-artifacts/31-0g-live-proof.json.
 - **Sensitive/write-only:** none on these rows; PSKs are owned by the separate sensitive ipsec_psk surface
 - **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/resources/ipsec_connection.md; docs/resources/ipsec_connection.md
 - **Follow-up:** `_bmad-output/implementation-artifacts/31-0g-ipsec-field-parity.md`

@@ -10,7 +10,7 @@ FEATURES:
 
 UPGRADE NOTES:
 
-* No resource renames or legacy public type changes. Advanced numbers remain decimal strings; omitted advanced values adopt/preserve appliance truth without provider defaults. `ike_lifetime` is overtime grace (`over_time`), not total IKE lifetime; child `rekey_time` cannot be blank. Authentication/PSK/key ownership remains separate. Offline protocol/race tests do not establish live lifecycle parity: isolated disposable acceptance is still outstanding. The new version heading triggers automatic tagging/release after merge and successful main CI; these pending capabilities are not yet released.
+* No resource renames or legacy public type changes. Advanced numbers remain decimal strings; omitted advanced values adopt/preserve appliance truth without provider defaults. `ike_lifetime` is overtime grace (`over_time`), not total IKE lifetime; child `rekey_time` cannot be blank. Authentication/PSK/key ownership remains separate. The guarded 26.7.8_2 disabled-object lifecycle/activation matrix passed, including both persistent imports, all 21 lookups, drift/clears, Terraform deletion, zero leftovers, exact restoration and retirement. Negotiated IKE/packet traffic, older firmware and OpenTofu execution remain unverified; inherited legacy omission/read-completeness and proposal-order limitations remain deferred. The new version heading triggers automatic tagging/release after merge and successful main CI; these pending capabilities are not yet released.
 
 ## 0.14.0 (Released)
 

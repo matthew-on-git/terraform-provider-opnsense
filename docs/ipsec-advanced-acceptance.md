@@ -9,10 +9,13 @@ responses and confirmed-save failure recovery. The separate bounded offline
 `TestIPsecCoreImportedOmissionAndCSVNoChange` uses the actual local Terraform CLI/Core
 against a loopback fixture to construct real no-change plans for configured CSV
 presentation and imported omitted Optional+Computed fields. Neither category is
-live proof. **No live acceptance has run and
-zero appliance writes were made for this story.** Parent story 31.0g remains
-in progress and its PR must remain draft until the lifecycle gate is satisfied.
-These pending capabilities are not a released-provider claim.
+live proof. The final guarded **26.7.8_2** run now passes at `c03b2e0`, including
+real service activation, Terraform deletion, namespace zero, exact restoration,
+final digests and independently verified retirement. The sanitized
+[receipt](../_bmad-output/implementation-artifacts/31-0g-live-proof.json) identifies
+the exact tested source. This is the bounded 21-control increment, not negotiated
+IKE/packet proof or completion of inherited legacy limitations. Until merge and
+automatic publication, this remains a pending-provider capability.
 
 The oracle is released core **26.7.8**, commit
 [`96978001a8343669154e4492172ce0a07dac7e4b`](https://github.com/opnsense/core/tree/96978001a8343669154e4492172ce0a07dac7e4b).
@@ -159,6 +162,31 @@ results, and malformed selection members/domain values fail without erasing
 prior state. True/false aggressive and SHA256-96 lookup/drift controls are executed
 offline, including hard-coded-false negative controls.
 
-The revised guarded live run remains pending; offline checks are not appliance
-acceptance. The current integration targets **v0.15.0**, following published Trust
+The revised guarded live run passed completely; offline results remain distinct
+from that appliance evidence. The current integration targets **v0.15.0**, following published Trust
 v0.14.0 and retry-settings v0.13.0.
+
+## Final guarded receipt (2026-11-04)
+
+The fresh full retry passed the non-skipped real Terraform matrix: 11 configured
+steps, both persistent imports, all 21 lookup assertions, omission/no-change,
+both drift/repair cases, true-to-false and blank/zero clears, independent child
+deletion and final parent deletion. Both resources remained disabled; no
+negotiated IKE or packet-flow claim is made. Independent observations confirm
+zero owned/unresolved objects immediately and finally. Original raw config,
+Swanctl settings, routes and generated runtime hashes match; final source,
+runtime and receipt digest gates passed and wrapper exit was zero. The exact
+owned disposable, disk, marker, acceptance container, oracle, tunnel and
+listeners were retired and independently absent.
+
+The earlier full attempt remains **failed**, despite its Go pass and zero
+objects. Its restoration comparison rejected only the model-save `persisted_at`
+attribute. Pinned `BaseModel::toXML` stamps this cache/save metadata on every
+versioned-model serialization; installed bytes match the pinned source. Recovery
+permits comparison differences only in the unique owned Swanctl timestamp and
+direct revision metadata, rejects policy/global/other-model or runtime/routes
+drift, and restores the original raw config under the original inode lock.
+**Final hashes still include every original byte**, including timestamps; they
+are not normalized. Twenty independent counterexample controls pass. The
+original failed inputs/receipts remain private, and only the subsequent full
+fresh successful runner is acceptance evidence.

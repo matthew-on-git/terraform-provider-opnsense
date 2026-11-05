@@ -2,8 +2,10 @@
 
 ## Status
 
-in-progress — implementation and offline verification; isolated live lifecycle
-proof is outstanding. Keep the PR draft. Parent story 31.0g is **not complete**.
+in-progress — bounded 21-control increment independently reviewed and live
+verified; final PR evidence checks and merge/publication pending. Inherited legacy
+omission/read-completeness and proposal-order limitations remain deferred; no
+full-family or negotiated-IKE completion claim.
 
 ## Priority
 
@@ -159,3 +161,21 @@ The canonical full-proof command is the bounded external runner in
 guest is being prepared by a single checkpointed owner; setup writes are not
 acceptance proof. Parent status remains in-progress and PR82 remains draft until
 complete live deletion/restoration/digest evidence and exact-head CI pass.
+
+
+## Final sequential-review live checkpoint (2026-11-04)
+
+Supersedes the historical unexecuted/zero-write notes above. Frozen candidate
+`c03b2e0` passes the full guarded26.7.8_2 matrix and wrapper, all original raw
+restoration hashes and final source/runtime/receipt digests. The sanitized
+[receipt](31-0g-live-proof.json) records the tested scope and limits. Real Core
+checks persist both imported owners and all21lookup outputs, then omission,
+no-change, drift/repair, true/false and blank/zero clears, child deletion and final
+parent deletion. Immediate/final owned and unresolved counts are zero. The owned
+guest/disk/marker/container/oracle/tunnel/listeners are independently absent.
+The first metadata-restoration failure and its recovery remain separate from the
+successful fresh full retry; no failed outcome was relabeled. Current source
+passed all6local gates and8hosted checks; final evidence-only head checks remain.
+Next: exact-head CI, normal authorized merge and automatic0.15.0 publication,
+then31.0h/PR83. Broader inherited legacy limitations remain explicit; do not
+count this bounded increment as unqualified whole-family parity.
