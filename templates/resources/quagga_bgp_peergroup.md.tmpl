@@ -51,6 +51,14 @@ reconcile an ambiguous create with no uniquely proven identity rather than blind
 re-applying. The provider does not install or upgrade plugins, manage unexposed BGP
 credentials, or make production adoption/full advanced-field-parity claims.
 
+## Dynamic peers
+
+`listen_ranges` is an Optional+Computed set of strict IPv4/IPv6 CIDR networks.
+Omission preserves appliance ranges; an empty set clears them. Host bits and
+host-only strings are rejected before mutation. Peer-group mode takes precedence
+over numeric AS; the existing numeric zero sentinel remains compatible. Names
+use the released 1–64 character alphanumeric, dot, underscore or hyphen pattern.
+
 ## Example Usage
 
 {{tffile "examples/resources/opnsense_quagga_bgp_peergroup/resource.tf"}}

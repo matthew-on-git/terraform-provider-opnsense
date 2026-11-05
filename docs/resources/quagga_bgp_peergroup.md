@@ -51,6 +51,14 @@ reconcile an ambiguous create with no uniquely proven identity rather than blind
 re-applying. The provider does not install or upgrade plugins, manage unexposed BGP
 credentials, or make production adoption/full advanced-field-parity claims.
 
+## Dynamic peers
+
+`listen_ranges` is an Optional+Computed set of strict IPv4/IPv6 CIDR networks.
+Omission preserves appliance ranges; an empty set clears them. Host bits and
+host-only strings are rejected before mutation. Peer-group mode takes precedence
+over numeric AS; the existing numeric zero sentinel remains compatible. Names
+use the released 1–64 character alphanumeric, dot, underscore or hyphen pattern.
+
 ## Example Usage
 
 ```terraform
@@ -81,6 +89,7 @@ resource "opnsense_quagga_bgp_peergroup" "speakers" {
 - `linked_prefixlist_out` (Set of String) Linked linked_prefixlist_out policy entry UUIDs. FRR 2.0 logical group semantics are validated before writes.
 - `linked_routemap_in` (Set of String) Linked linked_routemap_in policy entry UUIDs. FRR 2.0 logical group semantics are validated before writes.
 - `linked_routemap_out` (Set of String) Linked linked_routemap_out policy entry UUIDs. FRR 2.0 logical group semantics are validated before writes.
+- `listen_ranges` (Set of String) Strict CIDR ranges for dynamic BGP peers.
 - `next_hop_self` (Boolean) Set next-hop to self. Defaults to `false`.
 - `remote_as` (Number) Remote AS number (0 = unset / use remote_as_mode).
 - `remote_as_mode` (String) Remote AS mode: `internal` or `external` (leave empty to use an explicit `remote_as`).

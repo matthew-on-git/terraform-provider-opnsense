@@ -9,10 +9,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"reflect"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -31,12 +33,24 @@ var (
 	frrCollectorSHA       atomic.Value
 )
 
-const frrOracleBase = "http://host.docker.internal:18445"
+func frrOracleBase() string {
+	return strings.TrimSuffix(os.Getenv("OPNSENSE_FRR_ORACLE_URI"), "/snapshot")
+}
+
+func frrRequiredBinding(t *testing.T, name string) string {
+	t.Helper()
+	value := os.Getenv(name)
+	if value == "" {
+		t.Fatal("missing required isolated runtime binding:", name)
+	}
+	return value
+}
 
 type frrObservation struct {
 	Identity             struct{ Name, UUID string } `json:"identity"`
 	Core, Plugin, Daemon frrCommand
 	Config               frrCommand `json:"frr_config"`
+	Authentication       frrCommand `json:"sa_policies"`
 	PF                   frrCommand `json:"pf_rules"`
 	AllPF                frrCommand `json:"pf_all_rules"`
 	Rendered             frrCommand `json:"pf_rendered"`
@@ -61,7 +75,7 @@ type frrCommand struct {
 func frrObserve(t *testing.T) frrObservation {
 	t.Helper()
 	var result frrObservation
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, frrOracleBase+"/snapshot", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, frrOracleBase()+"/snapshot", nil)
 	if err != nil {
 		t.Fatal("invalid observation URI")
 	}
@@ -75,10 +89,10 @@ func frrObserve(t *testing.T) frrObservation {
 	if response.StatusCode != 200 || json.NewDecoder(response.Body).Decode(&result) != nil {
 		t.Fatal("independent observation failed")
 	}
-	if result.Identity.Name != "opnsense-acceptance-102" || result.Identity.UUID != "13921598-695f-42cc-9d09-1b06dd2d38b5" {
+	if result.Identity.Name != frrRequiredBinding(t, "OPNSENSE_DISPOSABLE_VM_NAME") || result.Identity.UUID != frrRequiredBinding(t, "OPNSENSE_DISPOSABLE_VM_UUID") {
 		t.Fatal("observation VM identity mismatch")
 	}
-	if result.Core.Status != 0 || !strings.Contains(result.Core.Stdout, "OPNsense 26.7.7") || result.Plugin.Status != 0 || strings.TrimSpace(result.Plugin.Stdout) != "2.0_1" || result.Daemon.Status != 0 || !strings.Contains(result.Daemon.Stdout, "bgpd version 10.7.1") {
+	if result.Core.Status != 0 || frrVersionToken(result.Core.Stdout, "OPNsense") != frrRequiredBinding(t, "OPNSENSE_FRR_EXPECTED_CORE") || result.Plugin.Status != 0 || strings.TrimSpace(result.Plugin.Stdout) != frrRequiredBinding(t, "OPNSENSE_FRR_EXPECTED_PLUGIN") || result.Daemon.Status != 0 || frrVersionToken(result.Daemon.Stdout, "bgpd version") != frrRequiredBinding(t, "OPNSENSE_FRR_EXPECTED_DAEMON") {
 		t.Fatal("independent core/plugin/daemon version mismatch")
 	}
 	if initial := frrCollectorSHA.Load(); initial == nil {
@@ -108,7 +122,7 @@ func frrObserve(t *testing.T) frrObservation {
 
 func frrLabOperation(t *testing.T, operation string) {
 	t.Helper()
-	uri := frrOracleBase + "/filter-reload"
+	uri := frrOracleBase() + "/filter-reload"
 	if operation != "filter-reload" {
 		t.Fatal("unsupported lab operation")
 	}
@@ -146,7 +160,7 @@ func frrLabDisabledConfigSync(t *testing.T) {
 		t.Fatal("cannot open private host handshake directory")
 	}
 	defer func() { _ = root.Close() }()
-	if root.WriteFile("disabled-config-sync.request", []byte("13921598-695f-42cc-9d09-1b06dd2d38b5"), 0o600) != nil {
+	if root.WriteFile("disabled-config-sync.request", []byte(frrRequiredBinding(t, "OPNSENSE_DISPOSABLE_VM_UUID")), 0o600) != nil {
 		t.Fatal("cannot request host-side disabled config sync")
 	}
 	deadline := time.Now().Add(30 * time.Second)
@@ -230,7 +244,16 @@ func frrRawSelection(raw json.RawMessage) (string, error) {
 		if flag != "0" && flag != "1" {
 			return "", fmt.Errorf("malformed raw selected flag")
 		}
-		if flag == "1" && id != "" {
+		if flag == "1" {
+			// Released core BaseListField::getNodeOptions emits an exact
+			// empty-key selected "None" placeholder for unset optional fields.
+			// Like decodeFRRSelection, do not treat that placeholder as a UUID.
+			if id == "" {
+				continue
+			}
+			if strings.TrimSpace(id) != id {
+				return "", fmt.Errorf("malformed raw selected member")
+			}
 			values = append(values, id)
 		}
 	}
@@ -316,10 +339,10 @@ func frrPreflight(t *testing.T) {
 	if os.Getenv("OPNSENSE_URI") != "https://host.docker.internal:18444" {
 		t.Fatal("FRR acceptance requires the exact isolated container forwarding endpoint")
 	}
-	if os.Getenv("OPNSENSE_FRR_ORACLE_URI") != frrOracleBase+"/snapshot" {
+	if !regexp.MustCompile(`^http://host\.docker\.internal:[0-9]+/snapshot$`).MatchString(frrRequiredBinding(t, "OPNSENSE_FRR_ORACLE_URI")) {
 		t.Fatal("requires the fixed private host observation oracle")
 	}
-	if os.Getenv("OPNSENSE_DISPOSABLE_VM_NAME") != "opnsense-acceptance-102" || os.Getenv("OPNSENSE_DISPOSABLE_VM_UUID") != "13921598-695f-42cc-9d09-1b06dd2d38b5" || os.Getenv("OPNSENSE_FRR_IDENTITY_ATTESTATION") != "opnsense-acceptance-102:13921598-695f-42cc-9d09-1b06dd2d38b5" {
+	if !regexp.MustCompile(`^[0-9a-f-]{36}$`).MatchString(frrRequiredBinding(t, "OPNSENSE_DISPOSABLE_VM_UUID")) || frrRequiredBinding(t, "OPNSENSE_FRR_IDENTITY_ATTESTATION") != frrRequiredBinding(t, "OPNSENSE_DISPOSABLE_VM_NAME")+":"+os.Getenv("OPNSENSE_DISPOSABLE_VM_UUID") {
 		t.Fatal("requires exact disposable identity")
 	}
 	endpointCheck := exec.Command("python3", "-c", `
@@ -335,7 +358,7 @@ with socket.create_connection((uri.hostname,uri.port or 443),timeout=15) as sock
 	if endpointCheck.Run() != nil {
 		t.Fatal("exact container API endpoint TLS attestation failed")
 	}
-	if os.Getenv("OPNSENSE_FRR_IPV6_READY_ATTESTATION") != "13921598-695f-42cc-9d09-1b06dd2d38b5:vtnet0:2001:db8:2::15:linklocal:ready" {
+	if os.Getenv("OPNSENSE_FRR_IPV6_READY_ATTESTATION") != frrRequiredBinding(t, "OPNSENSE_DISPOSABLE_VM_UUID")+":vtnet0:2001:db8:2::15:linklocal:ready" {
 		t.Fatal("requires independently attested isolated WAN IPv6 next-hop readiness")
 	}
 	t.Log("FRR_LAB_IPV6_READY interface=vtnet0 global=2001:db8:2::15 linklocal=true provisioning=parent_lab_not_provider")
@@ -343,7 +366,7 @@ with socket.create_connection((uri.hostname,uri.port or 443),timeout=15) as sock
 	if observed.Collector.DefaultObserved {
 		t.Fatal("collector already observed default before fixture")
 	}
-	t.Logf("FRR_IDENTITY core=26.7.7 plugin=2.0_1 daemon=10.7.1 collector_sha256=%s vm_uuid=%s", observed.CollectorSHA, observed.Identity.UUID)
+	t.Logf("FRR_IDENTITY core=%s plugin=%s daemon=%s collector_sha256=%s", frrVersionToken(observed.Core.Stdout, "OPNsense"), strings.TrimSpace(observed.Plugin.Stdout), frrVersionToken(observed.Daemon.Stdout, "bgpd version"), observed.CollectorSHA)
 }
 
 func TestAccFRRCompatibility(t *testing.T) {
@@ -415,20 +438,158 @@ func TestAccFRRCompatibility(t *testing.T) {
 
 	frrLegacyCoreUpgrade(t, marker)
 	config := frrCompatibilityConfig(marker, true, false)
-	check := func(s *terraform.State) error { return frrLiveCheck(t, s, marker, true, baseline.Collector.Sessions) }
-	steps := []resource.TestStep{{Config: config, Check: check}, {Config: config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}}}
-	for _, name := range []string{"opnsense_quagga_prefix_list.a", "opnsense_quagga_prefix_list.b", "opnsense_quagga_route_map.a", "opnsense_quagga_route_map.b", "opnsense_quagga_bgp_peergroup.policy", "opnsense_quagga_bgp_neighbor.peer", "opnsense_quagga_bgp_redistribution.policy"} {
-		steps = append(steps, resource.TestStep{ResourceName: name, ImportState: true, ImportStateVerify: true, ImportStateVerifyIgnore: []string{"linked_prefixlist_out", "linked_routemap_out", "match_prefix", "route_map"}, ImportStateCheck: frrCheckImportedPolicy(t, marker, name)})
+	var advancedID string
+	sequenceIDs := map[string]string{}
+	check := func(s *terraform.State) error {
+		owner := s.RootModule().Resources["opnsense_quagga_bgp_neighbor.advanced"]
+		if owner == nil {
+			return fmt.Errorf("advanced owner missing")
+		}
+		if advancedID != "" && advancedID != owner.Primary.ID {
+			return fmt.Errorf("advanced identity churn")
+		}
+		advancedID = owner.Primary.ID
+		for _, name := range []string{"a", "b"} {
+			object := s.RootModule().Resources["opnsense_quagga_route_map."+name]
+			if object == nil {
+				return fmt.Errorf("route-map owner missing")
+			}
+			if previous := sequenceIDs[name]; previous != "" && previous != object.Primary.ID {
+				return fmt.Errorf("route-map identity changed")
+			}
+			sequenceIDs[name] = object.Primary.ID
+		}
+		if err := frrAdvancedLiveCheck(t, s); err != nil {
+			return err
+		}
+		return frrLiveCheck(t, s, marker, true, baseline.Collector.Sessions)
 	}
+	steps := []resource.TestStep{{Config: config, Check: check}, {Config: config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}}}
+	for _, name := range []string{"opnsense_quagga_prefix_list.a", "opnsense_quagga_prefix_list.b", "opnsense_quagga_route_map.a", "opnsense_quagga_route_map.b", "opnsense_quagga_bgp_peergroup.policy", "opnsense_quagga_bgp_neighbor.peer", "opnsense_quagga_bgp_neighbor.advanced", "opnsense_quagga_bgp_neighbor.reflector", "opnsense_quagga_bgp_redistribution.policy"} {
+		steps = append(steps, resource.TestStep{ResourceName: name, ImportState: true, ImportStateVerify: true, ImportStateVerifyIgnore: []string{"linked_prefixlist_out", "linked_routemap_out", "match_prefix", "route_map", "password"}, ImportStateCheck: frrCheckImportedPolicy(t, marker, name)})
+	}
+	reordered := strings.ReplaceAll(strings.ReplaceAll(config, "order = 10", "order = 30"), "order = 20", "order = 5")
+	steps = append(steps, resource.TestStep{Config: reordered, Check: func(s *terraform.State) error {
+		observation := frrObserve(t)
+		generated := observation.Config.Stdout
+		if err := frrRenderedSequenceValues(generated, marker+"_rm"); err != nil {
+			return err
+		}
+		a, b := s.RootModule().Resources["opnsense_quagga_route_map.a"], s.RootModule().Resources["opnsense_quagga_route_map.b"]
+		if a == nil || b == nil || a.Primary.ID == b.Primary.ID || a.Primary.ID != sequenceIDs["a"] || b.Primary.ID != sequenceIDs["b"] {
+			return fmt.Errorf("sequence update lost route-map identities")
+		}
+		if err := frrCheckManagedPolicyReference(t, marker, s.RootModule().Resources["opnsense_quagga_bgp_peergroup.policy"]); err != nil {
+			return err
+		}
+		deadline := time.Now().Add(180 * time.Second)
+		for {
+			observation = frrObserve(t)
+			if observation.Collector.DefaultObserved {
+				return fmt.Errorf("reversed policy exported forbidden default")
+			}
+			if observation.Collector.Active && !slices.Contains(observation.Collector.Prefixes, "198.18.31.0/24") {
+				break
+			}
+			if time.Now().After(deadline) {
+				return fmt.Errorf("reversed policy did not withdraw current approved prefix with active session")
+			}
+			time.Sleep(time.Second)
+		}
+		t.Log("FRR_ADVANCED_SEQUENCE rendered_sequence_values=true effective_numeric_order=true grouped_reference=true")
+		return nil
+	}}, resource.TestStep{Config: config, Check: check})
 	steps = append(steps, resource.TestStep{Config: config, ExpectNonEmptyPlan: true, Check: func(s *terraform.State) error {
 		owner := s.RootModule().Resources["opnsense_quagga_bgp_neighbor.peer"]
 		result := frrRaw(t, "POST", "/api/quagga/bgp/set_neighbor/"+owner.Primary.ID, map[string]any{"neighbor": map[string]string{"description": marker + "_drift", "family": "ipv6"}})
+		advanced := s.RootModule().Resources["opnsense_quagga_bgp_neighbor.advanced"]
+		drift := frrRaw(t, "POST", "/api/quagga/bgp/set_neighbor/"+advanced.Primary.ID, map[string]any{"neighbor": map[string]string{"weight": "9", "attributeunchanged": "med"}})
+		if string(drift["result"]) != `"saved"` {
+			return fmt.Errorf("advanced drift rejected")
+		}
 		if string(result["result"]) != `"saved"` {
 			return fmt.Errorf("raw drift mutation rejected")
 		}
 		return nil
 	}}, resource.TestStep{Config: config, ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectResourceAction("opnsense_quagga_bgp_neighbor.peer", plancheck.ResourceActionUpdate)}}, Check: check}, resource.TestStep{Config: frrCompatibilityConfig(marker, false, true), Check: func(s *terraform.State) error { return frrLiveCheck(t, s, marker, false, baseline.Collector.Sessions) }}, resource.TestStep{Config: config, Check: check})
 	resource.Test(t, resource.TestCase{ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories, WorkingDir: workingDir, CheckDestroy: func(_ *terraform.State) error { frrAssertZeros(t, marker, "TERRAFORM_DESTROY"); return nil }, Steps: steps})
+}
+
+// Managed references retain configured siblings. Observe the same owner freshly,
+// then prove both selections independently instead of applying import semantics.
+func frrCheckManagedPolicyReference(t *testing.T, marker string, owner *terraform.ResourceState) error {
+	t.Helper()
+	if owner == nil || owner.Primary == nil || owner.Primary.ID == "" {
+		return fmt.Errorf("managed policy owner missing")
+	}
+	read := func(kind, id string) (map[string]json.RawMessage, error) {
+		raw := frrRaw(t, "GET", "/api/quagga/bgp/get_"+kind+"/"+id, nil)
+		var object map[string]json.RawMessage
+		if json.Unmarshal(raw[kind], &object) != nil || len(object) == 0 {
+			return nil, fmt.Errorf("authoritative policy object missing")
+		}
+		return object, nil
+	}
+	return frrManagedPolicyReference(owner.Primary, owner.Primary.ID, marker, read)
+}
+
+// The injected authoritative reader keeps selection/group negative controls
+// independent of an appliance. No state or provider behavior is modified.
+func frrManagedPolicyReference(owner *terraform.InstanceState, rawOwnerID, marker string, read func(string, string) (map[string]json.RawMessage, error)) error {
+	if owner == nil || owner.ID == "" || rawOwnerID != owner.ID || owner.Attributes["id"] != owner.ID {
+		return fmt.Errorf("managed policy owner identity mismatch")
+	}
+	managed, err := frrFlatmapSelection(owner.Attributes, "linked_routemap_out")
+	if err != nil || len(managed) == 0 {
+		return fmt.Errorf("managed policy selection absent or malformed")
+	}
+	raw, err := read("peergroup", rawOwnerID)
+	if err != nil {
+		return fmt.Errorf("managed policy owner unreadable")
+	}
+	var name string
+	if json.Unmarshal(raw["name"], &name) != nil || name != marker+"_pg" {
+		return fmt.Errorf("managed policy owner group mismatch")
+	}
+	selected, err := frrRawSelection(raw["linkedRoutemapOut"])
+	if err != nil || selected == "" {
+		return fmt.Errorf("raw managed policy selection absent or malformed")
+	}
+	for _, selection := range [][]string{managed, strings.Split(selected, ",")} {
+		for _, id := range selection {
+			if strings.TrimSpace(id) == "" {
+				return fmt.Errorf("empty policy reference member")
+			}
+			object, err := read("routemap", id)
+			var groupName string
+			if err != nil || json.Unmarshal(object["name"], &groupName) != nil || groupName != marker+"_rm" {
+				return fmt.Errorf("policy reference lost authoritative group identity")
+			}
+		}
+	}
+	return nil
+}
+
+// Validate the actual flatmap members, not just the synthetic count. Empty
+// sets are valid here; callers that require a configured relation reject them.
+func frrFlatmapSelection(attrs map[string]string, field string) ([]string, error) {
+	count, err := strconv.Atoi(attrs[field+".#"])
+	if err != nil || count < 0 {
+		return nil, fmt.Errorf("policy reference set count missing or malformed")
+	}
+	members := []string{}
+	for key, id := range attrs {
+		if strings.HasPrefix(key, field+".") && key != field+".#" {
+			if strings.TrimSpace(id) == "" {
+				return nil, fmt.Errorf("empty policy reference member")
+			}
+			members = append(members, id)
+		}
+	}
+	if len(members) != count {
+		return nil, fmt.Errorf("policy reference set count disagrees with members")
+	}
+	return members, nil
 }
 
 // Imports may canonicalize a sibling UUID within a name/number group. Verify
@@ -456,6 +617,16 @@ func frrCheckImportedPolicy(t *testing.T, marker, name string) resource.ImportSt
 			}
 			if err := frrCanonicalReferences(states[0].Attributes, owner); err != nil {
 				return err
+			}
+		}
+		// This additional inspected set is not canonicalized above, but its
+		// count/member boundary must be equally strict before per-UUID reads.
+		for key := range states[0].Attributes {
+			if strings.HasPrefix(key, "linked_prefixlist_out.") {
+				if _, err := frrFlatmapSelection(states[0].Attributes, "linked_prefixlist_out"); err != nil {
+					return err
+				}
+				break
 			}
 		}
 		for key, id := range states[0].Attributes {
@@ -530,13 +701,8 @@ func frrLiveCheck(t *testing.T, s *terraform.State, marker string, firewall bool
 		if managed == nil || lookup == nil {
 			return fmt.Errorf("resource/data-source fixture missing")
 		}
-		for key, value := range managed.Primary.Attributes {
-			if strings.HasPrefix(key, "linked_routemap_out.") || strings.HasPrefix(key, "match_prefix.") {
-				continue
-			}
-			if lookup.Primary.Attributes[key] != value {
-				return fmt.Errorf("resource/data-source disagree on %s", key)
-			}
+		if err := frrCompareAdvancedPublicAttributes(managed.Primary.Attributes, lookup.Primary.Attributes, "linked_routemap_out.", "match_prefix."); err != nil {
+			return err
 		}
 		if err := frrCheckImportedPolicy(t, marker, name)([]*terraform.InstanceState{lookup.Primary}); err != nil {
 			return err
@@ -652,6 +818,7 @@ resource "opnsense_quagga_bgp_peergroup" "policy" {
 }
 resource "opnsense_quagga_bgp_peergroup" "unused" {
  name = "%[1]s_unused"
+ listen_ranges = ["192.0.2.0/24","2001:db8:31::/64"]
  remote_as = 65222
  family = ["ipv4","ipv6"]
  default_originate = %[3]t
@@ -662,6 +829,41 @@ resource "opnsense_quagga_bgp_neighbor" "peer" {
  description = "%[1]s"
  family = ["ipv4","ipv6"]
  peer_group = opnsense_quagga_bgp_peergroup.policy.id
+ depends_on = [opnsense_quagga_general.lab]
+}
+resource "opnsense_quagga_bgp_neighbor" "advanced" {
+ address = "2001:db8::34"
+ description = "%[1]s_advanced"
+ family = ["ipv6"]
+ remote_as_mode = "external"
+ local_as = 64513
+ password = "acceptance-only-input"
+ weight = 0
+ local_ip = "2001:db8:2::15"
+ link_local_interface = "wan"
+ next_hop_self = true
+ next_hop_self_all = true
+ multihop = true
+ route_reflector_client = false
+ soft_reconfiguration_inbound = true
+ bfd = true
+ bfd_strict = true
+ connect_timer = 30
+ default_originate = true
+ as_override = true
+ remove_private_as = "remove-private-AS all replace-AS"
+ allow_as_in = "origin"
+ disable_connected_check = true
+ attribute_unchanged = "as-path"
+ capabilities = ["extended-nexthop","dynamic","fqdn","link-local"]
+ depends_on = [opnsense_quagga_general.lab]
+}
+resource "opnsense_quagga_bgp_neighbor" "reflector" {
+ address = "2001:db8::35"
+ description = "%[1]s_reflector"
+ remote_as_mode = "internal"
+ family = ["ipv6"]
+ route_reflector_client = true
  depends_on = [opnsense_quagga_general.lab]
 }
 resource "opnsense_quagga_bgp_neighbor" "v4" {
@@ -693,6 +895,7 @@ resource "opnsense_quagga_bgp_neighbor" "cross" {
  description="%[1]s_cross"
 }
 data "opnsense_quagga_bgp_neighbor" "peer" {id=opnsense_quagga_bgp_neighbor.peer.id}
+data "opnsense_quagga_bgp_neighbor" "advanced" {id=opnsense_quagga_bgp_neighbor.advanced.id}
 data "opnsense_quagga_bgp_peergroup" "policy" {id=opnsense_quagga_bgp_peergroup.policy.id}
 data "opnsense_quagga_route_map" "a" {id=opnsense_quagga_route_map.a.id}
 `, marker, firewall, defaultOriginate)
@@ -880,10 +1083,16 @@ func frrBGPFirewallProof(rules, rendered string, enabled bool) error {
 
 func frrCanonicalReferences(attrs map[string]string, raw map[string]json.RawMessage) error {
 	for field, wire := range map[string]string{"linked_routemap_out": "linkedRoutemapOut", "match_prefix": "match2", "route_map": "linkedRoutemap", "peer_group": "peergroup"} {
-		if _, present := attrs[field]; !present {
-			if _, present = attrs[field+".#"]; !present {
-				continue
-			}
+		_, scalar := attrs[field]
+		set := false
+		for key := range attrs {
+			set = set || strings.HasPrefix(key, field+".")
+		}
+		if scalar && set {
+			return fmt.Errorf("policy reference mixes scalar and set representations")
+		}
+		if !scalar && !set {
+			continue
 		}
 		selected, err := frrRawSelection(raw[wire])
 		if err != nil {
@@ -895,10 +1104,9 @@ func frrCanonicalReferences(attrs map[string]string, raw map[string]json.RawMess
 				want = append(want, value)
 			}
 		} else {
-			for key, value := range attrs {
-				if strings.HasPrefix(key, field+".") && key != field+".#" {
-					want = append(want, value)
-				}
+			want, err = frrFlatmapSelection(attrs, field)
+			if err != nil {
+				return err
 			}
 		}
 		got := []string{}
@@ -964,4 +1172,625 @@ func frrAFPolicyProof(config, marker string, unusedDefault bool) error {
 		}
 	}
 	return nil
+}
+
+// Advanced observations never print generated configuration or credentials.
+func frrAdvancedLiveCheck(t *testing.T, s *terraform.State) error {
+	t.Helper()
+	owner := s.RootModule().Resources["opnsense_quagga_bgp_neighbor.advanced"]
+	lookup := s.RootModule().Resources["data.opnsense_quagga_bgp_neighbor.advanced"]
+	if owner == nil || lookup == nil {
+		return fmt.Errorf("advanced owner/lookup missing")
+	}
+	if _, exists := lookup.Primary.Attributes["password"]; exists {
+		return fmt.Errorf("lookup exposed authentication")
+	}
+	if owner.Primary.Attributes["password"] != "acceptance-only-input" || owner.Primary.Attributes["weight"] != "0" || owner.Primary.Attributes["attribute_unchanged"] != "as-path" {
+		return fmt.Errorf("advanced configured state did not converge")
+	}
+	if err := frrCompareAdvancedPublicAttributes(owner.Primary.Attributes, lookup.Primary.Attributes); err != nil {
+		return err
+	}
+	observation := frrObserve(t)
+	group := s.RootModule().Resources["opnsense_quagga_bgp_peergroup.unused"]
+	if group == nil || group.Primary == nil {
+		return fmt.Errorf("listen-range owner missing")
+	}
+	if observation.Authentication.Status != 0 {
+		return fmt.Errorf("advanced authentication observation failed")
+	}
+	if err := frrAdvancedGeneratedProof(observation.Config.Stdout, observation.Authentication.Stdout, owner.Primary.ID, group.Primary.Attributes["name"], owner.Primary.Attributes["password"], owner.Primary.Attributes["local_ip"]); err != nil {
+		return err
+	}
+	t.Log("FRR_ADVANCED public_fields=19 password_lookup=false numeric_zero=true generated_transport=true generated_ipv6=true listen_ranges=2 identity_stable=true")
+	return nil
+}
+
+// Commands and authentication sections follow the released bgpd.conf and
+// sa_policies.conf templates at 5ac2959c8514b4f60e94d65439be5f629f10521f.
+// localip supplies TCP-MD5 policy endpoints, not an IPv6 update-source command.
+// Never include observed/expected command text or credentials in errors.
+func frrAdvancedGeneratedProof(config, authentication, uuid, group, password, localIP string) error {
+	type command struct{ prefix, line, family string }
+	peer := "neighbor 2001:db8::34 "
+	reflector := "neighbor 2001:db8::35 "
+	commands := []command{
+		{peer + "remote-as", peer + "remote-as external", ""},
+		{peer + "local-as", peer + "local-as 64513", ""},
+		{peer + "password", peer + "password " + password, ""},
+		{peer + "weight", peer + "weight 0", ""},
+		{peer + "interface", peer + "interface vtnet0", ""},
+		// The released strict-BFD branch emits the plain command twice.
+		{peer + "bfd", peer + "bfd", ""},
+		{peer + "bfd", peer + "bfd strict", ""},
+		{peer + "ebgp-multihop", peer + "ebgp-multihop 255", ""},
+		{peer + "timers connect", peer + "timers connect 30", ""},
+		{peer + "attribute-unchanged", peer + "attribute-unchanged as-path", ""},
+		{peer + "disable-connected-check", peer + "disable-connected-check", ""},
+		{peer + "activate", peer + "activate", "ipv6 unicast"},
+		{reflector + "remote-as", reflector + "remote-as internal", ""},
+		{reflector + "route-reflector-client", reflector + "route-reflector-client", "ipv6 unicast"},
+		{reflector + "activate", reflector + "activate", "ipv6 unicast"},
+	}
+	for _, suffix := range []string{"next-hop-self all", "soft-reconfiguration inbound", "default-originate", "as-override", "remove-private-AS all replace-AS", "allowas-in origin"} {
+		commands = append(commands, command{peer + strings.Fields(suffix)[0], peer + suffix, "ipv6 unicast"})
+	}
+	for _, capability := range []string{"extended-nexthop", "dynamic", "fqdn", "link-local"} {
+		commands = append(commands, command{peer + "capability " + capability, peer + "capability " + capability, ""})
+	}
+	for _, prefix := range []string{"192.0.2.0/24", "2001:db8:31::/64"} {
+		commands = append(commands, command{"bgp listen range " + prefix, "bgp listen range " + prefix + " peer-group " + group, ""})
+	}
+	counts := make([]int, len(commands))
+	family := ""
+	for _, raw := range strings.Split(config, "\n") {
+		line := strings.Join(strings.Fields(raw), " ")
+		if strings.HasPrefix(line, "address-family ") {
+			family = strings.TrimPrefix(line, "address-family ")
+		}
+		if line == "exit-address-family" {
+			family = ""
+		}
+		// The IPv6 transport uses interface, never update-source. The advanced
+		// neighbor is not a reflector; only the separate iBGP fixture is one.
+		if line == peer+"update-source" || strings.HasPrefix(line, peer+"update-source ") || line == peer+"route-reflector-client" || strings.HasPrefix(line, peer+"route-reflector-client ") {
+			return fmt.Errorf("advanced generated unexpected transport or reflector command")
+		}
+		matchedPrefix, matchedCommand := false, false
+		for i, expected := range commands {
+			if line != expected.prefix && !strings.HasPrefix(line, expected.prefix+" ") {
+				continue
+			}
+			matchedPrefix = true
+			if line == expected.line && family == expected.family {
+				counts[i]++
+				matchedCommand = true
+			}
+		}
+		if matchedPrefix && !matchedCommand {
+			return fmt.Errorf("advanced generated command value or family mismatch")
+		}
+	}
+	for i, count := range counts {
+		want := 1
+		if commands[i].line == peer+"bfd" {
+			want = 2
+		}
+		if count != want {
+			return fmt.Errorf("advanced generated command missing or duplicated")
+		}
+	}
+	if uuid == "" || password == "" || localIP == "" {
+		return fmt.Errorf("advanced authentication expected input missing")
+	}
+	sections := map[string]map[string]string{}
+	section := ""
+	for _, raw := range strings.Split(authentication, "\n") {
+		line := strings.TrimSpace(raw)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
+			section = strings.TrimSuffix(strings.TrimPrefix(line, "["), "]")
+			if section != "policy_"+uuid+"_in" && section != "policy_"+uuid+"_out" {
+				continue
+			}
+			if _, exists := sections[section]; exists {
+				return fmt.Errorf("advanced authentication section duplicated")
+			}
+			sections[section] = map[string]string{}
+			continue
+		}
+		fields, tracked := sections[section]
+		if !tracked {
+			continue
+		}
+		key, value, valid := strings.Cut(line, "=")
+		if _, duplicate := fields[key]; !valid || duplicate {
+			return fmt.Errorf("advanced authentication field malformed or duplicated")
+		}
+		fields[key] = value
+	}
+	for _, direction := range []string{"in", "out"} {
+		want := map[string]string{"src": "2001:db8::34", "dst": localIP, "protocol": "tcp", "spi": "0x1000", "aalgo": "tcp-md5", "key": password}
+		if direction == "out" {
+			want["src"], want["dst"] = want["dst"], want["src"]
+		}
+		if !reflect.DeepEqual(sections["policy_"+uuid+"_"+direction], want) {
+			return fmt.Errorf("advanced authentication policy mismatch")
+		}
+	}
+	return nil
+}
+
+func frrVersionToken(output, label string) string {
+	fields := strings.Fields(output)
+	labelFields := strings.Fields(label)
+	for i := 0; i+len(labelFields) < len(fields); i++ {
+		if slices.Equal(fields[i:i+len(labelFields)], labelFields) {
+			token := fields[i+len(labelFields)]
+			if label == "OPNsense" {
+				match := regexp.MustCompile(`^([0-9]+(?:\.[0-9]+)+(?:_[0-9]+)?)(?:-(?:amd64|aarch64))?$`).FindStringSubmatch(token)
+				if match == nil {
+					return ""
+				}
+				return match[1]
+			}
+			return token
+		}
+	}
+	return ""
+}
+
+func TestFRRVersionTokensRejectPrefixes(t *testing.T) {
+	for _, tc := range []struct{ output, label, want string }{{"OPNsense 26.7.8_20-amd64", "OPNsense", "26.7.8_2"}, {"bgpd version 10.7.10", "bgpd version", "10.7.1"}} {
+		if frrVersionToken(tc.output, tc.label) == tc.want {
+			t.Fatal("version prefix falsely accepted")
+		}
+	}
+	if frrVersionToken("OPNsense 26.7.8_2 (amd64)", "OPNsense") != "26.7.8_2" || frrVersionToken("OPNsense 26.7.8_2-amd64", "OPNsense") != "26.7.8_2" {
+		t.Fatal("exact core token not parsed")
+	}
+}
+
+// The top-level flatmap % is synthetic: the resource has one more schema
+// property (password) than the deliberately password-free lookup. All real
+// public values, including set membership/counts and explicit empty strings,
+// must still agree in both directions.
+func frrCompareAdvancedPublicAttributes(owner, lookup map[string]string, ignoredPrefixes ...string) error {
+	if _, exists := lookup["password"]; exists {
+		return fmt.Errorf("lookup exposed authentication")
+	}
+	ignored := func(key string) bool {
+		if key == "%" || key == "password" {
+			return true
+		}
+		for _, prefix := range ignoredPrefixes {
+			if strings.HasPrefix(key, prefix) {
+				return true
+			}
+		}
+		return false
+	}
+
+	for _, pair := range [][2]map[string]string{{owner, lookup}, {lookup, owner}} {
+		for key, value := range pair[0] {
+			if ignored(key) {
+				continue
+			}
+			if got, exists := pair[1][key]; !exists || got != value {
+				return fmt.Errorf("advanced public lookup differs for %s", key)
+			}
+		}
+	}
+	return nil
+}
+
+func TestFRRAdvancedPublicFlatmapComparison(t *testing.T) {
+	owner := map[string]string{"%": "36", "password": "configured-test-input", "id": "stable", "weight": "0", "multihop": "false", "attribute_unchanged": "", "capabilities.#": "1", "capabilities.123": "dynamic"}
+	lookup := map[string]string{"%": "35", "id": "stable", "weight": "0", "multihop": "false", "attribute_unchanged": "", "capabilities.#": "1", "capabilities.123": "dynamic"}
+	if err := frrCompareAdvancedPublicAttributes(owner, lookup); err != nil {
+		t.Fatal("synthetic schema counts caused false mismatch", err)
+	}
+	for key := range lookup {
+		if key == "%" {
+			continue
+		}
+		t.Run(key, func(t *testing.T) {
+			changed := map[string]string{}
+			for k, v := range lookup {
+				changed[k] = v
+			}
+			changed[key] = "different"
+			if frrCompareAdvancedPublicAttributes(owner, changed) == nil {
+				t.Fatal("real public mismatch was ignored", key)
+			}
+		})
+	}
+	missing := map[string]string{}
+	for key, value := range lookup {
+		if key != "attribute_unchanged" {
+			missing[key] = value
+		}
+	}
+	if frrCompareAdvancedPublicAttributes(owner, missing) == nil {
+		t.Fatal("missing explicit empty public value was ignored")
+	}
+	lookup["unexpected_public_field"] = "value"
+	if frrCompareAdvancedPublicAttributes(owner, lookup) == nil {
+		t.Fatal("lookup-only public value was ignored")
+	}
+}
+
+func TestFRRGenericPeerPublicFlatmapComparison(t *testing.T) {
+	owner := map[string]string{"%": "36", "password": "", "id": "peer", "weight": "0", "description": "", "family.#": "1", "family.123": "ipv4", "peer_group": "group", "linked_routemap_out.#": "2", "linked_routemap_out.1": "sibling-a", "linked_routemap_out.2": "sibling-b", "match_prefix.#": "2", "match_prefix.1": "prefix-a"}
+	lookup := map[string]string{"%": "35", "id": "peer", "weight": "0", "description": "", "family.#": "1", "family.123": "ipv4", "peer_group": "group", "linked_routemap_out.#": "1", "linked_routemap_out.3": "canonical", "match_prefix.#": "1", "match_prefix.2": "canonical-prefix"}
+	compare := func(values map[string]string) error {
+		return frrCompareAdvancedPublicAttributes(owner, values, "linked_routemap_out.", "match_prefix.")
+	}
+	if err := compare(lookup); err != nil {
+		t.Fatal("generic peer metadata/canonical relation false mismatch", err)
+	}
+	for _, key := range []string{"id", "weight", "description", "family.#", "family.123", "peer_group"} {
+		t.Run(key, func(t *testing.T) {
+			changed := map[string]string{}
+			for k, v := range lookup {
+				changed[k] = v
+			}
+			changed[key] = "different"
+			if compare(changed) == nil {
+				t.Fatal("generic peer real field mismatch ignored", key)
+			}
+		})
+	}
+	delete(lookup, "description")
+	if compare(lookup) == nil {
+		t.Fatal("generic peer missing empty real field ignored")
+	}
+	lookup["description"] = ""
+	lookup["unexpected_public_field"] = "value"
+	if compare(lookup) == nil {
+		t.Fatal("generic peer lookup-only real field ignored")
+	}
+	delete(lookup, "unexpected_public_field")
+	lookup["password"] = ""
+	if compare(lookup) == nil {
+		t.Fatal("generic peer password exposure ignored")
+	}
+}
+
+// Released bgpd.conf at 5ac2959c8514b4f60e94d65439be5f629f10521f
+// uses helpers.sortDictList(..., 'name', 'id'): textual rendering may put "30"
+// before "5". FRR precedence is numeric, independently proved by the mandatory
+// active-session current-prefix withdrawal check before the sequence marker.
+func frrRenderedSequenceValues(config, name string) error {
+	counts := map[string]int{}
+	for _, line := range strings.Split(config, "\n") {
+		counts[strings.TrimSpace(line)]++
+	}
+	if counts["route-map "+name+" permit 30"] != 1 || counts["route-map "+name+" deny 5"] != 1 {
+		return fmt.Errorf("generated route-map numeric sequence values missing or duplicated")
+	}
+	return nil
+}
+
+func TestFRRRenderedSequenceValuesAllowReleasedLexicalOrder(t *testing.T) {
+	// Source: net/frr/src/opnsense/service/templates/OPNsense/Quagga/Config/bgpd.conf
+	// at the released revision above. Lexical ID order is not effective policy order.
+	lexical := "route-map fixture_rm permit 30\n match ip address prefix-list fixture_pl\nroute-map fixture_rm deny 5\n"
+	if err := frrRenderedSequenceValues(lexical, "fixture_rm"); err != nil {
+		t.Fatal("valid released lexical rendering rejected", err)
+	}
+	for _, invalid := range []string{
+		"route-map fixture_rm permit 30\n",
+		"route-map fixture_rm deny 5\n",
+		"route-map fixture_rm permit 300\nroute-map fixture_rm deny 5\n",
+		"route-map fixture_rm permit 30\nroute-map fixture_rm deny 50\n",
+		"route-map fixture_rm permit 30\nroute-map fixture_rm deny 5\nroute-map fixture_rm deny 5\n",
+	} {
+		if frrRenderedSequenceValues(invalid, "fixture_rm") == nil {
+			t.Fatal("missing, wrong or duplicated numeric sequence accepted")
+		}
+	}
+}
+
+func TestFRRManagedPolicyReference(t *testing.T) {
+	for _, tc := range []struct {
+		name, managed, raw, count, managedGroup, rawGroup, unreadable, ownerID, rawOwnerID, invalidName string
+		missingOwner, missingRelation, missingCount, emptyMember, missingRaw, badOwner                  bool
+		wantError                                                                                       bool
+	}{
+		{name: "different canonical same group", managed: "b", raw: "a"},
+		{name: "exact canonical", managed: "a", raw: "a"},
+		{name: "multiple same group", managed: "a,b", raw: "a,b"},
+		{name: "managed multiple raw single", managed: "a,b", raw: "a"},
+		{name: "managed single raw multiple", managed: "b", raw: "a,b"},
+		{name: "valid then null member name", managed: "b", raw: "a", invalidName: "null", wantError: true},
+		{name: "valid then missing member name", managed: "b", raw: "a", invalidName: "missing", wantError: true},
+		{name: "managed wrong group", managed: "b", raw: "a", managedGroup: "other", wantError: true},
+		{name: "raw wrong group", managed: "b", raw: "a", rawGroup: "other", wantError: true},
+		{name: "managed stale", managed: "b", raw: "a", unreadable: "b", wantError: true},
+		{name: "raw unreadable", managed: "b", raw: "a", unreadable: "a", wantError: true},
+		{name: "owner unreadable", managed: "b", raw: "a", unreadable: "owner", wantError: true},
+		{name: "missing selected object", managed: "b", raw: "a", unreadable: "missing-b", wantError: true},
+		{name: "missing owner", missingOwner: true, wantError: true},
+		{name: "empty owner ID", ownerID: "empty", wantError: true},
+		{name: "owner ID mismatch", managed: "b", raw: "a", rawOwnerID: "other", wantError: true},
+		{name: "owner attribute mismatch", managed: "b", raw: "a", ownerID: "other", wantError: true},
+		{name: "wrong owner group", managed: "b", raw: "a", badOwner: true, wantError: true},
+		{name: "missing relation", missingRelation: true, wantError: true},
+		{name: "empty managed", raw: "a", wantError: true},
+		{name: "empty raw", managed: "b", wantError: true},
+		{name: "missing raw", managed: "b", missingRaw: true, wantError: true},
+		{name: "empty member", managed: "b", raw: "a", emptyMember: true, wantError: true},
+		{name: "empty raw member", managed: "b", raw: "a,", wantError: true},
+		{name: "missing count", managed: "b", raw: "a", missingCount: true, wantError: true},
+		{name: "noninteger count", managed: "b", raw: "a", count: "invalid", wantError: true},
+		{name: "negative count", managed: "b", raw: "a", count: "-1", wantError: true},
+		{name: "count mismatch", managed: "b", raw: "a", count: "2", wantError: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			attrs := map[string]string{"id": "owner", "linked_routemap_out.#": "0"}
+			if tc.managed != "" {
+				members := strings.Split(tc.managed, ",")
+				attrs["linked_routemap_out.#"] = strconv.Itoa(len(members))
+				for i, id := range members {
+					attrs["linked_routemap_out."+strconv.Itoa(i)] = id
+				}
+			}
+			if tc.count != "" {
+				attrs["linked_routemap_out.#"] = tc.count
+			}
+			if tc.missingCount {
+				delete(attrs, "linked_routemap_out.#")
+			}
+			if tc.missingRelation {
+				attrs = map[string]string{"id": "owner"}
+			}
+			if tc.emptyMember {
+				attrs["linked_routemap_out.0"] = ""
+			}
+			owner := &terraform.InstanceState{ID: "owner", Attributes: attrs}
+			if tc.ownerID == "empty" {
+				owner.ID = ""
+			} else if tc.ownerID != "" {
+				attrs["id"] = tc.ownerID
+			}
+			if tc.missingOwner {
+				owner = nil
+			}
+			rawID := "owner"
+			if tc.rawOwnerID != "" {
+				rawID = tc.rawOwnerID
+			}
+			reads := map[string]int{}
+			read := func(kind, id string) (map[string]json.RawMessage, error) {
+				reads[kind+"/"+id]++
+				if id == tc.unreadable {
+					return nil, fmt.Errorf("unreadable fixture")
+				}
+				if tc.unreadable == "missing-"+id {
+					return nil, nil
+				}
+				if kind == "peergroup" {
+					name := "m_pg"
+					if tc.badOwner {
+						name = "other"
+					}
+					encoded, err := json.Marshal(tc.raw)
+					if err != nil {
+						return nil, err
+					}
+					result := map[string]json.RawMessage{"name": json.RawMessage(strconv.Quote(name)), "linkedRoutemapOut": encoded}
+					if tc.missingRaw {
+						delete(result, "linkedRoutemapOut")
+					}
+					return result, nil
+				}
+				if id == "a" && tc.invalidName != "" {
+					if tc.invalidName == "null" {
+						return map[string]json.RawMessage{"name": json.RawMessage(`null`)}, nil
+					}
+					return map[string]json.RawMessage{}, nil
+				}
+				group := "m_rm"
+				if id == "b" && tc.managedGroup != "" {
+					group = tc.managedGroup
+				}
+				if id == "a" && tc.rawGroup != "" {
+					group = tc.rawGroup
+				}
+				return map[string]json.RawMessage{"name": json.RawMessage(strconv.Quote(group))}, nil
+			}
+			err := frrManagedPolicyReference(owner, rawID, "m", read)
+			if (err != nil) != tc.wantError {
+				t.Fatalf("error = %v, wantError = %t", err, tc.wantError)
+			}
+			if !tc.wantError {
+				wantReads := map[string]int{}
+				for _, id := range append(strings.Split(tc.managed, ","), strings.Split(tc.raw, ",")...) {
+					wantReads[id]++
+				}
+				for id, count := range wantReads {
+					if reads["routemap/"+id] != count {
+						t.Fatal("each selection was not independently authoritatively read")
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestFRRFreshCanonicalSelectionCardinality(t *testing.T) {
+	raw := map[string]json.RawMessage{"linkedRoutemapOut": json.RawMessage(`"a"`)}
+	for _, tc := range []struct {
+		name, count, member     string
+		missingCount, wantError bool
+	}{
+		{name: "canonical", count: "1", member: "a"},
+		{name: "noncanonical sibling", count: "1", member: "b", wantError: true},
+		{name: "missing count", member: "a", missingCount: true, wantError: true},
+		{name: "malformed count", count: "x", member: "a", wantError: true},
+		{name: "negative count", count: "-1", member: "a", wantError: true},
+		{name: "count mismatch", count: "2", member: "a", wantError: true},
+		{name: "empty member", count: "1", wantError: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			attrs := map[string]string{"linked_routemap_out.#": tc.count, "linked_routemap_out.0": tc.member}
+			if tc.missingCount {
+				delete(attrs, "linked_routemap_out.#")
+			}
+			if err := frrCanonicalReferences(attrs, raw); (err != nil) != tc.wantError {
+				t.Fatalf("error = %v, wantError = %t", err, tc.wantError)
+			}
+		})
+	}
+}
+
+// This HTTP fixture checks observation wiring only, never live acceptance.
+func TestFRRManagedPolicyReferenceHTTPObservation(t *testing.T) {
+	reads := map[string]int{}
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reads[r.URL.Path]++
+		if r.Method != http.MethodGet {
+			t.Error("oracle attempted mutation")
+		}
+		switch r.URL.Path {
+		case "/api/quagga/bgp/get_peergroup/owner":
+			_, _ = fmt.Fprint(w, `{"peergroup":{"name":"m_pg","linkedRoutemapOut":{"a":{"selected":"1"},"b":{"selected":"0"}}}}`)
+		case "/api/quagga/bgp/get_routemap/a", "/api/quagga/bgp/get_routemap/b":
+			_, _ = fmt.Fprint(w, `{"routemap":{"name":"m_rm"}}`)
+		default:
+			t.Error("unexpected authoritative read")
+			http.NotFound(w, r)
+		}
+	}))
+	defer api.Close()
+	t.Setenv("OPNSENSE_URI", api.URL)
+	t.Setenv("OPNSENSE_API_KEY", "fixture")
+	t.Setenv("OPNSENSE_API_SECRET", "fixture")
+	attrs := map[string]string{"id": "owner", "linked_routemap_out.#": "1", "linked_routemap_out.0": "b"}
+	owner := &terraform.ResourceState{Primary: &terraform.InstanceState{ID: "owner", Attributes: attrs}}
+	if err := frrCheckManagedPolicyReference(t, "m", owner); err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range []string{"/api/quagga/bgp/get_peergroup/owner", "/api/quagga/bgp/get_routemap/a", "/api/quagga/bgp/get_routemap/b"} {
+		if reads[path] != 1 {
+			t.Fatal("oracle did not independently read owner and both selected UUIDs")
+		}
+	}
+	if attrs["linked_routemap_out.0"] != "b" {
+		t.Fatal("managed representation mutated")
+	}
+}
+
+func TestFRRFreshCanonicalRepresentationShape(t *testing.T) {
+	raw := map[string]json.RawMessage{"linkedRoutemapOut": json.RawMessage(`"a"`)}
+	for _, tc := range []struct {
+		name      string
+		attrs     map[string]string
+		wantError bool
+	}{
+		{name: "canonical scalar", attrs: map[string]string{"linked_routemap_out": "a"}},
+		{name: "canonical set", attrs: map[string]string{"linked_routemap_out.#": "1", "linked_routemap_out.0": "a"}},
+		{name: "conflicting mixed", attrs: map[string]string{"linked_routemap_out": "a", "linked_routemap_out.#": "1", "linked_routemap_out.0": "b"}, wantError: true},
+		{name: "matching mixed", attrs: map[string]string{"linked_routemap_out": "a", "linked_routemap_out.#": "1", "linked_routemap_out.0": "a"}, wantError: true},
+		{name: "malformed mixed count", attrs: map[string]string{"linked_routemap_out": "a", "linked_routemap_out.#": "x"}, wantError: true},
+		{name: "mixed uncounted member", attrs: map[string]string{"linked_routemap_out": "a", "linked_routemap_out.0": "b"}, wantError: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := frrCanonicalReferences(tc.attrs, raw); (err != nil) != tc.wantError {
+				t.Fatalf("error = %v, wantError = %t", err, tc.wantError)
+			}
+		})
+	}
+}
+
+func TestFRRImportedPrefixSelectionCardinality(t *testing.T) {
+	for _, tc := range []struct {
+		name, count             string
+		missingCount, wantError bool
+	}{
+		{name: "valid", count: "1"},
+		{name: "malformed", count: "x", wantError: true},
+		{name: "missing", missingCount: true, wantError: true},
+		{name: "mismatched", count: "2", wantError: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var prefixReads atomic.Int32
+			api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodGet {
+					t.Error("oracle attempted mutation")
+				}
+				switch r.URL.Path {
+				case "/api/quagga/bgp/get_neighbor/owner":
+					_, _ = fmt.Fprint(w, `{"neighbor":{"peergroup":"pg"}}`)
+				case "/api/quagga/bgp/get_prefixlist/prefix":
+					prefixReads.Add(1)
+					_, _ = fmt.Fprint(w, `{"prefixlist":{"name":"m_pl"}}`)
+				default:
+					t.Error("unexpected authoritative read")
+					http.NotFound(w, r)
+				}
+			}))
+			defer api.Close()
+			t.Setenv("OPNSENSE_URI", api.URL)
+			t.Setenv("OPNSENSE_API_KEY", "fixture")
+			t.Setenv("OPNSENSE_API_SECRET", "fixture")
+			attrs := map[string]string{"id": "owner", "peer_group": "pg", "linked_prefixlist_out.#": tc.count, "linked_prefixlist_out.0": "prefix"}
+			if tc.missingCount {
+				delete(attrs, "linked_prefixlist_out.#")
+			}
+			err := frrCheckImportedPolicy(t, "m", "opnsense_quagga_bgp_neighbor.peer")([]*terraform.InstanceState{{ID: "owner", Attributes: attrs}})
+			if (err != nil) != tc.wantError {
+				t.Fatalf("error = %v, wantError = %t", err, tc.wantError)
+			}
+			wantReads := int32(1)
+			if tc.wantError {
+				wantReads = 0
+			}
+			if prefixReads.Load() != wantReads {
+				t.Fatal("unexpected authoritative prefix-group read count")
+			}
+		})
+	}
+}
+
+func TestFRRRawSelectionNonePlaceholder(t *testing.T) {
+	for _, tc := range []struct {
+		name, raw, want string
+		wantError       bool
+	}{
+		{name: "placeholder only", raw: `{"":{"value":"None","selected":1}}`},
+		{name: "placeholder and real UUID", raw: `{"":{"selected":"1"},"a":{"selected":1}}`, want: "a"},
+		{name: "malformed placeholder flag", raw: `{"":{"selected":2}}`, wantError: true},
+		{name: "whitespace ID", raw: `{" ":{"selected":1}}`, wantError: true},
+		{name: "padded ID", raw: `{" a ":{"selected":1}}`, wantError: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := frrRawSelection(json.RawMessage(tc.raw))
+			if (err != nil) != tc.wantError || got != tc.want {
+				t.Fatalf("selection = %q, error = %v; want %q, error %t", got, err, tc.want, tc.wantError)
+			}
+		})
+	}
+	raw := map[string]json.RawMessage{"linkedRoutemapOut": json.RawMessage(`{"":{"value":"None","selected":1}}`)}
+	if err := frrCanonicalReferences(map[string]string{"linked_routemap_out.#": "0"}, raw); err != nil {
+		t.Fatal("fresh empty set rejected None placeholder", err)
+	}
+	if err := frrCanonicalReferences(map[string]string{"linked_routemap_out.#": "1", "linked_routemap_out.0": "a"}, raw); err == nil {
+		t.Fatal("fresh nonempty set accepted raw None")
+	}
+	owner := &terraform.InstanceState{ID: "owner", Attributes: map[string]string{"id": "owner", "linked_routemap_out.#": "1", "linked_routemap_out.0": "a"}}
+	var memberReads int
+	err := frrManagedPolicyReference(owner, "owner", "m", func(kind, _ string) (map[string]json.RawMessage, error) {
+		if kind == "peergroup" {
+			return map[string]json.RawMessage{"name": json.RawMessage(`"m_pg"`), "linkedRoutemapOut": raw["linkedRoutemapOut"]}, nil
+		}
+		memberReads++
+		return map[string]json.RawMessage{"name": json.RawMessage(`"m_rm"`)}, nil
+	})
+	if err == nil || memberReads != 0 {
+		t.Fatal("required managed relation accepted raw None or attempted member lookup")
+	}
 }

@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "accepted": true,
+  "observed_at": "2026-11-05T01:57:08.868897+00:00",
+  "tested_commit": "d80cad813194c9ea84666472ba077a3f312f85e7",
+  "tested_source_sha256": "118a9579f22bbfaa509ee6c45964f778f00910de4a8007841f82bd490052adbd",
+  "versions": {
+    "opnsense": "26.7.8_2",
+    "os-frr": "2.0_4",
+    "bgpd": "10.7.1",
+    "base": "26.7.8",
+    "kernel_set": "26.7.8",
+    "running_kernel": "15.1-RELEASE-p6"
+  },
+  "released_plugin_source_pin": "5ac2959c8514b4f60e94d65439be5f629f10521f",
+  "installed_authority_files": {
+    "BGP.xml": {
+      "sha256": "cb95b93416e2cd20e328d70258aace45c2913bf85ab34066b39435771d65494e",
+      "matches_released_source": true
+    },
+    "bgpd.conf": {
+      "sha256": "5f19e2b9433c2e02cf4060eeaf249aebc8146d98a2537fb7e663f0f952f1ab66",
+      "matches_released_source": true
+    },
+    "sa_policies.conf": {
+      "sha256": "718123bea60eb95abd178954c8f05e5d836ed39c01408538ff87e72e32986da3",
+      "matches_released_source": true
+    },
+    "BgpController.php": {
+      "sha256": "c71ca7f8e3b574df620570fe4185f1758adf8aa5c455dff988835eda4d713929",
+      "matches_released_source": true
+    }
+  },
+  "execution": {
+    "configured_steps": 17,
+    "go_pass_seconds": 486.49,
+    "whole_wrapper_exit": 0,
+    "non_skipped_go_pass": true,
+    "source_unchanged": true,
+    "runtime_helpers_unchanged": true,
+    "quiescence": {
+      "returncode": 0,
+      "timed_out": false,
+      "canceled": false,
+      "host_group_empty": true,
+      "containers_empty": true
+    },
+    "terraform_deletion": {
+      "neighbor": 0,
+      "peergroup": 0,
+      "routemap": 0,
+      "prefixlist": 0,
+      "redistribution": 0,
+      "aspath": 0,
+      "communitylist": 0
+    },
+    "zero_namespace_phases": {
+      "TERRAFORM_DESTROY": {
+        "neighbor": 0,
+        "peergroup": 0,
+        "routemap": 0,
+        "prefixlist": 0,
+        "redistribution": 0,
+        "aspath": 0,
+        "communitylist": 0
+      },
+      "BEFORE_ROLLBACK": {
+        "neighbor": 0,
+        "peergroup": 0,
+        "routemap": 0,
+        "prefixlist": 0,
+        "redistribution": 0,
+        "aspath": 0,
+        "communitylist": 0
+      },
+      "FINAL_CLEANUP": {
+        "neighbor": 0,
+        "peergroup": 0,
+        "routemap": 0,
+        "prefixlist": 0,
+        "redistribution": 0,
+        "aspath": 0,
+        "communitylist": 0
+      }
+    },
+    "independent_post_wrapper_inventory": {
+      "neighbor": 0,
+      "peergroup": 0,
+      "routemap": 0,
+      "prefixlist": 0,
+      "redistribution": 0,
+      "aspath": 0,
+      "communitylist": 0
+    },
+    "independent_final_inventory": {
+      "neighbor": 0,
+      "peergroup": 0,
+      "routemap": 0,
+      "prefixlist": 0,
+      "redistribution": 0,
+      "aspath": 0,
+      "communitylist": 0
+    },
+    "final_digest_and_secret_scan_gate": true
+  },
+  "restoration": {
+    "exact": {
+      "frr_config": true,
+      "sa_policies": true,
+      "pf_rules": true,
+      "pf_all_rules": true,
+      "pf_rendered": true,
+      "routes": true,
+      "config_xml": true
+    },
+    "original_config_xml_sha256": "37426009bf25c4afa0922ae90ac7837f0c91803be80d49979898c7a8e58d161b",
+    "raw_command_stdout_sha256": {
+      "frr_config": "c17815452724bec264303bd8c1aac1793a2698a6ab5d247defd624d9d95b3208",
+      "sa_policies": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pf_rules": "0b53a3bf9c9f99a889b52fbbd8f4473a51eb08902730fdfd168ad1430f7474eb",
+      "pf_all_rules": "3f88ced22ec7866b70f8d211bd2c781325cff0b9d7209aa6da73efc4e4de91c5",
+      "pf_rendered": "f221e3cd5c8f941eb872a816025b280887edd9a7de270681ce8b7c97efea726e",
+      "routes": "78a2098622cfcf53d06fa7c0c7bb7bf62a5020ec262d67729b5d2dbae74ff2cd"
+    },
+    "sa_presence_and_probe_status_verified": true,
+    "immutable_baseline_write_rejected_before_mutation": true,
+    "provisioning_note": "Initial effective PF ordering changed during the first full activation. Its original snapshot and failed receipt remain preserved. The full canonical post-activation baseline was captured only before Terraform execution/freeze; the second exact restoration passed. No normalization or omitted predicate was used."
+  },
+  "retirement": {
+    "owned_vm_absent": true,
+    "owned_disk_absent": true,
+    "owner_marker_absent": true,
+    "remote_collector_and_qemu_listeners_absent": true,
+    "local_listeners_absent": true,
+    "oracle_and_tunnel_absent": true,
+    "acceptance_container_absent": true,
+    "cluster_inventory_absent": true
+  },
+  "verified_controls": [
+    "19 public advanced fields and password-free lookup",
+    "config-owned password state; independently observed generated TCP-MD5 key/address associations without printing the input",
+    "exact generated command cardinality and selected IPv6 AF placement",
+    "effective numeric policy order and grouped references",
+    "active collector with current permitted prefix and no unwanted default; withdrawal and restored positive gates",
+    "schema-v0 state upgrade on the current appliance",
+    "successful Terraform deletion and seven empty namespaces before/final rollback",
+    "seven exact restoration predicates including successful probes and independent authentication-file presence",
+    "whole guarded wrapper success, final source/runtime hashes and process/container quiescence"
+  ],
+  "lab_boundary": {
+    "isolated_new_disposable": true,
+    "production_writes": false,
+    "qemu_networks_restricted": true,
+    "explicit_collector_only_forward": true,
+    "arbitrary_external_and_private_tcp_blocked": true,
+    "dns_policy": "Existing appliance resolver explicitly REFUSES external DNS; actual RCODE5/zero answers observed. Real unmodified firmware API and three serial discovery checks attest installed versions. Original pkg configuration restored exactly; no repository/catalogue/installed-version/controller/provider fabrication.",
+    "historical_metadata_incident": "This successful bounded run does not diagnose or claim to fix the historical 99%-CPU metadata stall."
+  },
+  "limits": [
+    "numeric clear interface remains an owned parent-story follow-up",
+    "older-plugin/appliance execution and authentic 1.55 response capture remain unverified",
+    "OpenTofu execution remains unverified",
+    "advanced-neighbor TCP-MD5 session negotiation and operational IPv6 traffic are not proven by generated settings",
+    "PF activation and disabled-template sync were explicit lab-owned operations, not provider FRR reconfigure behavior"
+  ]
+}

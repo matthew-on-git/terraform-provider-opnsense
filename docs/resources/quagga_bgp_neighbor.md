@@ -61,19 +61,55 @@ If a confirmed save succeeds but activation/read-back fails, the UUID and privat
 pending-activation state are retained. Refresh retries activation without creating
 another object. Resolve unsupported configuration/capabilities before retrying;
 reconcile an ambiguous create with no uniquely proven identity rather than blindly
-re-applying. The provider does not install or upgrade plugins, manage unexposed BGP
-credentials, or make production adoption/full advanced-field-parity claims.
+re-applying. The provider does not install or upgrade plugins, make production adoption or full appliance-proof claims.
+
+## Advanced neighbor ownership
+
+The candidate advanced surface requires released FRR 1.55 or 2.0 capabilities;
+older supported base plugins require authoritative field-presence proof before
+advanced writes. New public properties are Optional+Computed without defaults:
+omission adopts remote values, explicit false, weight zero, empty strings and
+empty capability sets are configured intent. Null numeric values remain unset.
+`remote_as` is optional: `remote_as_mode` (`internal` / `external`) takes
+precedence; a peer group may supply the AS. `attribute_unchanged` is one scalar
+option, not a set. `remove_private_as` uses source values such as
+`remove-private-AS all replace-AS`, not XML element labels. `allow_as_in` accepts
+empty, `1` through `10`, or `origin`. Capabilities are a set of
+`extended-nexthop`, `dynamic`, `fqdn`, and `link-local`.
+
+`next_hop_self_all` requires `next_hop_self`; `bfd_strict` requires `bfd`.
+Transport-wide flags and per-family policies follow the installed plugin template.
+`link_local_interface` is meaningful for IPv6 transports; update-source rendering
+is transport-dependent. Saved settings alone do not prove an established session.
+
+`password` is an Optional Sensitive, **configuration-owned input**. Omitted or null
+passwords are never read from the appliance, sent as clears, or adopted on import.
+An explicit empty string clears authentication. Refresh retains prior configured
+input, and lookups have no password property. A configured nonempty password
+requires a host `local_ip`, as required by the released model. Sensitive marks
+state for display redaction; it is **not encryption**. Protect Terraform state and
+backend access. Remote password drift cannot be proven. A failed ambiguous create
+with authentication cannot recover identity from remote secret comparison.
+
+Candidate protocol/Core checks and disposable proof are separate from release
+publication. Legacy appliance, OpenTofu and route-collector coverage remain
+unverified unless separately evidenced; parent Story 31.0h remains open.
 
 ## Example Usage
 
 ```terraform
 # MetalLB BGP peering session
 resource "opnsense_quagga_bgp_neighbor" "metallb" {
-  address       = "10.0.0.2"
-  remote_as     = 65001
-  family        = ["ipv4"]
-  next_hop_self = true
-  description   = "MetalLB speaker"
+  address             = "192.0.2.2"
+  remote_as           = 65001
+  family              = ["ipv4"]
+  next_hop_self       = true
+  weight              = 0
+  connect_timer       = 30
+  attribute_unchanged = "as-path"
+  capabilities        = ["dynamic"]
+  # Authentication is config-owned Sensitive input; omission never adopts it.
+  description = "MetalLB speaker"
 }
 ```
 
@@ -83,23 +119,43 @@ resource "opnsense_quagga_bgp_neighbor" "metallb" {
 ### Required
 
 - `address` (String) Neighbor IP address.
-- `remote_as` (Number) Remote AS number.
 
 ### Optional
 
+- `allow_as_in` (String) Source-supported allow_as_in; omitted values adopt appliance state.
+- `as_override` (Boolean) Source-supported as_override; omitted values adopt appliance state.
+- `attribute_unchanged` (String) Source-supported attribute_unchanged; omitted values adopt appliance state.
+- `bfd` (Boolean) Source-supported bfd; omitted values adopt appliance state.
+- `bfd_strict` (Boolean) Source-supported bfd_strict; omitted values adopt appliance state.
+- `capabilities` (Set of String) Source-supported capabilities; omitted values adopt appliance state.
+- `connect_timer` (Number) Source-supported connect_timer; omitted values adopt appliance state.
+- `default_originate` (Boolean) Source-supported default_originate; omitted values adopt appliance state.
 - `description` (String) Description.
+- `disable_connected_check` (Boolean) Source-supported disable_connected_check; omitted values adopt appliance state.
 - `enabled` (Boolean) Whether this neighbor is enabled.
 - `family` (Set of String) Activated address families: lowercase `ipv4`, `ipv6`, or both. Omission preserves legacy multi_protocol/transport behavior. Explicit family may differ from transport only on os-frr 2.0.
 - `holddown` (Number) Hold-down timer in seconds (3-3000).
 - `keepalive` (Number) Keepalive interval in seconds (1-1000).
+- `link_local_interface` (String) Source-supported link_local_interface; omitted values adopt appliance state.
 - `linked_prefixlist_in` (Set of String) Inbound prefix list UUIDs.
 - `linked_prefixlist_out` (Set of String) Outbound prefix list UUIDs.
 - `linked_routemap_in` (Set of String) Inbound route map UUIDs.
 - `linked_routemap_out` (Set of String) Outbound route map UUIDs.
+- `local_as` (Number) Source-supported local_as; omitted values adopt appliance state.
+- `local_ip` (String) Source-supported local_ip; omitted values adopt appliance state.
 - `multi_protocol` (Boolean) Legacy alias: true activates ipv4 and ipv6; false selects the transport family. Prefer family.
+- `multihop` (Boolean) Source-supported multihop; omitted values adopt appliance state.
 - `next_hop_self` (Boolean) Set next-hop to self for advertised routes.
+- `next_hop_self_all` (Boolean) Source-supported next_hop_self_all; omitted values adopt appliance state.
+- `password` (String, Sensitive) Config-owned authentication input. Omitted values are never adopted or cleared. Sensitive state is not encrypted; remote password drift cannot be proven.
 - `peer_group` (String) Existing BGP peer-group UUID. Its policies are activated per selected address family on FRR 2.0.
+- `remote_as` (Number) Remote AS number; mode takes precedence and peer groups may supply it.
+- `remote_as_mode` (String) Source-supported remote_as_mode; omitted values adopt appliance state.
+- `remove_private_as` (String) Source-supported remove_private_as; omitted values adopt appliance state.
+- `route_reflector_client` (Boolean) Source-supported route_reflector_client; omitted values adopt appliance state.
+- `soft_reconfiguration_inbound` (Boolean) Source-supported soft_reconfiguration_inbound; omitted values adopt appliance state.
 - `update_source` (String) Interface or IP to use as update source.
+- `weight` (Number) Source-supported weight; omitted values adopt appliance state.
 
 ### Read-Only
 
@@ -110,3 +166,12 @@ resource "opnsense_quagga_bgp_neighbor" "metallb" {
 ```shell
 terraform import opnsense_quagga_bgp_neighbor.example 12345678-1234-1234-1234-123456789012
 ```
+
+### Remaining numeric-clear interface limitation
+
+`local_as`, `connect_timer`, and `remote_as` are Optional+Computed numeric
+properties. After adopting a non-null appliance value, omission or `null`
+preserves that value; neither is a configured clear. There is currently no
+configured numeric clear for these properties. No zero sentinel is introduced.
+Designing an explicit clear interface remains an open parent Story 31.0h
+follow-up; empty string/set clears described above apply only to those types.

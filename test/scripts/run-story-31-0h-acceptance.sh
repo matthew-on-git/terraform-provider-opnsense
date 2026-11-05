@@ -27,7 +27,7 @@ disabled_sync_worker() {
   local handshake_dir="$1"
   while [[ ! -f "${handshake_dir}/disabled-config-sync.stop" ]]; do
     if [[ -f "${handshake_dir}/disabled-config-sync.request" && ! -f "${handshake_dir}/disabled-config-sync.done" ]]; then
-      if [[ "$(cat "${handshake_dir}/disabled-config-sync.request")" == 13921598-695f-42cc-9d09-1b06dd2d38b5 ]] &&
+      if [[ "$(cat "${handshake_dir}/disabled-config-sync.request")" == "${OPNSENSE_DISPOSABLE_VM_UUID}" ]] &&
         verify_disabled_settings >"${handshake_dir}/disabled-config-precheck.log" 2>&1 &&
         "${OPNSENSE_FRR_GUEST_PROBE}" '/usr/local/sbin/pluginctl -c frr_sync' >"${handshake_dir}/disabled-config-sync.log" 2>&1; then
         printf ok >"${handshake_dir}/disabled-config-sync.done"
@@ -50,7 +50,7 @@ for kind in ("general", "bgp"):
             raise SystemExit("disabled template sync refused enabled settings")
 SYNC
 }
-required_env=(OPNSENSE_FRR_GUEST_PROBE OPNSENSE_FRR_ORACLE_URI OPNSENSE_FRR_ORACLE_TOKEN OPNSENSE_URI OPNSENSE_API_KEY OPNSENSE_API_SECRET OPNSENSE_ALLOW_INSECURE OPNSENSE_DISPOSABLE_VM_NAME OPNSENSE_DISPOSABLE_VM_UUID OPNSENSE_FRR_IDENTITY_PROBE OPNSENSE_FRR_EXPECTED_DIGEST)
+required_env=(OPNSENSE_FRR_EXPECTED_CORE OPNSENSE_FRR_EXPECTED_PLUGIN OPNSENSE_FRR_EXPECTED_DAEMON OPNSENSE_FRR_GUEST_PROBE OPNSENSE_FRR_ORACLE_URI OPNSENSE_FRR_ORACLE_TOKEN OPNSENSE_URI OPNSENSE_API_KEY OPNSENSE_API_SECRET OPNSENSE_ALLOW_INSECURE OPNSENSE_DISPOSABLE_VM_NAME OPNSENSE_DISPOSABLE_VM_UUID OPNSENSE_FRR_IDENTITY_PROBE OPNSENSE_FRR_EXPECTED_DIGEST)
 for name in "${required_env[@]}"; do
   [[ -n "${!name:-}" ]] || die "missing required environment variable: ${name}"
 done
@@ -66,7 +66,7 @@ guest_probe_before="$(shasum -a 256 "${OPNSENSE_FRR_GUEST_PROBE}" | awk '{print 
 identity="$("${probe}")"
 observed_name="$(sed -n 's/^name=//p' <<<"${identity}")"
 observed_uuid="$(sed -n 's/^uuid=//p' <<<"${identity}")"
-[[ "${observed_name}" = opnsense-acceptance-102 && "${observed_name}" = "${OPNSENSE_DISPOSABLE_VM_NAME}" && -n "${observed_uuid}" && "${observed_uuid}" = "${OPNSENSE_DISPOSABLE_VM_UUID}" ]] || die "disposable VM identity mismatch"
+[[ -n "${observed_name}" && "${observed_name}" = "${OPNSENSE_DISPOSABLE_VM_NAME}" && "${observed_uuid}" =~ ^[0-9a-f-]{36}$ && "${observed_uuid}" = "${OPNSENSE_DISPOSABLE_VM_UUID}" ]] || die "disposable VM identity mismatch"
 # Independently bind the configured API endpoint to the attested VM before any
 # credentialed traffic. The probe gets this certificate through VM-owned QEMU
 # forwarding over trusted SSH, not from OPNSENSE_URI.
@@ -135,6 +135,7 @@ docker run --rm --network host -v "${repo_root}:/workspace" \
   -e OPNSENSE_DISPOSABLE_VM_NAME -e OPNSENSE_DISPOSABLE_VM_UUID \
   -e OPNSENSE_FRR_COMPATIBILITY -e OPNSENSE_FRR_IDENTITY_ATTESTATION -e OPNSENSE_FRR_TLS_SHA256 -e OPNSENSE_FRR_IPV6_READY_ATTESTATION \
   -e OPNSENSE_FRR_ORACLE_URI -e OPNSENSE_FRR_ORACLE_TOKEN \
+  -e OPNSENSE_FRR_EXPECTED_CORE -e OPNSENSE_FRR_EXPECTED_PLUGIN -e OPNSENSE_FRR_EXPECTED_DAEMON \
   -e "OPNSENSE_FRR_ARTIFACT_DIR=${container_artifacts}" -e "TMPDIR=${container_artifacts}/.tmp" \
   ghcr.io/devrail-dev/dev-toolchain:1.12.24 bash -c \
   'go build -o "${OPNSENSE_FRR_ARTIFACT_DIR}/bin/current/terraform-provider-opnsense" . && (cd "${OPNSENSE_FRR_ARTIFACT_DIR}/legacy-source" && go build -o "${OPNSENSE_FRR_ARTIFACT_DIR}/bin/legacy/terraform-provider-opnsense" .) && go test -count=1 -v -timeout 60m -run "^TestAccFRRCompatibility$" ./internal/service/quagga' >"${artifact_dir}/runner.log" 2>&1
@@ -151,7 +152,7 @@ scan_secret_artifacts "${artifact_dir}"
 cat "${artifact_dir}/runner.log"
 [[ ${status} -eq 0 ]] || die "FRR acceptance failed; private artifacts retained at ${artifact_dir}"
 grep -Eq -- '--- PASS: TestAccFRRCompatibility( |$)' "${artifact_dir}/runner.log" || die "missing non-skipped live PASS"
-for proof in 'FRR_RESTORE settings_equal=true config_equal=true pf_equal=true rendered_pf_equal=true routes_equal=true' 'positive_prefix=198.18.31.0/24 default_export=false'; do
+for proof in 'FRR_ADVANCED public_fields=19 password_lookup=false' 'FRR_RESTORE settings_equal=true config_equal=true pf_equal=true rendered_pf_equal=true routes_equal=true' 'positive_prefix=198.18.31.0/24 default_export=false'; do
   grep -Fq "${proof}" "${artifact_dir}/runner.log" || die "missing ${proof}"
 done
 for kind in neighbor peergroup routemap prefixlist redistribution aspath communitylist; do
@@ -161,4 +162,4 @@ for kind in neighbor peergroup routemap prefixlist redistribution aspath communi
 done
 digest_after="$(test/scripts/story-31-0h-code-digest.sh)"
 [[ "${digest_after}" = "${digest_before}" ]] || die "candidate changed during acceptance"
-log_info "FRR_COMPATIBILITY_EVIDENCE digest=${digest_after} core=26.7.7 plugin=2.0_1 daemon=10.7.1 vm_uuid=${observed_uuid} restore_equal=true terraform_deleted=0 final_leftovers=0 secret_scan=pass legacy_live=unverified firewall_activation=explicit_lab_not_provider"
+log_info "FRR_COMPATIBILITY_EVIDENCE digest=${digest_after} core=${OPNSENSE_FRR_EXPECTED_CORE} plugin=${OPNSENSE_FRR_EXPECTED_PLUGIN} daemon=${OPNSENSE_FRR_EXPECTED_DAEMON} restore_equal=true terraform_deleted=0 final_leftovers=0 secret_scan=pass legacy_live=unverified firewall_activation=explicit_lab_not_provider"

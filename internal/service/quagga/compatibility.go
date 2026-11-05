@@ -22,8 +22,10 @@ import (
 var bgpOwnerMu = semaphore.NewWeighted(1)
 
 type frrCapability struct {
-	Version, Core string
-	Grouped       bool
+	Version, Core    string
+	Grouped          bool
+	Fields           map[string]bool
+	InterfaceOptions map[string]bool
 }
 
 // Package revisions do not change the plugin release. Keep 2.0 revisions
@@ -97,6 +99,29 @@ func discoverFRR(ctx context.Context, c *opnsense.Client) (frrCapability, error)
 	}
 	if err := frrRead(ctx, c, "/api/quagga/bgp/get_neighbor", &template); err != nil {
 		return result, err
+	}
+	result.Fields = map[string]bool{}
+	for wire := range template.Neighbor {
+		result.Fields[wire] = validAdvancedTemplateField(wire, template.Neighbor[wire])
+	}
+	if raw, exists := template.Neighbor["linklocalinterface"]; exists {
+		var options map[string]json.RawMessage
+		if selected, err := decodeFRRSelection(raw); err != nil || len(selected) > 1 {
+			return result, fmt.Errorf("FRR link-local interface selected metadata is malformed")
+		}
+		if string(raw) != `""` && string(raw) != "[]" && json.Unmarshal(raw, &options) != nil {
+			return result, fmt.Errorf("FRR link-local interface capability is malformed")
+		}
+		result.InterfaceOptions = map[string]bool{}
+		for option, rawOption := range options {
+			var entry struct {
+				Value *string `json:"value"`
+			}
+			if json.Unmarshal(rawOption, &entry) != nil || entry.Value == nil {
+				return result, fmt.Errorf("FRR link-local interface option metadata is malformed")
+			}
+			result.InterfaceOptions[option] = true
+		}
 	}
 	family, hasFamily := template.Neighbor["family"]
 	multi, hasMulti := template.Neighbor["multiprotocol"]

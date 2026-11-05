@@ -6,6 +6,10 @@ package quagga
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -24,6 +28,7 @@ func (r *bgpPeerGroupResource) Schema(_ context.Context, _ resource.SchemaReques
 			"linked_prefixlist_out": schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, MarkdownDescription: "Linked linked_prefixlist_out policy entry UUIDs. FRR 2.0 logical group semantics are validated before writes."},
 			"linked_routemap_in":    schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, MarkdownDescription: "Linked linked_routemap_in policy entry UUIDs. FRR 2.0 logical group semantics are validated before writes."},
 			"linked_routemap_out":   schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, MarkdownDescription: "Linked linked_routemap_out policy entry UUIDs. FRR 2.0 logical group semantics are validated before writes."},
+			"listen_ranges":         schema.SetAttribute{Optional: true, Computed: true, ElementType: types.StringType, MarkdownDescription: "Strict CIDR ranges for dynamic BGP peers."},
 			"id": schema.StringAttribute{
 				Computed: true, MarkdownDescription: "UUID.",
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
@@ -33,14 +38,16 @@ func (r *bgpPeerGroupResource) Schema(_ context.Context, _ resource.SchemaReques
 				MarkdownDescription: "Whether the peer group is enabled. Defaults to `true`.",
 			},
 			"name": schema.StringAttribute{
-				Required: true, MarkdownDescription: "Peer group name.",
+				Required: true, MarkdownDescription: "Peer group name.", Validators: []validator.String{stringvalidator.RegexMatches(frrPolicyName, "Use 1-64 letters, digits, dot, underscore or hyphen.")},
 			},
 			"remote_as_mode": schema.StringAttribute{
 				Optional: true, Computed: true, Default: stringdefault.StaticString(""),
+				Validators:          []validator.String{stringvalidator.OneOf("", "internal", "external")},
 				MarkdownDescription: "Remote AS mode: `internal` or `external` (leave empty to use an explicit `remote_as`).",
 			},
 			"remote_as": schema.Int64Attribute{
 				Optional: true, Computed: true, Default: int64default.StaticInt64(0),
+				Validators:          []validator.Int64{int64validator.Between(0, 4294967295)},
 				MarkdownDescription: "Remote AS number (0 = unset / use remote_as_mode).",
 			},
 			"family": schema.SetAttribute{

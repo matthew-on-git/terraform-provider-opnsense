@@ -16,7 +16,7 @@ import (
 )
 
 func finalNeighbor() map[string]any {
-	return map[string]any{"enabled": "1", "description": "retained", "address": "192.0.2.1", "remoteas": "64512", "updatesource": "", "nexthopself": "0", "family": "ipv4", "peergroup": "", "keepalive": "", "holddown": "", "linkedPrefixlistIn": []any{}, "linkedPrefixlistOut": []any{}, "linkedRoutemapIn": []any{}, "linkedRoutemapOut": []any{}}
+	return map[string]any{"remote_as_mode": "", "localas": "", "weight": "", "localip": "", "linklocalinterface": "", "nexthopselfall": "0", "multihop": "0", "rrclient": "0", "soft_reconfiguration_inbound": "0", "bfd": "0", "bfd_strict": "0", "connecttimer": "", "defaultoriginate": "0", "asoverride": "0", "removeprivateas": "", "allowas_in": "", "disable_connected_check": "0", "attributeunchanged": "", "capabilities": []any{}, "enabled": "1", "description": "retained", "address": "192.0.2.1", "remoteas": "64512", "updatesource": "", "nexthopself": "0", "family": "ipv4", "peergroup": "", "keepalive": "", "holddown": "", "linkedPrefixlistIn": []any{}, "linkedPrefixlistOut": []any{}, "linkedRoutemapIn": []any{}, "linkedRoutemapOut": []any{}}
 }
 
 func TestFinalNeighborEmptyASRefreshImportDataSource(t *testing.T) {
@@ -85,10 +85,10 @@ func TestFinalMalformedOwnedReadRetainsState(t *testing.T) {
 				response = map[string]any{"enabled": "1", "asnumber": "65111", "routerid": "198.18.31.1", "distance": "", "graceful": "0", "networkimportcheck": "1", "enforce_first_as": "1", "logneighborchanges": "0", "networks": []any{}, "maximumpaths": "", "maximumpathsibgp": ""}
 			case "peergroup":
 				values = map[string]any{"id": "group", "enabled": true, "name": "group", "remote_as_mode": "", "remote_as": 64512, "family": []string{"ipv4"}, "update_source": "", "next_hop_self": false, "default_originate": false, "linked_prefixlist_in": []string{}, "linked_prefixlist_out": []string{}, "linked_routemap_in": []string{}, "linked_routemap_out": []string{}}
-				response = map[string]any{"enabled": "1", "name": "group", "remote_as_mode": "", "remoteas": "64512", "family": "ipv4", "updatesource": "", "nexthopself": "0", "defaultoriginate": "0", "linkedPrefixlistIn": []any{}, "linkedPrefixlistOut": []any{}, "linkedRoutemapIn": []any{}, "linkedRoutemapOut": []any{}}
+				response = map[string]any{"listenranges": []any{}, "enabled": "1", "name": "group", "remote_as_mode": "", "remoteas": "64512", "family": "ipv4", "updatesource": "", "nexthopself": "0", "defaultoriginate": "0", "linkedPrefixlistIn": []any{}, "linkedPrefixlistOut": []any{}, "linkedRoutemapIn": []any{}, "linkedRoutemapOut": []any{}}
 			case "redistribution":
 				values = map[string]any{"id": "redistribution", "enabled": true, "description": "retained", "redistribute": "connected", "route_map": ""}
-				response = map[string]any{"enabled": "1", "description": "retained", "redistribute": "connected", "linkedRoutemap": ""}
+				response = map[string]any{"remote_as_mode": "", "localas": "", "weight": "", "localip": "", "linklocalinterface": "", "nexthopselfall": "0", "multihop": "0", "rrclient": "0", "soft_reconfiguration_inbound": "0", "bfd": "0", "bfd_strict": "0", "connecttimer": "", "defaultoriginate": "0", "asoverride": "0", "removeprivateas": "", "allowas_in": "", "disable_connected_check": "0", "attributeunchanged": "", "capabilities": []any{}, "enabled": "1", "description": "retained", "redistribute": "connected", "linkedRoutemap": ""}
 			}
 			malformed := false
 			api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +149,13 @@ func TestFinalLegacyCreateUpdateWire(t *testing.T) {
 					case "/api/core/firmware/info":
 						_, _ = fmt.Fprintf(w, `{"product_version":"26.7.7","package":[{"name":"os-frr","version":%q,"installed":"1"}]}`, version)
 					case "/api/quagga/bgp/get_neighbor":
-						_, _ = fmt.Fprint(w, `{"neighbor":{"multiprotocol":"0"}}`)
+						template := finalNeighbor()
+						if version == "1.46" {
+							removeOldAbsentAdvanced(template)
+						}
+						delete(template, "family")
+						template["multiprotocol"] = "0"
+						_ = json.NewEncoder(w).Encode(map[string]any{"neighbor": template})
 					case "/api/quagga/bgp/search_neighbor":
 						_, _ = fmt.Fprint(w, `{"rows":[],"total":0,"current":1,"rowCount":0}`)
 					case "/api/quagga/bgp/add_neighbor", "/api/quagga/bgp/set_neighbor/" + id:
@@ -165,6 +171,9 @@ func TestFinalLegacyCreateUpdateWire(t *testing.T) {
 						_, _ = fmt.Fprintf(w, `{"result":"saved","uuid":%q}`, id)
 					case "/api/quagga/bgp/get_neighbor/" + id:
 						response := finalNeighbor()
+						if version == "1.46" {
+							removeOldAbsentAdvanced(response)
+						}
 						delete(response, "family")
 						response["multiprotocol"] = tc.multi
 						response["address"] = tc.address
@@ -231,7 +240,7 @@ func TestFinalPeerGroupRelationReadBoundary(t *testing.T) {
 					if stale {
 						_, _ = fmt.Fprint(w, `{"peergroup":{}}`)
 					} else {
-						_, _ = fmt.Fprint(w, `{"peergroup":{"enabled":"1","name":"policy","remote_as_mode":"","remoteas":"64512","family":"ipv4","updatesource":"","nexthopself":"0","defaultoriginate":"0","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
+						_, _ = fmt.Fprint(w, `{"peergroup":{"listenranges":[],"enabled":"1","name":"policy","remote_as_mode":"","remoteas":"64512","family":"ipv4","updatesource":"","nexthopself":"0","defaultoriginate":"0","linkedPrefixlistIn":[],"linkedPrefixlistOut":[],"linkedRoutemapIn":[],"linkedRoutemapOut":[]}}`)
 					}
 					return
 				}
@@ -254,5 +263,11 @@ func TestFinalPeerGroupRelationReadBoundary(t *testing.T) {
 				t.Fatal("data-source relation boundary", err, data.Diagnostics, reads)
 			}
 		})
+	}
+}
+
+func removeOldAbsentAdvanced(v map[string]any) {
+	for _, wire := range []string{"remote_as_mode", "localas", "weight", "localip", "linklocalinterface", "nexthopselfall", "multihop", "rrclient", "soft_reconfiguration_inbound", "bfd", "bfd_strict", "connecttimer", "defaultoriginate", "asoverride", "removeprivateas", "allowas_in", "disable_connected_check", "attributeunchanged", "capabilities"} {
+		delete(v, wire)
 	}
 }

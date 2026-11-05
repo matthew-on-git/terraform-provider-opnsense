@@ -15,6 +15,27 @@ import (
 
 // BGPNeighborResourceModel is the Terraform state model for opnsense_quagga_bgp_neighbor.
 type BGPNeighborResourceModel struct {
+	RemoteASMode               types.String `tfsdk:"remote_as_mode"`
+	LocalAS                    types.Int64  `tfsdk:"local_as"`
+	Password                   types.String `tfsdk:"password"`
+	Weight                     types.Int64  `tfsdk:"weight"`
+	LocalIP                    types.String `tfsdk:"local_ip"`
+	LinkLocalInterface         types.String `tfsdk:"link_local_interface"`
+	NextHopSelfAll             types.Bool   `tfsdk:"next_hop_self_all"`
+	Multihop                   types.Bool   `tfsdk:"multihop"`
+	RouteReflectorClient       types.Bool   `tfsdk:"route_reflector_client"`
+	SoftReconfigurationInbound types.Bool   `tfsdk:"soft_reconfiguration_inbound"`
+	BFD                        types.Bool   `tfsdk:"bfd"`
+	BFDStrict                  types.Bool   `tfsdk:"bfd_strict"`
+	ConnectTimer               types.Int64  `tfsdk:"connect_timer"`
+	DefaultOriginate           types.Bool   `tfsdk:"default_originate"`
+	ASOverride                 types.Bool   `tfsdk:"as_override"`
+	RemovePrivateAS            types.String `tfsdk:"remove_private_as"`
+	AllowASIn                  types.String `tfsdk:"allow_as_in"`
+	DisableConnectedCheck      types.Bool   `tfsdk:"disable_connected_check"`
+	AttributeUnchanged         types.String `tfsdk:"attribute_unchanged"`
+	Capabilities               types.Set    `tfsdk:"capabilities"`
+
 	PeerGroup           types.String `tfsdk:"peer_group"`
 	ID                  types.String `tfsdk:"id"`
 	Enabled             types.Bool   `tfsdk:"enabled"`
@@ -34,6 +55,26 @@ type BGPNeighborResourceModel struct {
 }
 
 type bgpNeighborAPIResponse struct {
+	RemoteASMode               frrSelectedMap     `json:"remote_as_mode"`
+	LocalAS                    string             `json:"localas"`
+	Weight                     string             `json:"weight"`
+	LocalIP                    string             `json:"localip"`
+	LinkLocalInterface         frrSelectedMap     `json:"linklocalinterface"`
+	NextHopSelfAll             string             `json:"nexthopselfall"`
+	Multihop                   string             `json:"multihop"`
+	RouteReflectorClient       string             `json:"rrclient"`
+	SoftReconfigurationInbound string             `json:"soft_reconfiguration_inbound"`
+	BFD                        string             `json:"bfd"`
+	BFDStrict                  string             `json:"bfd_strict"`
+	ConnectTimer               string             `json:"connecttimer"`
+	DefaultOriginate           string             `json:"defaultoriginate"`
+	ASOverride                 string             `json:"asoverride"`
+	RemovePrivateAS            frrSelectedMap     `json:"removeprivateas"`
+	AllowASIn                  frrSelectedMap     `json:"allowas_in"`
+	DisableConnectedCheck      string             `json:"disable_connected_check"`
+	AttributeUnchanged         frrSelectedMap     `json:"attributeunchanged"`
+	Capabilities               frrSelectedMapList `json:"capabilities"`
+
 	frrReadPresence     `json:"-"`
 	PeerGroup           frrSelectedMap     `json:"peergroup"`
 	Enabled             string             `json:"enabled"`
@@ -53,6 +94,27 @@ type bgpNeighborAPIResponse struct {
 }
 
 type bgpNeighborAPIRequest struct {
+	RemoteASMode               *string `json:"remote_as_mode,omitempty"`
+	LocalAS                    *string `json:"localas,omitempty"`
+	Password                   *string `json:"password,omitempty"`
+	Weight                     *string `json:"weight,omitempty"`
+	LocalIP                    *string `json:"localip,omitempty"`
+	LinkLocalInterface         *string `json:"linklocalinterface,omitempty"`
+	NextHopSelfAll             *string `json:"nexthopselfall,omitempty"`
+	Multihop                   *string `json:"multihop,omitempty"`
+	RouteReflectorClient       *string `json:"rrclient,omitempty"`
+	SoftReconfigurationInbound *string `json:"soft_reconfiguration_inbound,omitempty"`
+	BFD                        *string `json:"bfd,omitempty"`
+	BFDStrict                  *string `json:"bfd_strict,omitempty"`
+	ConnectTimer               *string `json:"connecttimer,omitempty"`
+	DefaultOriginate           *string `json:"defaultoriginate,omitempty"`
+	ASOverride                 *string `json:"asoverride,omitempty"`
+	RemovePrivateAS            *string `json:"removeprivateas,omitempty"`
+	AllowASIn                  *string `json:"allowas_in,omitempty"`
+	DisableConnectedCheck      *string `json:"disable_connected_check,omitempty"`
+	AttributeUnchanged         *string `json:"attributeunchanged,omitempty"`
+	Capabilities               *string `json:"capabilities,omitempty"`
+
 	PeerGroup           string `json:"peergroup"`
 	Enabled             string `json:"enabled"`
 	Description         string `json:"description"`
@@ -89,11 +151,32 @@ func (m *BGPNeighborResourceModel) toAPI(ctx context.Context) *bgpNeighborAPIReq
 	}
 
 	return &bgpNeighborAPIRequest{
+		RemoteASMode:               advancedString(ctx, m.RemoteASMode),
+		LocalAS:                    advancedInt64(ctx, m.LocalAS),
+		Password:                   advancedString(ctx, m.Password),
+		Weight:                     advancedInt64(ctx, m.Weight),
+		LocalIP:                    advancedString(ctx, m.LocalIP),
+		LinkLocalInterface:         advancedString(ctx, m.LinkLocalInterface),
+		NextHopSelfAll:             advancedBool(ctx, m.NextHopSelfAll),
+		Multihop:                   advancedBool(ctx, m.Multihop),
+		RouteReflectorClient:       advancedBool(ctx, m.RouteReflectorClient),
+		SoftReconfigurationInbound: advancedBool(ctx, m.SoftReconfigurationInbound),
+		BFD:                        advancedBool(ctx, m.BFD),
+		BFDStrict:                  advancedBool(ctx, m.BFDStrict),
+		ConnectTimer:               advancedInt64(ctx, m.ConnectTimer),
+		DefaultOriginate:           advancedBool(ctx, m.DefaultOriginate),
+		ASOverride:                 advancedBool(ctx, m.ASOverride),
+		RemovePrivateAS:            advancedString(ctx, m.RemovePrivateAS),
+		AllowASIn:                  advancedString(ctx, m.AllowASIn),
+		DisableConnectedCheck:      advancedBool(ctx, m.DisableConnectedCheck),
+		AttributeUnchanged:         advancedString(ctx, m.AttributeUnchanged),
+		Capabilities:               advancedSet(ctx, m.Capabilities),
+
 		PeerGroup:           m.PeerGroup.ValueString(),
 		Enabled:             opnsense.BoolToString(m.Enabled.ValueBool()),
 		Description:         m.Description.ValueString(),
 		Address:             m.Address.ValueString(),
-		RemoteAS:            opnsense.Int64ToString(m.RemoteAS.ValueInt64()),
+		RemoteAS:            optionalFRRInt(m.RemoteAS),
 		UpdateSource:        m.UpdateSource.ValueString(),
 		NextHopSelf:         opnsense.BoolToString(m.NextHopSelf.ValueBool()),
 		MultiProtocol:       opnsense.BoolToString(m.MultiProtocol.ValueBool()),
@@ -109,6 +192,26 @@ func (m *BGPNeighborResourceModel) toAPI(ctx context.Context) *bgpNeighborAPIReq
 
 func (m *BGPNeighborResourceModel) fromAPI(_ context.Context, a *bgpNeighborAPIResponse, uuid string) {
 	m.ID = types.StringValue(uuid)
+	m.RemoteASMode = readAdvancedString(a.hasField("remote_as_mode"), string(a.RemoteASMode))
+	m.LocalAS = readAdvancedInt64(a.hasField("localas"), a.LocalAS)
+	m.Weight = readAdvancedInt64(a.hasField("weight"), a.Weight)
+	m.LocalIP = readAdvancedString(a.hasField("localip"), a.LocalIP)
+	m.LinkLocalInterface = readAdvancedString(a.hasField("linklocalinterface"), string(a.LinkLocalInterface))
+	m.NextHopSelfAll = readAdvancedBool(a.hasField("nexthopselfall"), a.NextHopSelfAll)
+	m.Multihop = readAdvancedBool(a.hasField("multihop"), a.Multihop)
+	m.RouteReflectorClient = readAdvancedBool(a.hasField("rrclient"), a.RouteReflectorClient)
+	m.SoftReconfigurationInbound = readAdvancedBool(a.hasField("soft_reconfiguration_inbound"), a.SoftReconfigurationInbound)
+	m.BFD = readAdvancedBool(a.hasField("bfd"), a.BFD)
+	m.BFDStrict = readAdvancedBool(a.hasField("bfd_strict"), a.BFDStrict)
+	m.ConnectTimer = readAdvancedInt64(a.hasField("connecttimer"), a.ConnectTimer)
+	m.DefaultOriginate = readAdvancedBool(a.hasField("defaultoriginate"), a.DefaultOriginate)
+	m.ASOverride = readAdvancedBool(a.hasField("asoverride"), a.ASOverride)
+	m.RemovePrivateAS = readAdvancedString(a.hasField("removeprivateas"), string(a.RemovePrivateAS))
+	m.AllowASIn = readAdvancedString(a.hasField("allowas_in"), string(a.AllowASIn))
+	m.DisableConnectedCheck = readAdvancedBool(a.hasField("disable_connected_check"), a.DisableConnectedCheck)
+	m.AttributeUnchanged = readAdvancedString(a.hasField("attributeunchanged"), string(a.AttributeUnchanged))
+	m.Capabilities = readAdvancedSet(a.hasField("capabilities"), a.Capabilities)
+
 	m.PeerGroup = types.StringValue(string(a.PeerGroup))
 	m.Enabled = types.BoolValue(opnsense.StringToBool(a.Enabled))
 	m.Description = types.StringValue(a.Description)

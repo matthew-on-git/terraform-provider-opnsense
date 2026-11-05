@@ -64,10 +64,12 @@ Make the provider complete enough to be the default choice for an appliance, rep
 
 ## Sequential release integration — 2026-11-04
 
-Supported Trust lifecycle/read work shipped in v0.14.0; its parent remains open
-for deferred keyless and compatibility boundaries. Retry controls shipped in
-v0.13.0. Advanced IPsec31.0g is now the active increment, targeting v0.15.0;
-its current21-control protocol evidence does not establish live activation.
-Keep remaining FRR/BGP31.0h after IPsec, then interface lookups and independent
-API-gated/adoption/readiness stories. Do not reimplement released increments or
-claim an entire parent complete from a bounded PR.
+Supported Trust lifecycle/read work shipped in v0.14.0, retry controls in v0.13.0,
+and the bounded21-control IPsec increment in v0.15.0. Trust and IPsec retain their
+explicit deferred capability/compatibility and inherited legacy limitations;
+their shipped increments must not be repeated. IPsec's complete guarded26.7.8_2
+lifecycle/activation proof is recorded separately from negotiated IKE/traffic.
+Remaining FRR/BGP31.0h is now the active increment, targeting v0.16.0; prior
+partial/failed or Go-only attempts do not establish full guarded-runner acceptance.
+Complete that source-backed validation before interface lookups and independent
+API-gated/adoption/readiness work. No parent-family or v1 completion is implied.

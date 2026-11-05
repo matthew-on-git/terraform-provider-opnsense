@@ -105,6 +105,32 @@ func resolveBGPModel(ctx context.Context, config tfsdk.Config, model any, prior 
 		}
 		return fmt.Errorf("BGP %s intent is unknown; resolve configured values before applying", name)
 	}
+	for _, name := range []string{"Capabilities", "ListenRanges"} {
+		f := value.FieldByName(name)
+		if !f.IsValid() {
+			continue
+		}
+		set := f.Interface().(types.Set)
+		if set.IsNull() || set.IsUnknown() {
+			continue
+		}
+		var members []string
+		if set.ElementsAs(ctx, &members, false).HasError() {
+			return fmt.Errorf("BGP %s members are invalid", name)
+		}
+		for _, member := range members {
+			if strings.Contains(member, ",") {
+				return fmt.Errorf("BGP %s requires one value per set member, not CSV", name)
+			}
+			wire := "capabilities"
+			if name == "ListenRanges" {
+				wire = "listenranges"
+			}
+			if err := validateAdvancedWire(map[string]string{wire: member}); err != nil {
+				return err
+			}
+		}
+	}
 	if m, ok := model.(*BGPNeighborResourceModel); ok {
 		if m.Family.IsNull() {
 			f, err := legacyFamilies(m.Address.ValueString(), m.MultiProtocol)
@@ -287,23 +313,26 @@ func bgpCreate[M, A, P any](ctx context.Context, c *opnsense.Client, opts opnsen
 	reflect.ValueOf(&plan).Elem().FieldByName("ID").Set(reflect.ValueOf(types.StringValue(id)))
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	resp.Diagnostics.Append(markBGP(ctx, resp.Private, `"mutation"`)...)
+	// Once identity is confirmed and persisted, errors would taint this new
+	// Core resource and force replacement on retry. Preserve ownership and the
+	// pending marker; refresh can recover without replaying the saved create.
 	if err != nil {
-		resp.Diagnostics.AddError("BGP saved; activation pending", frrDiagnostic(err))
+		resp.Diagnostics.AddWarning("BGP saved; activation pending", frrDiagnostic(err))
 		return
 	}
 	result, err := opnsense.Get[A](ctx, c, strictBGPOpts(opts), id)
 	if err != nil {
-		resp.Diagnostics.AddError("BGP saved; read-back pending", frrDiagnostic(err))
+		resp.Diagnostics.AddWarning("BGP saved; read-back pending", frrDiagnostic(err))
 		return
 	}
 	if err := validateBGPResponse(result, capability); err != nil {
-		resp.Diagnostics.AddError("Invalid FRR read-back", frrDiagnostic(err))
+		resp.Diagnostics.AddWarning("BGP saved; invalid FRR read-back", frrDiagnostic(err))
 		return
 	}
 	current := plan
 	from(&current, result, id)
 	if err := normalizeBGPRead(ctx, c, capability, &plan, &current); err != nil {
-		resp.Diagnostics.AddError("BGP saved; policy read-back failed", frrDiagnostic(err))
+		resp.Diagnostics.AddWarning("BGP saved; policy read-back failed", frrDiagnostic(err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &current)...)

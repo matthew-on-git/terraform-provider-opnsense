@@ -44,6 +44,7 @@ output "quagga_bgp_peergroup_id" {
 - `linked_prefixlist_out` (Set of String) Linked linked_prefixlist_out policy entry UUIDs.
 - `linked_routemap_in` (Set of String) Linked linked_routemap_in policy entry UUIDs.
 - `linked_routemap_out` (Set of String) Linked linked_routemap_out policy entry UUIDs.
+- `listen_ranges` (Set of String) Dynamic peer listen ranges.
 - `name` (String) Peer group name.
 - `next_hop_self` (Boolean) Whether next-hop-self is enabled.
 - `remote_as` (Number) Remote autonomous system number.

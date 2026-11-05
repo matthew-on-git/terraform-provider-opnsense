@@ -11,6 +11,8 @@ if [[ "${1:-}" == --help ]]; then
 fi
 paths=(.gitleaksignore .devrail.yml .goreleaser.yml DEVELOPMENT.md README.md Makefile go.mod go.sum main.go
   _bmad-output/implementation-artifacts/spec-31-0h-frr2-compatibility-gate.md
+  _bmad-output/implementation-artifacts/spec-31-0h-advanced-frr-parity.md
+  _bmad-output/implementation-artifacts/31-0h-advanced-source-evidence.json
   _bmad-output/implementation-artifacts/epic-31-context.md
   _bmad-output/implementation-artifacts/31-0h-quagga-bgp-field-parity.md
   _bmad-output/implementation-artifacts/sprint-status.yaml
@@ -18,7 +20,7 @@ paths=(.gitleaksignore .devrail.yml .goreleaser.yml DEVELOPMENT.md README.md Mak
   _bmad-output/planning-artifacts/provider-ecosystem-coverage-audit.json
   _bmad-output/planning-artifacts/provider-ecosystem-coverage-audit.md
   test/README.md test/scripts/lib/log.sh test/scripts/run-vagrant-acceptance.sh
-  test/scripts/run-story-31-0h-acceptance.sh test/scripts/story-31-0h-code-digest.sh test/scripts/test-story-31-0h-code-digest.sh)
+  test/scripts/run-story-31-0h-acceptance.sh test/scripts/frr_acceptance_supervisor.py test/scripts/test_frr_acceptance_supervisor.py test/scripts/story-31-0h-code-digest.sh test/scripts/test-story-31-0h-code-digest.sh)
 inventory_dir="$(mktemp -d)"
 trap 'rm -rf -- "${inventory_dir}"' EXIT
 find internal pkg .github/workflows -type f -print0 >"${inventory_dir}/sources" || {

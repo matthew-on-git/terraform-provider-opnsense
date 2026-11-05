@@ -17,3 +17,11 @@
 ## Deferred from: Trust settings increment review (2026-11-03)
 
 - Shared `pkg/opnsense/client.go` has no explicit HTTP deadline when callers supply none. Caller cancellation remains supported/tested. Define a provider-wide deadline policy alongside transport diagnostics rather than an arbitrary Trust-only timeout; this is not closed by configurable retry/backoff Story31.0j alone.
+
+## FRR-NUMERIC-CLEAR — owned follow-up from sequential review2026-11-04
+
+Owner: provider maintainers (Matthew/Phaedrus); parent story31.0h remains open. Design an explicit backwards-compatible numeric-clear interface for adopted remote_as/local_as/connect_timer. Acceptance: omitted fields preserve remote numeric intent; explicit clear removes the numeric value without inventing0; numeric→mode-only/inherited transitions prove effective generated configuration and stable identity; import/upgrade/Core no-change/recovery, supported model capability, protocol zero-write negatives and fresh appliance restoration proof pass. This PR does not implement that additional interface.
+
+## Deferred from: sequential review of31.0h (2026-11-04)
+
+Finding9 (unverified medium): obtain an authentic captured1.55 API response and actual older-plugin lifecycle proof. Pinned released model/controller sources verified, but no capture exists; do not fabricate a modern fixture as historical appliance evidence. Owner: provider maintainers, parent31.0h.

@@ -2,7 +2,17 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.15.0 (Unreleased)
+## 0.16.0 (Unreleased)
+
+FEATURES:
+
+* Extend the existing FRR neighbor with 20 source-backed advanced attributes, config-owned sensitive authentication input, public password-free lookups, and peer-group strict CIDR listen ranges. Preserve existing addresses, grouped policy references, family semantics and pending activation recovery. Advanced writes require released capability or authoritative field-presence proof before mutation.
+
+UPGRADE NOTES:
+
+* Neighbor `remote_as` becomes Optional+Computed without changing its numeric type; mode takes precedence and peer-group inheritance remains possible. New public fields adopt on omission, while explicit false, zero weight and empty clears remain intent. Authentication is never adopted from the appliance; Sensitive state is not encryption and remote password drift cannot be proven. Existing schema-v0 migration is retained. Real legacy/OpenTofu and route-collector proof remain separate, unverified gates; this candidate does not close parent Story 31.0h. Refresh the version against published tags before merge; pending sibling changes are not dependencies.
+
+## 0.15.0 (2026-11-05)
 
 FEATURES:
 
@@ -10,7 +20,7 @@ FEATURES:
 
 UPGRADE NOTES:
 
-* No resource renames or legacy public type changes. Advanced numbers remain decimal strings; omitted advanced values adopt/preserve appliance truth without provider defaults. `ike_lifetime` is overtime grace (`over_time`), not total IKE lifetime; child `rekey_time` cannot be blank. Authentication/PSK/key ownership remains separate. The guarded 26.7.8_2 disabled-object lifecycle/activation matrix passed, including both persistent imports, all 21 lookups, drift/clears, Terraform deletion, zero leftovers, exact restoration and retirement. Negotiated IKE/packet traffic, older firmware and OpenTofu execution remain unverified; inherited legacy omission/read-completeness and proposal-order limitations remain deferred. The new version heading triggers automatic tagging/release after merge and successful main CI; these pending capabilities are not yet released.
+* No resource renames or legacy public type changes. Advanced numbers remain decimal strings; omitted advanced values adopt/preserve appliance truth without provider defaults. `ike_lifetime` is overtime grace (`over_time`), not total IKE lifetime; child `rekey_time` cannot be blank. Authentication/PSK/key ownership remains separate. The guarded 26.7.8_2 disabled-object lifecycle/activation matrix passed, including both persistent imports, all 21 lookups, drift/clears, Terraform deletion, zero leftovers, exact restoration and retirement. Negotiated IKE/packet traffic, older firmware and OpenTofu execution remain unverified; inherited legacy omission/read-completeness and proposal-order limitations remain deferred. Published through automatic tagging and GoReleaser after successful exact-merge main CI.
 
 ## 0.14.0 (Released)
 
