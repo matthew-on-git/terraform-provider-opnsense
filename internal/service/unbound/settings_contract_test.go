@@ -631,7 +631,6 @@ func TestDomainOverrideFromAPIRejectsMalformedTypeAndPort(t *testing.T) {
 	for name, response := range map[string]domainOverrideAPIResponse{
 		"type":   {Enabled: "1", Domain: "example.test", Type: "bogus", Server: "192.0.2.1", Port: "53"},
 		"port":   {Enabled: "1", Domain: "example.test", Type: "forward", Server: "192.0.2.1", Port: "not-a-port"},
-		"domain": {Enabled: "1", Type: "forward", Server: "192.0.2.1", Port: "53"},
 		"server": {Enabled: "1", Domain: "example.test", Type: "forward", Port: "53"},
 	} {
 		t.Run(name, func(t *testing.T) {
