@@ -128,3 +128,7 @@ c908164e6f08d6fb603100a8cbb450c1acef0f06:internal/service/iface/assignment_resou
 74e1766ffcc58b39a2f1837011d5e35ccee96c1d:internal/service/unbound/dnsbl_resource.go:generic-api-key:28
 74e1766ffcc58b39a2f1837011d5e35ccee96c1d:internal/service/unbound/dnsbl_resource.go:generic-api-key:29
 74e1766ffcc58b39a2f1837011d5e35ccee96c1d:internal/service/unbound/general_resource.go:generic-api-key:32
+
+# Historical Terraform private-state activation-marker name, not a credential.
+# Exact reviewed commit/file/rule/line only, matching the Kea/Unbound entries.
+3a5a84b4f9a56604ef51dd2981b781d150a794bd:internal/service/ipsec/advanced.go:generic-api-key:316

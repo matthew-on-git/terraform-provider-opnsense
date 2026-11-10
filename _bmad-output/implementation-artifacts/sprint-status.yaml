@@ -1,5 +1,5 @@
 # generated: 2026-03-18
-# last_updated: 2026-06-18
+# last_updated: 2026-11-10
 # project: terraform-provider-opnsense
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-18
-last_updated: 2026-11-03
+last_updated: 2026-11-10
 project: terraform-provider-opnsense
 project_key: NOKEY
 tracking_system: file-system
@@ -302,7 +302,7 @@ development_status:
   31-0f-trust-lifecycle-and-settings-parity: in-progress # six-field settings increment; CA/cert actions and disposable proof outstanding
   31-0g-ipsec-field-parity: backlog              # P1 — audit-derived; before 31.1
   31-0h-quagga-bgp-field-parity: in-progress     # compatibility PR64/69 released by v0.8.1; advanced parity remains; operator adoption is private
-  31-0i-live-interface-data-sources: backlog     # P1 — audit-derived; before 31.1
+  31-0i-live-interface-data-sources: review          # implementation/reviews/local gates complete; exact-head hosted CI and maintainer merge separate
   31-0j-provider-retry-settings: review         # P1 — audit-derived; before 31.1
   31-0k-gateway-group-stable-api-validation: done # stable API proof merged in PR71; implementation/lifecycle tracked by 31.0m
   31-0l-kea-option-ddns-stable-api-validation: done # stable API proof merged in PR71; owners independently lab-proved under 31.0n/o

@@ -2,7 +2,17 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.16.0 (Unreleased)
+## 0.17.0 (Unreleased)
+
+FEATURES:
+
+* Add four GET-only runtime interface data sources: `opnsense_interface`, `opnsense_interface_all`, `opnsense_interfaces_overview`, and `opnsense_interfaces_overview_all`. Preserve the complete pinned public allowlist with typed optional nulls, exact device lookup, complete overview counts and deterministic collection ordering.
+
+UPGRADE NOTES:
+
+* No assignment/IP ownership or existing resource behavior changes. Runtime values are observations and may change between refreshes. Terraform state contains public inventory; protect state access. Configuration, wireless and arbitrary backend fields are excluded. Supported-appliance observations are separate evidence from fixture/Core checks; older firmware, OpenTofu and unobserved hardware are not claimed.
+
+## 0.16.0 (2026-11-05)
 
 FEATURES:
 

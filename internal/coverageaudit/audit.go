@@ -240,6 +240,13 @@ func (m *Manifest) Validate(root string) error {
 				if !registrations[row.Kind][equivalent] {
 					problems = append(problems, fmt.Sprintf("covered surface %s names unregistered local equivalent %q", key, equivalent))
 				}
+				if row.Kind == "provider-configuration" {
+					content, err := fs.ReadFile(os.DirFS(root), "docs/index.md")
+					if err != nil || !strings.Contains(string(content), "`"+equivalent+"`") {
+						problems = append(problems, fmt.Sprintf("covered provider setting %s lacks provider docs", equivalent))
+					}
+					continue
+				}
 				docs := resourceDocs
 				docKind := "resource"
 				switch row.Kind {
@@ -298,9 +305,14 @@ func isCovered(classification string) bool {
 
 func localRegistrations() map[string]map[string]bool {
 	registrations := map[string]map[string]bool{
-		"resource": {}, "data-source": {}, "ephemeral-resource": {},
+		"resource": {}, "data-source": {}, "ephemeral-resource": {}, "provider-configuration": {},
 	}
 	p := providerimpl.New("coverage-audit")()
+	var schema provider.SchemaResponse
+	p.Schema(context.Background(), provider.SchemaRequest{}, &schema)
+	for name := range schema.Schema.Attributes {
+		registrations["provider-configuration"][name] = true
+	}
 	for _, factory := range p.Resources(context.Background()) {
 		var resp resource.MetadataResponse
 		factory().Metadata(context.Background(), resource.MetadataRequest{ProviderTypeName: "opnsense"}, &resp)
