@@ -32,7 +32,7 @@ func TestProtocolDNSMasqSettingsLookupReadOnly(t *testing.T) {
 	}))
 	t.Cleanup(api.Close)
 
-	server := providerserver(t, api.URL)
+	server := lookupProviderServer(t, api.URL)
 	schemas, err := server.GetProviderSchema(ctx, &tfprotov6.GetProviderSchemaRequest{})
 	if err != nil || dnsmasqErrors(schemas.Diagnostics) {
 		t.Fatal(err, schemas.Diagnostics)
@@ -90,7 +90,7 @@ func TestProtocolDNSMasqSettingsLookupReadOnly(t *testing.T) {
 	}
 }
 
-func providerserver(t *testing.T, uri string) tfprotov6.ProviderServer {
+func lookupProviderServer(t *testing.T, uri string) tfprotov6.ProviderServer {
 	t.Helper()
 	server, _ := dnsmasqServer(t, uri)
 	return server

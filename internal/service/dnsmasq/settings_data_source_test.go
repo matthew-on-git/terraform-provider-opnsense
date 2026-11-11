@@ -61,7 +61,7 @@ func TestSettingsDataSourceSchemaAllowlist(t *testing.T) {
 		}
 	}
 	if _, ok := nested.Attributes["%domain"]; ok {
-		t.Fatal("response metadata %domain is lookup state")
+		t.Fatal("response-only system domain metadata is lookup state")
 	}
 }
 
