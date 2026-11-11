@@ -14,6 +14,7 @@ This register lists provider gaps that cannot be implemented safely until OPNsen
 | Domain | Provider impact | Current upstream status | Maintenance action |
 |---|---|---|---|
 | System general settings | Blocks provider management of legacy general system settings that are not yet exposed through a stable MVC API. | No stable OPNsense API in the current target release (`stable/26.1`). As of 2026-06-14, published core API docs list no durable system general settings endpoint; `core/system` is action/status-only; `Core/Api/SettingsController.php`, `Core/System.xml`, and `Core/Settings.xml` were not found; `core/initial_setup` exists but is wizard-only, memory-mounted, and has broad side effects, so it is unsafe for day-2 Terraform management. | Watch OPNsense release notes and System Settings MVC progress. Adopt only after stable get/set semantics and durable configuration fields are available. |
+| Kea ordered parent-option linkage | Blocks ordered UUID links from existing DHCPv4 subnet and reservation owners to generic options. Unordered selected maps would mis-state last-match precedence. | Released core 26.7.8 has the multi `option` relation, but `get_subnet` and `get_reservation` return description-sorted selected maps. The relations do not set `Sorted`, and no action returns an ordered UUID list. | Re-check the next stable core tag. Adopt only after a released parent GET exposes stored order without raw XML or JSON object key order. |
 
 ## Stable API Available; Provider Validation Pending
 
@@ -27,8 +28,11 @@ traffic failover.
 
 Generic Kea options and DDNS settings also have
 [disabled-service API proof](../_bmad-output/planning-artifacts/kea-option-ddns-api-validation.md).
-Stories 31.0n/o own implementation; provider import/drift/recovery/state-only
-destroy remain pending. Matching-option linkage/ordering needs further coverage.
+Stories 31.0n/o shipped those owners. Ordered parent-option linkage is
+upstream-blocked on released core 26.7.8: parent GET returns a
+description-sorted selected map and does not expose stored UUID order.
+Grid-search CSV and raw XML are not a supported order contract. See the
+[ordered-read research](../_bmad-output/planning-artifacts/kea-ordered-option-linkage-api-research.md).
 
 ## Not Upstream-Blocked Yet
 
