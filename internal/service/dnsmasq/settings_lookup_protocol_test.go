@@ -71,8 +71,9 @@ func TestProtocolDNSMasqSettingsLookupReadOnly(t *testing.T) {
 	if err := dhcp.As(&nested); err != nil {
 		t.Fatal(err)
 	}
-	if !nested["lease_max"].IsNull() {
-		t.Fatal("empty lease_max became synthetic zero")
+	var leaseMax int64
+	if err := nested["lease_max"].As(&leaseMax); err != nil || leaseMax != 128 {
+		t.Fatalf("lease_max = %v %v", nested["lease_max"], err)
 	}
 	if _, ok := nested["%domain"]; ok {
 		t.Fatal("response metadata published")
