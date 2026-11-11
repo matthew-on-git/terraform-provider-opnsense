@@ -30,7 +30,8 @@ These blobs are identical between those tags:
 - [x] Register the data source, example, template, generated page, changelog, and coverage inventory.
 - [ ] Live appliance proof is not part of this draft.
 - [ ] `expand_hosts` remains unowned until a resource field story adopts it.
-- [ ] Hosted security on unchanged Go 1.26.10 still fails GO-2026-6859. Do not absorb the separate repair.
+- [ ] Main on Go1.26.10 has GO-2026-6859. This draft now explicitly depends on PR87
+  and includes its existing Go1.26.11 repair for validation; neither PR is merged.
 
 ## Remaining limits
 
@@ -54,3 +55,12 @@ confirms the finding. The separate toolchain repair remains PR87; it is not
 silently merged or absorbed here. Hosted checks on this corrected head must be
 read independently; the story remains in review. Test-only decoder correction
 does not change provider behavior, so no additional release heading is created.
+
+## Explicit validation dependency
+
+This draft includes the existing PR87 Go1.26.11 patch from
+`877f693752a7c407d929f763851fbfeada0ddc01` as an explicit dependency. That PR
+remains separately reviewable and unmerged; no main-branch merge or release was
+performed. Earlier Go1.26.10 security failures remain historical failed receipts.
+Re-run the complete check gate on this dependent snapshot before describing its
+security status. Do not merge this draft ahead of the prerequisite review.
