@@ -1,0 +1,51 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Interfaces"
+description: |-
+  Reads allowlisted live interface observations without changing configuration.
+---
+
+# {{.Name}} ({{.Type}})
+
+Reads combined assignment/runtime overview through GET-only core API requests. Singles require the exact
+kernel `device`, not an assignment identifier or description. Aggregates return
+`interfaces` sorted by device. Address lists sort by their complete public tuple;
+the first address is not claimed to be primary. Overview `addr4`/`addr6` retain
+the explicit primary observations from the API.
+
+Optional absent scalars/objects remain null; missing address/set collections are
+known empty. Explicit false, zero, empty strings and multi-address DHCP collection
+members are preserved; exact duplicate set members collapse. Diagnostic `mtu` is Int64; overview `mtu` remains String.
+Malformed/null responses, duplicate/missing device identities and incomplete
+overview pagination are errors, not empty success. Unknown fields, raw JSON,
+configuration, wireless settings and secrets are never exposed.
+
+Credentials require read ACLs for `/api/interfaces/overview/interfaces_info`.
+The existing provider connectivity check also reads `/api/core/menu/search`.
+This source never saves, applies, reconfigures or acquires mutation ownership.
+Assignment/IP configuration remains with the existing assignment resource.
+Runtime differences are observations, not managed drift. Incidental runtime
+cache changes are not excluded by this read-only configuration boundary.
+
+**State privacy:** public observations include interface names, addresses and
+other inventory. Protect Terraform state and plan access; Sensitive is not
+state encryption. Contract authority is pinned released core 26.7.8; fixtures
+and real-appliance evidence are separate. No older-firmware, OpenTofu or
+unobserved CARP/VLAN/LAGG hardware compatibility is implied.
+
+Diagnostics use bare `ipv4`/`ipv6` `ipaddr` values with separate `subnetbits`.
+Assigned overview entries include CIDR prefixes; unassigned overview entries may
+remain bare. These address shapes are not interchangeable. Overview `link_type`
+is the IPv4 configuration mode, not media; upstream `link_typev6` is deliberately
+outside the pinned allowlist, so this is not a complete assignment view.
+
+The API families define different inventories: overview omits `pfsync0`, while
+diagnostics can include it. Unassigned overview `description` is localized and
+may change with appliance language. Use exact `device` identity rather than
+`description` for `for_each` keys.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_interfaces_overview_all/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

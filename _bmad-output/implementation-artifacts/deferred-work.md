@@ -25,3 +25,7 @@ Owner: provider maintainers (Matthew/Phaedrus); parent story31.0h remains open. 
 ## Deferred from: sequential review of31.0h (2026-11-04)
 
 Finding9 (unverified medium): obtain an authentic captured1.55 API response and actual older-plugin lifecycle proof. Pinned released model/controller sources verified, but no capture exists; do not fabricate a modern fixture as historical appliance evidence. Owner: provider maintainers, parent31.0h.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-31-0i-live-interface-data-sources.md`
+  summary: Restore the standing pagination-completeness rule in the compiled epic context for future list/search readers.
+  evidence: Review B8 found that the context rewrite removed the general rule; current live overview correctly rejects incomplete GET results and documents the 9999-row POST-only pagination limit. Agent-context changes route to defer under step04; no POST or partial success is authorized.

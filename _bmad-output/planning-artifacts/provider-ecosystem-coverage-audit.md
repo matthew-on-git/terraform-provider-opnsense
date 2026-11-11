@@ -2,7 +2,7 @@
 
 Pinned baseline: `browningluke/opnsense` v0.26.0 at `33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba` (47 resources, 45 data sources, 1 ephemeral resource, and provider retry configuration).
 
-Current local inventory: **113 resources and 100 data sources**, with 113/100 generated docs. There are **15 resource-only same-name data-source gaps** and the data-only surfaces are `system_info`, `unbound_settings`.
+Current local inventory: **113 resources and 104 data sources**, with 113/104 generated docs. There are **15 resource-only same-name data-source gaps** and the data-only surfaces are `interface`, `interface_all`, `interfaces_overview`, `interfaces_overview_all`, `system_info`, `unbound_settings`.
 
 ## Ownership Direction
 
@@ -10,10 +10,10 @@ Use one provider per appliance and object domain in steady state. Never configur
 
 ## Classification Summary
 
-- `covered`: 53
+- `covered`: 58
 - `covered-different-name`: 16
 - `covered-broader`: 2
-- `missing-buildable`: 17
+- `missing-buildable`: 12
 - `missing-upstream-blocked`: 0
 - `intentionally-different`: 6
 - `needs-field-audit`: 0
@@ -24,10 +24,10 @@ Use one provider per appliance and object domain in steady state. Never configur
 - **Dnsmasq:** 2 surfaces (`covered-broader`=2)
 - **Firewall/NAT:** 12 surfaces (`covered`=10, `covered-different-name`=2)
 - **IPsec:** 6 surfaces (`covered`=2, `covered-different-name`=2, `missing-buildable`=2)
-- **Interfaces:** 8 surfaces (`covered-different-name`=4, `missing-buildable`=4)
+- **Interfaces:** 8 surfaces (`covered`=4, `covered-different-name`=4)
 - **Kea:** 20 surfaces (`covered`=12, `covered-different-name`=2, `intentionally-different`=6)
 - **OpenVPN:** 7 surfaces (`covered`=7)
-- **Provider:** 1 surfaces (`missing-buildable`=1)
+- **Provider:** 1 surfaces (`covered`=1)
 - **Quagga/BGP:** 10 surfaces (`covered`=4, `covered-different-name`=2, `missing-buildable`=4)
 - **Routing:** 2 surfaces (`covered-different-name`=2)
 - **Trust:** 6 surfaces (`missing-buildable`=6)
@@ -38,17 +38,16 @@ Use one provider per appliance and object domain in steady state. Never configur
 
 ### Provider Configuration
 
-#### `provider-configuration:retry-settings` — missing-buildable
+#### `provider-configuration:retry-settings` — covered
 
-- **Domain / local mapping:** Provider / `provider retry defaults`
+- **Domain / local mapping:** Provider / `retries`, `min_backoff`, `max_backoff`
 - **Baseline fields:** min_backoff, max_backoff, retries
-- **Shared semantics:** both HTTP clients automatically retry transient failures
-- **Baseline-only:** user-configurable min_backoff, max_backoff, and retries attributes plus environment variables
-- **Local-only:** fixed defaults of 1s, 30s, and 3 plus a local read-concurrency limiter
-- **Lifecycle:** provider configuration is resolved once and passed into the shared API client
+- **Shared semantics:** released v0.13.0 exposes retries, min_backoff, max_backoff and matching environment fallbacks
+- **Baseline-only:** none for these pinned retry controls
+- **Local-only:** bounded read concurrency and strict range validation; existing defaults preserved
+- **Lifecycle:** provider configuration passed to shared authenticated TLS/retry clients; no mutation ownership
 - **Sensitive/write-only:** none
 - **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/internal/provider/provider.go; internal/provider/provider.go; pkg/opnsense/client.go
-- **Follow-up:** `_bmad-output/implementation-artifacts/31-0j-provider-retry-settings.md`
 
 ### Resource
 
@@ -666,53 +665,49 @@ Use one provider per appliance and object domain in steady state. Never configur
 - **Sensitive/write-only:** none
 - **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/firewall_nat_port_forward.md; docs/data-sources/firewall_nat_port_forward.md
 
-#### `data-source:interface` — missing-buildable
+#### `data-source:interface` — covered
 
-- **Domain / local mapping:** Interfaces / none
+- **Domain / local mapping:** Interfaces / `interface`
 - **Baseline fields:** capabilities, device, flags, groups, ipv4, ipv6, is_physical, macaddr, media, media_raw, mtu, options, status, supported_media
-- **Shared semantics:** same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema
-- **Baseline-only:** live device state, capabilities, media, flags, addresses, MTU, and all-interface aggregation have no local data source
-- **Local-only:** none material
-- **Lifecycle:** read-only API lookup; operational interface rows read live state rather than durable configuration
-- **Sensitive/write-only:** none
-- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/interface.md; internal/provider/provider.go
-- **Follow-up:** `_bmad-output/implementation-artifacts/31-0i-live-interface-data-sources.md`
+- **Shared semantics:** complete pinned public typed allowlist, exact device selection and aggregate observations; diagnostic MTU Int64 and overview MTU String
+- **Baseline-only:** none in the pinned public field contract; unobserved hardware and older firmware remain unverified
+- **Local-only:** strict optional null preservation, complete pagination validation, deterministic tuple ordering and bounded read concurrency
+- **Lifecycle:** GET-only observational reads; assignment/IP owners unchanged; fixture/Core coverage is not real appliance proof
+- **Sensitive/write-only:** configuration, wireless and unknown backend fields excluded; public observations contain inventory and require protected Terraform state
+- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/interface.md; internal/provider/provider.go; internal/service/iface/live_interface_model.go; internal/service/iface/live_interface_api.go; docs/data-sources/interface.md; _bmad-output/implementation-artifacts/31-0i-interface-api-contract.md
 
-#### `data-source:interface_all` — missing-buildable
+#### `data-source:interface_all` — covered
 
-- **Domain / local mapping:** Interfaces / none
+- **Domain / local mapping:** Interfaces / `interface_all`
 - **Baseline fields:** interfaces
-- **Shared semantics:** same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema
-- **Baseline-only:** live device state, capabilities, media, flags, addresses, MTU, and all-interface aggregation have no local data source
-- **Local-only:** none material
-- **Lifecycle:** read-only API lookup; operational interface rows read live state rather than durable configuration
-- **Sensitive/write-only:** none
-- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/interface_all.md; internal/provider/provider.go
-- **Follow-up:** `_bmad-output/implementation-artifacts/31-0i-live-interface-data-sources.md`
+- **Shared semantics:** complete pinned public typed allowlist, exact device selection and aggregate observations; diagnostic MTU Int64 and overview MTU String
+- **Baseline-only:** none in the pinned public field contract; unobserved hardware and older firmware remain unverified
+- **Local-only:** strict optional null preservation, complete pagination validation, deterministic tuple ordering and bounded read concurrency
+- **Lifecycle:** GET-only observational reads; assignment/IP owners unchanged; fixture/Core coverage is not real appliance proof
+- **Sensitive/write-only:** configuration, wireless and unknown backend fields excluded; public observations contain inventory and require protected Terraform state
+- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/interface_all.md; internal/provider/provider.go; internal/service/iface/live_interface_model.go; internal/service/iface/live_interface_api.go; docs/data-sources/interface_all.md; _bmad-output/implementation-artifacts/31-0i-interface-api-contract.md
 
-#### `data-source:interfaces_overview` — missing-buildable
+#### `data-source:interfaces_overview` — covered
 
-- **Domain / local mapping:** Interfaces / none
+- **Domain / local mapping:** Interfaces / `interfaces_overview`
 - **Baseline fields:** addr4, addr6, capabilities, description, device, enabled, flags, gateways, groups, identifier, ifctl_nameserver, ifctl_prefix, ifctl_router, ifctl_searchdomain, ipv4, ipv6, is_physical, lagg_hash, lagg_options, lagg_proto, lagg_statistics, link_type, macaddr, macaddr_hw, media, media_raw, mtu, nd6_flags, options, routes, status, supported_media, vlan, vlan_tag
-- **Shared semantics:** same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema
-- **Baseline-only:** the combined assignment/runtime overview, gateways, routes, VLAN/LAGG details, DHCP-learned values, and aggregate form have no local data source
-- **Local-only:** none material
-- **Lifecycle:** read-only API lookup; operational interface rows read live state rather than durable configuration
-- **Sensitive/write-only:** none
-- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/interfaces_overview.md; internal/provider/provider.go
-- **Follow-up:** `_bmad-output/implementation-artifacts/31-0i-live-interface-data-sources.md`
+- **Shared semantics:** complete pinned public typed allowlist, exact device selection and aggregate observations; diagnostic MTU Int64 and overview MTU String
+- **Baseline-only:** none in the pinned public field contract; unobserved hardware and older firmware remain unverified
+- **Local-only:** strict optional null preservation, complete pagination validation, deterministic tuple ordering and bounded read concurrency
+- **Lifecycle:** GET-only observational reads; assignment/IP owners unchanged; fixture/Core coverage is not real appliance proof
+- **Sensitive/write-only:** configuration, wireless and unknown backend fields excluded; public observations contain inventory and require protected Terraform state
+- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/interfaces_overview.md; internal/provider/provider.go; internal/service/iface/live_interface_model.go; internal/service/iface/live_interface_api.go; docs/data-sources/interfaces_overview.md; _bmad-output/implementation-artifacts/31-0i-interface-api-contract.md
 
-#### `data-source:interfaces_overview_all` — missing-buildable
+#### `data-source:interfaces_overview_all` — covered
 
-- **Domain / local mapping:** Interfaces / none
+- **Domain / local mapping:** Interfaces / `interfaces_overview_all`
 - **Baseline fields:** interfaces
-- **Shared semantics:** same stable OPNsense object/endpoint family; top-level field names are enumerated above and semantic renames are recorded in the local generated schema
-- **Baseline-only:** the combined assignment/runtime overview, gateways, routes, VLAN/LAGG details, DHCP-learned values, and aggregate form have no local data source
-- **Local-only:** none material
-- **Lifecycle:** read-only API lookup; operational interface rows read live state rather than durable configuration
-- **Sensitive/write-only:** none
-- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/interfaces_overview_all.md; internal/provider/provider.go
-- **Follow-up:** `_bmad-output/implementation-artifacts/31-0i-live-interface-data-sources.md`
+- **Shared semantics:** complete pinned public typed allowlist, exact device selection and aggregate observations; diagnostic MTU Int64 and overview MTU String
+- **Baseline-only:** none in the pinned public field contract; unobserved hardware and older firmware remain unverified
+- **Local-only:** strict optional null preservation, complete pagination validation, deterministic tuple ordering and bounded read concurrency
+- **Lifecycle:** GET-only observational reads; assignment/IP owners unchanged; fixture/Core coverage is not real appliance proof
+- **Sensitive/write-only:** configuration, wireless and unknown backend fields excluded; public observations contain inventory and require protected Terraform state
+- **Sources:** https://github.com/browningluke/terraform-provider-opnsense/blob/33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba/docs/data-sources/interfaces_overview_all.md; internal/provider/provider.go; internal/service/iface/live_interface_model.go; internal/service/iface/live_interface_api.go; docs/data-sources/interfaces_overview_all.md; _bmad-output/implementation-artifacts/31-0i-interface-api-contract.md
 
 #### `data-source:interfaces_vip` — covered-different-name
 
@@ -1099,4 +1094,4 @@ Use one provider per appliance and object domain in steady state. Never configur
 
 Resource-only same-name data-source gaps (15): `dnsmasq_settings`, `interface_assignment`, `ipsec_key_pair`, `ipsec_psk`, `kea_ctrl_agent`, `kea_dhcpv4_settings`, `kea_dhcpv6_settings`, `quagga_bgp_global`, `quagga_general`, `quagga_ospf6_general`, `quagga_ospf_general`, `quagga_rip`, `quagga_static`, `unbound_dnsbl`, `unbound_general`.
 
-Data-only: `system_info`, `unbound_settings`.
+Data-only: `interface`, `interface_all`, `interfaces_overview`, `interfaces_overview_all`, `system_info`, `unbound_settings`.

@@ -21,10 +21,11 @@ import (
 // Client is the OPNsense API client. It handles authentication, TLS
 // configuration, and HTTP transport for all API interactions.
 type Client struct {
-	httpClient *http.Client
-	baseURL    string
-	writeMu    sync.Mutex
-	readSem    *semaphore.Weighted
+	httpClient     *http.Client
+	readHTTPClient *http.Client
+	baseURL        string
+	writeMu        sync.Mutex
+	readSem        *semaphore.Weighted
 }
 
 // ClientConfig holds configuration for creating a new Client.
@@ -87,6 +88,20 @@ func NewClient(cfg ClientConfig) (*Client, error) {
 	retryClient.RetryWaitMax = cfg.RetryWaitMax
 	retryClient.Logger = nil // Suppress default logger; we'll use terraform-plugin-log later.
 
+	// Runtime observation endpoints must not follow redirects, including inside
+	// retryablehttp's nested client where Basic Auth is injected on every hop.
+	// This independent wrapper reuses authenticated TLS transport and retry policy
+	// without changing existing CRUD request behavior or copying synchronization.
+	readRetryClient := retryablehttp.NewClient()
+	readRetryClient.HTTPClient.Transport = authTransport
+	readRetryClient.HTTPClient.CheckRedirect = func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }
+	readRetryClient.RetryMax = cfg.RetryMax
+	readRetryClient.RetryWaitMin = cfg.RetryWaitMin
+	readRetryClient.RetryWaitMax = cfg.RetryWaitMax
+	readRetryClient.Logger = nil
+	readHTTPClient := readRetryClient.StandardClient()
+	readHTTPClient.CheckRedirect = func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }
+
 	// Normalize base URL (remove trailing slash).
 	baseURL := strings.TrimRight(cfg.BaseURL, "/")
 
@@ -97,9 +112,10 @@ func NewClient(cfg ClientConfig) (*Client, error) {
 	}
 
 	return &Client{
-		httpClient: retryClient.StandardClient(),
-		baseURL:    baseURL,
-		readSem:    semaphore.NewWeighted(maxReads),
+		httpClient:     retryClient.StandardClient(),
+		readHTTPClient: readHTTPClient,
+		baseURL:        baseURL,
+		readSem:        semaphore.NewWeighted(maxReads),
 	}, nil
 }
 
@@ -187,3 +203,7 @@ func (t *apiKeyTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	clone.SetBasicAuth(t.apiKey, t.apiSecret)
 	return t.base.RoundTrip(clone)
 }
+
+// ReadHTTPClient returns the authenticated retry client that rejects redirects.
+// Callers still acquire exactly one bounded read semaphore slot per GET.
+func (c *Client) ReadHTTPClient() *http.Client { return c.readHTTPClient }

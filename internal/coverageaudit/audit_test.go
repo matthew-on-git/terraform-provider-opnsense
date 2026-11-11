@@ -81,8 +81,8 @@ func TestMatrixClassificationExamples(t *testing.T) {
 		t.Fatalf("surface count = %d, want 94", len(audit.Surfaces))
 	}
 
-	if audit.LocalInventory.ResourceCount != 113 || audit.LocalInventory.DataSourceCount != 100 || len(audit.LocalInventory.ResourceOnly) != 15 {
-		t.Fatal("Trust continuation inventory must be 113/100 with 15 lookup gaps")
+	if audit.LocalInventory.ResourceCount != 113 || audit.LocalInventory.DataSourceCount != 104 || len(audit.LocalInventory.ResourceOnly) != 15 {
+		t.Fatal("Live interface inventory must be 113/104 with 15 lookup gaps")
 	}
 	for _, kind := range []string{"resource", "data-source"} {
 		surface := findSurface(t, audit, kind, "trust_settings")
@@ -100,7 +100,7 @@ func TestMatrixClassificationExamples(t *testing.T) {
 		t.Fatalf("deprecated Kea alias mapping = %q %v", keaAlias.Classification, keaAlias.LocalEquivalents)
 	}
 	interfaceData := findSurface(t, audit, "data-source", "interface")
-	if interfaceData.Classification != "missing-buildable" || interfaceData.FollowUp == "" {
+	if interfaceData.Classification != "covered" || interfaceData.FollowUp != "" {
 		t.Fatalf("interface data-source classification = %q, follow-up = %q", interfaceData.Classification, interfaceData.FollowUp)
 	}
 	openVPNKey := findSurface(t, audit, "ephemeral-resource", "openvpn_generate_key")
@@ -136,6 +136,7 @@ func TestManifestRejectsInvalidMatrixRows(t *testing.T) {
 			}
 		}, "missing pinned baseline surface resource:route"},
 		"buildable without follow-up": {func(audit *coverageaudit.Manifest) {
+			audit.Surfaces[0].Classification = "missing-buildable"
 			audit.Surfaces[0].FollowUp = ""
 		}, "lacks follow_up"},
 		"nonexistent nonempty follow-up": {func(audit *coverageaudit.Manifest) {
