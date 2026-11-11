@@ -7,6 +7,7 @@ All notable changes to the OPNsense Terraform provider are documented here, foll
 FEATURES:
 
 * Add four GET-only runtime interface data sources: `opnsense_interface`, `opnsense_interface_all`, `opnsense_interfaces_overview`, and `opnsense_interfaces_overview_all`. Preserve the complete pinned public allowlist with typed optional nulls, exact device lookup, complete overview counts and deterministic collection ordering.
+* Add a read-only `opnsense_dnsmasq_settings` lookup for the existing singleton. It reads the stable settings GET, requires identity `dnsmasq`, and publishes only the public resource allowlist. Empty DHCP integers stay null. Response-only `%domain`, stored `expand_hosts`, and child arrays are not lookup state.
 
 UPGRADE NOTES:
 

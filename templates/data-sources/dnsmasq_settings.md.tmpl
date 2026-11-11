@@ -1,0 +1,18 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Dnsmasq"
+description: |-
+  Reads Dnsmasq DNS/DHCP general settings on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Reads the Dnsmasq DNS/DHCP general settings singleton. The only accepted identity is `dnsmasq`. This data source calls the stable settings GET and never writes or reconfigures the service.
+
+The public allowlist matches the resource contract. Response-only `%domain`, the stored `expand_hosts` boolean, and child arrays are not lookup state. The released general and DHCP models have no password or write-only secret. Empty DHCP integer sentinels stay null.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_dnsmasq_settings/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

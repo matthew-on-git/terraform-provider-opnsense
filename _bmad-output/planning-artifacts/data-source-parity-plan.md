@@ -38,7 +38,7 @@ The complete deterministic inventory is the set registered by `OpnsenseProvider.
 
 | Resource | Domain | Current data source? | Pattern | Priority | Batch | Notes |
 |---|---|---|---|---|---|---|
-| dnsmasq_settings | Dnsmasq | No | Singleton | Low | 4 | Singleton read pattern may differ from UUID resources. |
+| dnsmasq_settings | Dnsmasq | Yes | Singleton | Low | 4 | Implemented by 31.0q as a read-only public allowlist. Live proof remains separate. |
 | interface_assignment | Interfaces | No | UUID-backed-special | Medium | 4 | Configuration lookup differs from live interface-state data sources. |
 | ipsec_key_pair | IPsec | No | UUID-backed-special | Medium | 4 | Sensitive/write-only fields require careful state expectations. |
 | ipsec_psk | IPsec | No | UUID-backed-special | Medium | 4 | Secret fields require careful state expectations. |
@@ -130,7 +130,7 @@ Goal: keep non-standard cases from blocking straightforward UUID-backed data sou
 
 | Data source | Files to inspect | Likely pattern | Docs/examples needed | Risks |
 |---|---|---|---|---|
-| dnsmasq_settings | `internal/service/dnsmasq/settings_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
+| dnsmasq_settings | `internal/service/dnsmasq/settings_data_source.go` | Singleton | Data-source docs/example | Implemented by 31.0q. No UUID lifecycle. `expand_hosts` remains unowned. |
 | kea_ctrl_agent | `internal/service/kea/ctrl_agent_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
 | kea_dhcpv6_settings | `internal/service/kea/dhcpv6_settings_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
 | quagga_general | `internal/service/quagga/general_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
