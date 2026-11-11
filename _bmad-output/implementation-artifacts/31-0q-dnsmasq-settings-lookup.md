@@ -38,3 +38,19 @@ These blobs are identical between those tags:
 - OpenTofu execution is not claimed.
 - Child UUID lookups stay on their existing data sources.
 - Merge, release, and the Go security baseline remain separate human decisions.
+
+## Protocol-test decoder repair
+
+Decode Terraform Number state into `big.Float`, the supported `tftypes.Value.As`
+target, rather than `int64`. Keep the exact value128 assertion and existing
+read-only/wrong-ID/metadata assertions intact. This repairs test decoding, not
+provider schema or appliance behavior. Re-run required checks and bind hosted
+results to the corrected head; no live appliance or release claim is added.
+
+Validation of decoder repair: `make check` ran all six stages in DevRail1.12.24.
+Lint, format, test, scan and docs passed. Security failed on the existing Go
+standard-library advisory; direct `govulncheck ./...` output was retained and
+confirms the finding. The separate toolchain repair remains PR87; it is not
+silently merged or absorbed here. Hosted checks on this corrected head must be
+read independently; the story remains in review. Test-only decoder correction
+does not change provider behavior, so no additional release heading is created.

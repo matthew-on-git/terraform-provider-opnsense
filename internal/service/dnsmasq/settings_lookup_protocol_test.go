@@ -6,6 +6,7 @@ package dnsmasq_test
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -71,8 +72,8 @@ func TestProtocolDNSMasqSettingsLookupReadOnly(t *testing.T) {
 	if err := dhcp.As(&nested); err != nil {
 		t.Fatal(err)
 	}
-	var leaseMax int64
-	if err := nested["lease_max"].As(&leaseMax); err != nil || leaseMax != 128 {
+	var leaseMax big.Float
+	if err := nested["lease_max"].As(&leaseMax); err != nil || leaseMax.Cmp(big.NewFloat(128)) != 0 {
 		t.Fatalf("lease_max = %v %v", nested["lease_max"], err)
 	}
 	if _, ok := nested["%domain"]; ok {
