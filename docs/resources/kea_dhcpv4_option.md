@@ -37,8 +37,10 @@ The stored `force` flag is **not a packet-level force guarantee**: the tagged
 upstream generator does not consume it. This owner does not enable DHCP/DDNS,
 own singleton settings/option_data, or attach options to subnets/reservations.
 Parent links and their persisted order affect last-match precedence; selected-map
-key/label order cannot recover that order. Ordered parent linkage is separate
-Story 31.0p; there is no invented generic-option position attribute. Older-core,
+key/label order cannot recover that order. Ordered parent linkage is
+upstream-blocked on released core 26.7.8: parent GET does not preserve stored
+order, and grid-search CSV or raw XML is not a supported link contract. There
+is no invented generic-option position attribute. Older-core,
 OpenTofu and active packet delivery remain unverified. Implementation and live
 acceptance/release publication are separate gates; see the support matrix.
 

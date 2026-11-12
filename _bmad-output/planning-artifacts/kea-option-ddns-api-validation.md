@@ -92,6 +92,7 @@ owner/lookup proof is recorded separately for Story31.0n in
 `../implementation-artifacts/31-0n-kea-option-live-evidence.md`; the API calibration alone does not establish it.
 
 Existing subnet/reservation resources do not yet expose the generic option
-relation. ModelRelationField GET choice maps are label-sorted and do not prove
-stored selection order; ordered parent linkage is an explicit separate follow-up
-31.0p, not completion conferred by creating an unlinked generic option.
+relation. Released core 26.7.8 parent GET choice maps are description-sorted
+and do not prove stored selection order. Ordered parent linkage is
+upstream-blocked, not completion conferred by creating an unlinked generic
+option. See `kea-ordered-option-linkage-api-research.md`.
