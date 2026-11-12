@@ -2,7 +2,13 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.17.0 (Unreleased)
+## 0.18.0 (Unreleased)
+
+FEATURES:
+
+* Add a read-only `opnsense_dnsmasq_settings` lookup for the existing singleton. It reads the stable settings GET, requires identity `dnsmasq`, and publishes only the public resource allowlist. Empty DHCP integers stay null. Response-only `%domain`, stored `expand_hosts`, and child arrays are not lookup state.
+
+## 0.17.0 (2026-11-11)
 
 FEATURES:
 
