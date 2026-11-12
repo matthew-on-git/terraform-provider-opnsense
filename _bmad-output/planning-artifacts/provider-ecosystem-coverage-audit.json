@@ -11,13 +11,12 @@
   },
   "local_inventory": {
     "resource_count": 113,
-    "data_source_count": 105,
+    "data_source_count": 106,
     "resource_doc_count": 113,
-    "data_source_doc_count": 105,
+    "data_source_doc_count": 106,
     "ephemeral_resource_count": 1,
     "ephemeral_resource_doc_count": 1,
     "resource_only_data_source_gaps": [
-      "dnsmasq_settings",
       "ipsec_key_pair",
       "ipsec_psk",
       "kea_ctrl_agent",

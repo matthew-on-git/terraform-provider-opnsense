@@ -110,7 +110,7 @@ Goal: make this provider complete enough to be the default provider choice for a
 | 31.0m Gateway Group Resource/Data Source | done / released v0.9.0 | `_bmad-output/implementation-artifacts/31-0m-gateway-group-resource.md` |
 | 31.0n Kea Generic Option Resource/Data Source | done / released v0.10.0 | `_bmad-output/implementation-artifacts/31-0n-kea-generic-option-resource.md` |
 | 31.0o Kea DDNS Settings Resource/Data Source | done / released v0.10.0 | `_bmad-output/implementation-artifacts/31-0o-kea-ddns-settings-resource.md` |
-| 31.0p Kea Ordered Generic-Option Linkage | backlog / ordered-read API gate | `_bmad-output/implementation-artifacts/31-0p-kea-ordered-option-linkage.md` |
+| 31.0p Kea Ordered Generic-Option Linkage | blocked / no ordered read on core 26.7.8 | `_bmad-output/implementation-artifacts/31-0p-kea-ordered-option-linkage.md` |
 | 31.1 Complete Provider Positioning README and Registry Pass | backlog | `_bmad-output/implementation-artifacts/31-1-complete-provider-positioning-docs.md` |
 | 31.2 Existing Provider Migration Guide | backlog | `_bmad-output/implementation-artifacts/31-2-existing-provider-migration-guide.md` |
 | 31.3 Example Stacks for Adoption | backlog | `_bmad-output/implementation-artifacts/31-3-example-stacks-for-adoption.md` |
@@ -130,7 +130,7 @@ Goal: make releases feel intentionally tested, versioned, and ready for producti
 1. Treat Epics 25B through 29 as completed or historical unless a regression appears.
 2. Keep completed Epic 30's weekly probe baseline current; assignment/IP support requires OPNsense 26.7.6+ and has disposable-appliance lifecycle proof.
 3. Finish P0 Trust31.0f, then advanced IPsec31.0g and remaining FRR/BGP31.0h, live-interface lookups31.0i and provider retry controls31.0j. The Trust settings resource/lookup is an unreleased first increment, not closure of CA/certificate lifecycle or disposable proof. FRR2.0 compatibility is already released; do not repeat that subgate.
-4. Research31.0p separately: generic Kea option CRUD/DDNS already shipped, but ordered linkage needs an authoritative order-preserving read API. No raw XML workaround is authorized.
+4. Keep31.0p blocked: generic Kea option CRUD/DDNS already shipped, and released core26.7.8 still has no authoritative order-preserving parent read. No raw XML, selected-map, or grid-search workaround is authorized.
 5. Complete31.1 positioning,31.2 migration and31.3 adoption examples after parity, carrying the remaining16 singleton/sensitive lookup gaps as explicit implementation or exception decisions.
 6. Complete32.1 acceptance-proof artifacts,32.2 preflight/version diagnostics and32.3 v1 stability criteria. Keep unit/protocol, real Core/disposable, release and Registry proof separate.
 

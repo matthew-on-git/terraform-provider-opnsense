@@ -25,6 +25,7 @@ func Resources() []func() resource.Resource {
 // DataSources returns the list of Dnsmasq data source types.
 func DataSources() []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		newSettingsDataSource,
 		newHostDataSource,
 		newDomainDataSource,
 		newTagDataSource,

@@ -2,7 +2,7 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.18.0 (Unreleased)
+## 0.19.0 (Unreleased)
 
 FEATURES:
 
@@ -10,7 +10,14 @@ FEATURES:
 
 UPGRADE NOTES:
 
-* No assignment resource behavior changes. The lookup never writes or reconfigures. Empty addresses stay empty strings with null prefix lengths. Identity is the assignment name, not a UUID. Live interface diagnostics remain separate data sources. Fixture and protocol checks are not appliance proof; older firmware, OpenTofu, and tunnel-mode assignments are not claimed. Merging this heading authorizes the automatic v0.18.0 publication path after successful main CI.
+* No assignment resource behavior changes. The lookup never writes or reconfigures. Empty addresses stay empty strings with null prefix lengths. Identity is the assignment name, not a UUID. Live interface diagnostics remain separate data sources. Fixture and protocol checks are not appliance proof; older firmware, OpenTofu, and tunnel-mode assignments are not claimed. Merging this heading authorizes the automatic v0.19.0 publication path after successful main CI.
+
+
+## 0.18.0 (Unreleased)
+
+FEATURES:
+
+* Add a read-only `opnsense_dnsmasq_settings` lookup for the existing singleton. It reads the stable settings GET, requires identity `dnsmasq`, and publishes only the public resource allowlist. Empty DHCP integers stay null. Response-only `%domain`, stored `expand_hosts`, and child arrays are not lookup state.
 
 ## 0.17.0 (2026-11-11)
 
