@@ -186,5 +186,5 @@ The public register and maintenance workflow live in [`docs/upstream-blocked.md`
 
 - **Supported:** 109 resources and 95 data sources listed in `support-matrix.md` and generated docs.
 - **Coming:** data-source parity for singleton and sensitive special cases; gateway groups and generic Kea option/DDNS owners after direct-API probes (Stories 31.0m–31.0o); provider/TF acceptance pending.
-- **Needs research:** Kea matching-option linkage/ordering details, HASync configuration, HASync status/actions, and PPPoE semantics.
-- **Upstream-blocked:** system general settings. Gateway groups moved to Coming for the verified 26.7.7 target; see Story 31.0k.
+- **Needs research:** HASync configuration, HASync status/actions, and PPPoE semantics.
+- **Upstream-blocked:** system general settings. Ordered Kea parent-option linkage is separately upstream-blocked on released core 26.7.8; see `kea-ordered-option-linkage-api-research.md`. Gateway groups moved to Coming for the verified 26.7.7 target; see Story 31.0k. The 2026-06-02 scorecard counts above are not refreshed by that linkage gate.
