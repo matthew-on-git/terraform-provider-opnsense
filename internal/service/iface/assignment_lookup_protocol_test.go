@@ -94,7 +94,7 @@ func protocolAssignment() map[string]any {
 	}
 	return map[string]any{
 		"identifier": "opt3", "if": selected("vtnet2"), "descr": "example", "lock": "1", "enable": "1",
-		"spoofmac": "02:00:00:00:00:01", "password": "write-only-secret",
+		"spoofmac": "02:00:00:00:00:01", "pending_action": "not-lookup-state",
 		"type4": selected("staticv4"), "ipaddr": "192.0.2.10/24", "gateway": "GW4",
 		"type6": selected(""), "ipaddrv6": "", "gatewayv6": "",
 		"dhcphostname": "", "dhcprejectfrom": "", "dhcphonourmtu": "0", "dhcpvlanprio": "",

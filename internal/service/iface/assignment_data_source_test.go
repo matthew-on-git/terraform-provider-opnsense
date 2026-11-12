@@ -54,7 +54,7 @@ func TestAssignmentLookupReadPublishesPublicFieldsOnly(t *testing.T) {
 	current["gatewayv6"] = "GW6"
 	current["dhcprejectfrom"] = "192.0.2.1,192.0.2.2"
 	current["spoofmac"] = "02:00:00:00:00:01"
-	current["password"] = "write-only-secret"
+	current["pending_action"] = "not-lookup-state"
 	current["descr"] = "not-lookup-state"
 	var methods []string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -126,7 +126,7 @@ func TestAssignmentLookupUnsupportedModeFailsClosed(t *testing.T) {
 	t.Parallel()
 	current := assignmentFixture("", "")
 	current["type4"] = selected("pppoe")
-	current["password"] = "do-not-synthesize"
+	current["pending_action"] = "do-not-synthesize"
 	_, diags := readAssignmentLookupFixture(t, current)
 	if !diags.HasError() || !strings.Contains(diags[0].Detail(), "unsupported IPv4 mode") {
 		t.Fatalf("diagnostics = %v", diags)
