@@ -2,6 +2,16 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.20.0 (Unreleased)
+
+FEATURES:
+
+* Add a read-only `opnsense_ipsec_key_pair` lookup for an existing key pair UUID. The public allowlist is name, key type, derived size, and fingerprint. Public and private key PEM payloads are not lookup state. An omitted private key stays absent rather than a synthetic secret. Empty derived size and fingerprint stay empty strings. A response without a name or key type fails closed.
+
+UPGRADE NOTES:
+
+* No key-pair resource behavior changes. The lookup never writes or reconfigures. Identity is the key-pair UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.20.0 publication path after successful main CI. v0.19.0 is already published, so this change does not append to that heading.
+
 ## 0.19.0 (Unreleased)
 
 FEATURES:
