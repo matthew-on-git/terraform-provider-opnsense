@@ -2,6 +2,16 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.19.0 (Unreleased)
+
+FEATURES:
+
+* Add a read-only `opnsense_interface_assignment` lookup for an existing `wan`, `lan`, or `optN` assignment. The public allowlist matches the resource contract. Device, description, MTU, hardware, tunnel, and response-only fields are not lookup state. Missing required fields, unknown names, and unsupported tunnel modes fail closed.
+
+UPGRADE NOTES:
+
+* No assignment resource behavior changes. The lookup never writes or reconfigures. Empty addresses stay empty strings with null prefix lengths. Identity is the assignment name, not a UUID. Live interface diagnostics remain separate data sources. Fixture and protocol checks are not appliance proof; older firmware, OpenTofu, and tunnel-mode assignments are not claimed. Merging this heading authorizes the automatic v0.19.0 publication path after successful main CI.
+
 ## 0.18.0 (Unreleased)
 
 FEATURES:

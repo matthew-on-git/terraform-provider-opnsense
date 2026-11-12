@@ -22,13 +22,13 @@ This plan defines the remaining data-source work after v0.1.0. It is an implemen
 
 | Check | Command | Result |
 |---|---|---:|
-| Registered resources | Provider registration metadata | 112 |
-| Registered data sources | Provider registration metadata | 98 |
-| Resource docs | `find docs/resources -name '*.md'` | 112 |
-| Data-source docs | `find docs/data-sources -name '*.md'` | 98 |
-| Resource-matching data-source gaps | Resource doc basenames minus data-source doc basenames | 16 |
+| Registered resources | Provider registration metadata | 113 |
+| Registered data sources | Provider registration metadata | 106 |
+| Resource docs | `find docs/resources -name '*.md'` | 113 |
+| Data-source docs | `find docs/data-sources -name '*.md'` | 106 |
+| Resource-matching data-source gaps | Resource doc basenames minus data-source doc basenames | 13 |
 
-No mismatch was found between registered implementation counts and generated documentation counts. The current gap is 16, not 112 minus 98, because `system_info` and `unbound_settings` are standalone data-source names without same-name resources. The OpenVPN static-key lookup is now published (v0.7.0), so it is not a remaining gap. The canonical names and drift checks now live in `provider-ecosystem-coverage-audit.json` and `internal/coverageaudit`.
+No mismatch was found between registered implementation counts and generated documentation counts. The current gap is 13, not 113 minus 106, because six runtime/standalone lookups have no same-name resource. The OpenVPN static-key lookup is now published (v0.7.0), so it is not a remaining gap. The canonical names and drift checks now live in `provider-ecosystem-coverage-audit.json` and `internal/coverageaudit`.
 
 ## Existing Data Sources
 
@@ -39,7 +39,7 @@ The complete deterministic inventory is the set registered by `OpnsenseProvider.
 | Resource | Domain | Current data source? | Pattern | Priority | Batch | Notes |
 |---|---|---|---|---|---|---|
 | dnsmasq_settings | Dnsmasq | Yes | Singleton | Low | 4 | Implemented by 31.0q as a read-only public allowlist. Live proof remains separate. |
-| interface_assignment | Interfaces | No | UUID-backed-special | Medium | 4 | Configuration lookup differs from live interface-state data sources. |
+| interface_assignment | Interfaces | Yes | Name-keyed | Medium | 4 | Implemented by 31.0r as a read-only public allowlist. Identity is `wan`, `lan`, or `optN`, not a UUID. Live proof remains separate. |
 | ipsec_key_pair | IPsec | No | UUID-backed-special | Medium | 4 | Sensitive/write-only fields require careful state expectations. |
 | ipsec_psk | IPsec | No | UUID-backed-special | Medium | 4 | Secret fields require careful state expectations. |
 | kea_ctrl_agent | Kea | No | Singleton | Low | 4 | Singleton read pattern may differ from UUID resources. |
