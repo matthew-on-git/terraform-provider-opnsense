@@ -40,7 +40,6 @@ The complete deterministic inventory is the set registered by `OpnsenseProvider.
 |---|---|---|---|---|---|---|
 | dnsmasq_settings | Dnsmasq | Yes | Singleton | Low | 4 | Implemented by 31.0q as a read-only public allowlist. Live proof remains separate. |
 | interface_assignment | Interfaces | Yes | Name-keyed | Medium | 4 | Implemented by 31.0r as a read-only public allowlist. Identity is `wan`, `lan`, or `optN`, not a UUID. Live proof remains separate. |
-
 | ipsec_key_pair | IPsec | No | UUID-backed-special | Medium | 4 | Sensitive/write-only fields require careful state expectations. |
 | ipsec_psk | IPsec | No | UUID-backed-special | Medium | 4 | Secret fields require careful state expectations. |
 | kea_ctrl_agent | Kea | No | Singleton | Low | 4 | Singleton read pattern may differ from UUID resources. |
