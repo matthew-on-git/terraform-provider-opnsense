@@ -112,6 +112,44 @@ func TestAssignmentLookupRejectsIdentityBeforeRead(t *testing.T) {
 	}
 }
 
+func TestAssignmentLookupResponseIdentity(t *testing.T) {
+	t.Parallel()
+
+	for _, test := range []struct {
+		name       string
+		identifier any
+		omit       bool
+		wantError  bool
+	}{
+		{name: "matching", identifier: "opt3"},
+		{name: "absent", omit: true},
+		{name: "mismatched", identifier: "opt4", wantError: true},
+		{name: "empty", identifier: "", wantError: true},
+		{name: "null", identifier: nil, wantError: true},
+		{name: "wrong type", identifier: 3, wantError: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			current := assignmentFixture("192.0.2.10/24", "")
+			if test.omit {
+				delete(current, "identifier")
+			} else {
+				current["identifier"] = test.identifier
+			}
+			state, diags := readAssignmentLookupFixture(t, current)
+			if test.wantError {
+				if !diags.HasError() || diags[0].Summary() != "Interface assignment identity changed" {
+					t.Fatalf("diagnostics = %v", diags)
+				}
+				return
+			}
+			if diags.HasError() || state.ID.ValueString() != "opt3" || state.Name.ValueString() != "opt3" {
+				t.Fatalf("identity = %s/%s, diagnostics = %v", state.ID.ValueString(), state.Name.ValueString(), diags)
+			}
+		})
+	}
+}
+
 func TestAssignmentLookupMissingFieldFailsClosed(t *testing.T) {
 	t.Parallel()
 	current := assignmentFixture("192.0.2.10/24", "")

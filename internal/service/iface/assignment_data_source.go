@@ -5,6 +5,7 @@ package iface
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -115,12 +116,17 @@ func (d *assignmentDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		addAssignmentDiagnostic(&resp.Diagnostics, "Error reading interface assignment", err)
 		return
 	}
+	// Older responses may omit this metadata. If supplied, validate it before
+	// fromAPI assigns the requested name to both Terraform identity fields.
+	if raw, present := result.Raw["identifier"]; present {
+		var identifier string
+		if err := json.Unmarshal(raw, &identifier); err != nil || identifier != name {
+			resp.Diagnostics.AddError("Interface assignment identity changed", "The lookup refused to publish a response whose identity did not match the requested assignment name.")
+			return
+		}
+	}
 	if err := config.fromAPI(ctx, result, name); err != nil {
 		resp.Diagnostics.AddError("Error normalizing interface assignment", err.Error())
-		return
-	}
-	if config.ID.ValueString() != name || config.Name.ValueString() != name {
-		resp.Diagnostics.AddError("Interface assignment identity changed", "The lookup refused to publish a response whose identity did not match the requested assignment name.")
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
