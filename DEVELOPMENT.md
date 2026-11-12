@@ -86,8 +86,9 @@ Makefiles follow this order:
 
 ## Go Toolchain
 
-Builds require Go 1.26.10 or newer, as declared in `go.mod`; CI and release
-workflows pin Go 1.26.10. This patch fixes GO-2026-6809 in `crypto/x509`.
+Builds require Go 1.26.11 or newer, as declared in `go.mod`; CI and release
+workflows pin Go 1.26.11. This baseline includes the GO-2026-6809 fix in `crypto/x509` and fixes
+GO-2026-6859 in `net/http`.
 DevRail 1.12.24 supplies Go 1.26-compatible linters/scanners. The container
 automatically selects the module-required toolchain, so
 standard `make check` needs no host Go installation or `GOTOOLCHAIN` override.
