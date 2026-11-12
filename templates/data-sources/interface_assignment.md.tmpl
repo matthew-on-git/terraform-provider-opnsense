@@ -1,0 +1,18 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Interfaces"
+description: |-
+  Reads safe IP settings for an existing OPNsense interface assignment.
+---
+
+# {{.Name}} ({{.Type}})
+
+Reads enablement and IP settings for an existing base interface assignment. The lookup identity is the assignment name (`wan`, `lan`, or `optN`), the same value used by the resource ID. This data source calls the stable assignment GET and never writes or reconfigures the assignment.
+
+The public allowlist matches the resource contract. Device, description, MTU, hardware offload, tunnel credentials, and response-only fields are not lookup state. The released assignment model has no password or write-only secret. Unsupported tunnel modes fail closed instead of being rewritten into a supported mode. An empty static address stays an empty string with a null prefix length.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_interface_assignment/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

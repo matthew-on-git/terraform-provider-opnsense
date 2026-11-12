@@ -2,7 +2,7 @@
 
 Pinned baseline: `browningluke/opnsense` v0.26.0 at `33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba` (47 resources, 45 data sources, 1 ephemeral resource, and provider retry configuration).
 
-Current local inventory: **113 resources and 104 data sources**, with 113/104 generated docs. There are **15 resource-only same-name data-source gaps** and the data-only surfaces are `interface`, `interface_all`, `interfaces_overview`, `interfaces_overview_all`, `system_info`, `unbound_settings`.
+Current local inventory: **113 resources and 105 data sources**, with 113/105 generated docs. There are **14 resource-only same-name data-source gaps** and the data-only surfaces are `interface`, `interface_all`, `interfaces_overview`, `interfaces_overview_all`, `system_info`, `unbound_settings`.
 
 ## Ownership Direction
 
@@ -1092,6 +1092,6 @@ Use one provider per appliance and object domain in steady state. Never configur
 
 ## Local Inventory Exceptions
 
-Resource-only same-name data-source gaps (15): `dnsmasq_settings`, `interface_assignment`, `ipsec_key_pair`, `ipsec_psk`, `kea_ctrl_agent`, `kea_dhcpv4_settings`, `kea_dhcpv6_settings`, `quagga_bgp_global`, `quagga_general`, `quagga_ospf6_general`, `quagga_ospf_general`, `quagga_rip`, `quagga_static`, `unbound_dnsbl`, `unbound_general`.
+Resource-only same-name data-source gaps (14): `dnsmasq_settings`, `ipsec_key_pair`, `ipsec_psk`, `kea_ctrl_agent`, `kea_dhcpv4_settings`, `kea_dhcpv6_settings`, `quagga_bgp_global`, `quagga_general`, `quagga_ospf6_general`, `quagga_ospf_general`, `quagga_rip`, `quagga_static`, `unbound_dnsbl`, `unbound_general`.
 
 Data-only: `interface`, `interface_all`, `interfaces_overview`, `interfaces_overview_all`, `system_info`, `unbound_settings`.

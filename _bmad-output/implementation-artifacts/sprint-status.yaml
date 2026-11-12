@@ -1,5 +1,5 @@
 # generated: 2026-03-18
-# last_updated: 2026-11-10
+# last_updated: 2026-11-12
 # project: terraform-provider-opnsense
 # project_key: NOKEY
 # tracking_system: file-system
@@ -310,6 +310,7 @@ development_status:
   31-0n-kea-generic-option-resource: done # owner/lookup shipped v0.10.0; ordered linkage remains separate
   31-0o-kea-ddns-settings-resource: done # owner/lookup shipped v0.10.0; DNS-delivery proof remains distinct
   31-0p-kea-ordered-option-linkage: backlog # existing parent owners lack links; ordered stable read API research gate
+  31-0r-interface-assignment-lookup: review # source-backed public allowlist; live proof remains separate
   31-1-complete-provider-positioning-docs: backlog
   31-2-existing-provider-migration-guide: backlog
   31-3-example-stacks-for-adoption: backlog
