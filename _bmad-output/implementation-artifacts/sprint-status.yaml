@@ -312,6 +312,7 @@ development_status:
   31-0p-kea-ordered-option-linkage: blocked # released core 26.7.8 has no authoritative ordered parent read; links not implemented
   31-0q-dnsmasq-settings-lookup: review # source-backed public allowlist; live proof and expand_hosts ownership remain separate
   31-0r-interface-assignment-lookup: review # source-backed public allowlist; live proof remains separate
+  31-0s-ipsec-key-pair-lookup: review # source-backed public allowlist; PEM payloads excluded; live proof remains separate
 
   31-1-complete-provider-positioning-docs: backlog
   31-2-existing-provider-migration-guide: backlog
