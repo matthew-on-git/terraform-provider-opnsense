@@ -87,11 +87,18 @@ Makefiles follow this order:
 ## Go Toolchain
 
 Builds require Go 1.26.11 or newer, as declared in `go.mod`; CI and release
-workflows pin Go 1.26.11. This baseline includes the GO-2026-6809 fix in `crypto/x509` and fixes
-GO-2026-6859 in `net/http`.
-DevRail 1.12.24 supplies Go 1.26-compatible linters/scanners. The container
-automatically selects the module-required toolchain, so
-standard `make check` needs no host Go installation or `GOTOOLCHAIN` override.
+workflows pin Go 1.26.11. This pin selects the Go 1.26.11 standard library,
+which fixes GO-2026-6859 (CVE-2026-97054) in `net/http`. It also keeps the
+earlier GO-2026-6809 `crypto/x509` fix from Go 1.26.10.
+
+DevRail image `ghcr.io/devrail-dev/dev-toolchain:1.12.24` remains the scanner
+and linter image. That tag was published before Go 1.26.11 and still embeds an
+older Go SDK. It is not this fix. Hosted workflows install Go 1.26.11 with
+`actions/setup-go` before running checks. Containerized `make check` uses the
+image's default toolchain selection, which follows the `go` line in `go.mod`,
+and needs no host Go installation. Publishing a DevRail image that embeds Go
+1.26.11 is a separate change in `devrail-dev/dev-toolchain`; retagging 1.12.24
+does not change the SDK inside it.
 
 
 <!-- devrail:shell-conventions -->
