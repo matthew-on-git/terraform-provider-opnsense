@@ -31,13 +31,28 @@ output "system_gateway_id" {
 
 ### Read-Only
 
+- `data_length` (String) Probe payload length in bytes; zero is an explicit value. Empty means appliance default.
 - `default_gateway` (Boolean) Mark as default gateway. Defaults to 'false'.
 - `description` (String) Description.
 - `enabled` (Boolean) Whether this gateway is enabled. Defaults to 'true'.
+- `far_gateway` (Boolean) Allow a gateway outside the interface subnet.
+- `force_down` (Boolean) Treat the gateway as down regardless of monitoring.
 - `gateway` (String) Gateway IP address.
 - `interface` (String) Interface (e.g., 'wan').
+- `interval` (String) Probe interval in seconds. Empty means appliance default.
 - `ip_protocol` (String) IP version: 'inet' (IPv4) or 'inet6' (IPv6).
+- `latency_high` (String) High latency threshold in milliseconds. Empty means appliance default.
+- `latency_low` (String) Low latency threshold in milliseconds. Empty means appliance default.
+- `loss_high` (String) High packet loss threshold in percent (1-100). Empty means appliance default.
+- `loss_interval` (String) Interval in seconds before a probe is considered lost. Empty means appliance default.
+- `loss_low` (String) Low packet loss threshold in percent (1-99). Empty means appliance default.
+- `monitor` (String) Monitor IP address. An empty string uses the gateway address.
 - `monitor_disable` (Boolean) Disable gateway monitoring. Defaults to 'true'.
+- `monitor_kill_states` (Boolean) Flush states when the gateway goes down.
+- `monitor_kill_states_priority` (Boolean) Flush states when a higher-priority gateway becomes available.
+- `monitor_no_route` (Boolean) Do not add a host route for the monitor address.
 - `name` (String) Gateway name (unique, alphanumeric + '_-', max 32 chars).
+- `no_sync` (Boolean) Exclude this gateway from configuration synchronization.
 - `priority` (Number) Priority (0-255). Lower = higher priority.
+- `time_period` (String) Time period in seconds over which monitoring results are averaged. Empty means appliance default.
 - `weight` (Number) Weight for gateway groups (1-5).
