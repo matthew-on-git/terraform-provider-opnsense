@@ -11,13 +11,12 @@
   },
   "local_inventory": {
     "resource_count": 113,
-    "data_source_count": 110,
+    "data_source_count": 111,
     "resource_doc_count": 113,
-    "data_source_doc_count": 110,
+    "data_source_doc_count": 111,
     "ephemeral_resource_count": 1,
     "ephemeral_resource_doc_count": 1,
     "resource_only_data_source_gaps": [
-      "kea_dhcpv6_settings",
       "quagga_bgp_global",
       "quagga_general",
       "quagga_ospf6_general",
