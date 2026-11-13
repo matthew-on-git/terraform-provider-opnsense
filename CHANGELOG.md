@@ -2,6 +2,16 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.22.0 (Unreleased)
+
+FEATURES:
+
+* Add a read-only `opnsense_kea_ctrl_agent` lookup for the existing singleton. It reads the stable control-agent GET, requires identity `kea-ctrl-agent`, and publishes only the public resource allowlist: enabled, listen address, and listen port. A disabled agent stays false. Missing required fields are not replaced with model defaults. The released general model has no password or write-only secret.
+
+UPGRADE NOTES:
+
+* No control-agent resource behavior changes. The lookup never writes or reconfigures. Identity is `kea-ctrl-agent`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.22.0 publication path after successful main CI. v0.21.0 is already published, so this change does not append to that heading.
+
 ## 0.21.0 (Unreleased)
 
 FEATURES:
