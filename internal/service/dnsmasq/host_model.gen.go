@@ -48,19 +48,19 @@ type hostAPIResponse struct {
 }
 
 type hostAPIRequest struct {
-	Host        string `json:"host"`
-	Domain      string `json:"domain,omitempty"`
-	Local       string `json:"local"`
-	IP          string `json:"ip"`
-	CNames      string `json:"cnames,omitempty"`
-	ClientID    string `json:"client_id,omitempty"`
-	HWAddr      string `json:"hwaddr,omitempty"`
-	LeaseTime   string `json:"lease_time,omitempty"`
-	Ignore      string `json:"ignore"`
-	SetTag      string `json:"set_tag,omitempty"`
-	Description string `json:"descr,omitempty"`
-	Comments    string `json:"comments,omitempty"`
-	Aliases     string `json:"aliases,omitempty"`
+	Host        string  `json:"host"`
+	Domain      string  `json:"domain,omitempty"`
+	Local       string  `json:"local"`
+	IP          string  `json:"ip"`
+	CNames      string  `json:"cnames,omitempty"`
+	ClientID    *string `json:"client_id,omitempty"`
+	HWAddr      string  `json:"hwaddr,omitempty"`
+	LeaseTime   string  `json:"lease_time,omitempty"`
+	Ignore      string  `json:"ignore"`
+	SetTag      string  `json:"set_tag,omitempty"`
+	Description string  `json:"descr,omitempty"`
+	Comments    string  `json:"comments,omitempty"`
+	Aliases     string  `json:"aliases,omitempty"`
 }
 
 func (m *HostResourceModel) toAPI(_ context.Context) *hostAPIRequest {
@@ -70,7 +70,7 @@ func (m *HostResourceModel) toAPI(_ context.Context) *hostAPIRequest {
 		Local:       opnsense.BoolToString(m.Local.ValueBool()),
 		IP:          m.IP.ValueString(),
 		CNames:      m.CNames.ValueString(),
-		ClientID:    m.ClientID.ValueString(),
+		ClientID:    knownString(m.ClientID),
 		HWAddr:      m.HWAddr.ValueString(),
 		LeaseTime:   tfconv.IntOrEmpty(m.LeaseTime.ValueInt64()),
 		Ignore:      opnsense.BoolToString(m.Ignore.ValueBool()),
