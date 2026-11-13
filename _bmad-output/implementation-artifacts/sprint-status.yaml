@@ -315,6 +315,7 @@ development_status:
   31-0s-ipsec-key-pair-lookup: review # source-backed public allowlist; PEM payloads excluded; live proof remains separate
   31-0t-ipsec-psk-lookup: review # source-backed public allowlist; secret excluded; live proof remains separate
   31-0u-kea-ctrl-agent-lookup: review # source-backed public allowlist; no secret in the released general model; live proof remains separate
+  31-0v-kea-dhcpv4-settings-lookup: review # source-backed public allowlist; no secret in the released general model; live proof remains separate
 
   31-1-complete-provider-positioning-docs: backlog
   31-2-existing-provider-migration-guide: backlog

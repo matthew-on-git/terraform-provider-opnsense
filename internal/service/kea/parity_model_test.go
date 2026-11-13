@@ -663,8 +663,8 @@ func TestKeaRegistrationCountsAndNoDeprecatedAliases(t *testing.T) {
 	if got := len(Resources()); got != 12 {
 		t.Fatalf("resources=%d want 12", got)
 	}
-	if got := len(DataSources()); got != 10 {
-		t.Fatalf("data sources=%d want 10", got)
+	if got := len(DataSources()); got != 11 {
+		t.Fatalf("data sources=%d want 11", got)
 	}
 	for _, name := range []string{"kea_peer", "kea_reservation", "kea_subnet"} {
 		for _, constructor := range Resources() {
