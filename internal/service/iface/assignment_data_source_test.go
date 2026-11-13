@@ -55,7 +55,7 @@ func TestAssignmentLookupReadPublishesPublicFieldsOnly(t *testing.T) {
 	current["dhcprejectfrom"] = "192.0.2.1,192.0.2.2"
 	current["spoofmac"] = "02:00:00:00:00:01"
 	current["pending_action"] = "not-lookup-state"
-	current["descr"] = "not-lookup-state"
+	current["descr"] = "EXAMPLE"
 	var methods []string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		methods = append(methods, req.Method+" "+req.URL.Path)

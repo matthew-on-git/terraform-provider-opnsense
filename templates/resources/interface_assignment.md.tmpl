@@ -8,15 +8,41 @@ description: |-
 # {{.Name}} ({{.Type}})
 
 Adopts an existing `wan`, `lan`, or `optN` assignment and manages its enabled
-state and safe IPv4, IPv6, DHCPv4, and DHCPv6 settings. This resource requires
+state, description, MTU/MSS, private/bogon blocking, per-interface offload controls,
+and safe IPv4, IPv6, DHCPv4, and DHCPv6 settings. This resource requires
 OPNsense **26.7.6 or newer** with the complete expanded
 `interfaces/assignment` API.
 
 This resource does not create assignments. Apply calls
 `assignment/set_item/{name}`, applies the assignment reconfigure operation, and
 reads the result back from OPNsense. Fields outside the documented safe subset
-are preserved. PPP/PPPoE, 6rd, 6to4, device binding, hardware tuning, MTU/MSS,
-and advanced DHCP client options are intentionally not managed.
+are preserved. PPP/PPPoE, 6rd, 6to4, media selection, MAC spoofing and promiscuous
+mode remain outside this resource.
+
+Omitting the new controls retains their saved values. Set `mtu` or `mss` to
+`0` to clear the saved override (the API stores this as an empty string);
+explicit values must be between 576 and 65535. A missing API field remains
+null and cannot be configured until the appliance exposes it. Offload flags
+only take effect when `override_hardware_settings` is enabled.
+
+`device` can rebind an existing assignment to a device advertised by its current
+API option map. It never creates a new assignment or changes its immutable name.
+Rebinding can immediately interrupt connectivity. `vlan_hardware_filtering`
+accepts `enable`, `disable`, or `default`.
+
+The DHCPv6 client controls use the `dhcp6_` prefix. `dhcp6_prefix_length` accepts
+`48` through `64` as strings, or `none`; the provider maps these displayed values
+to the appliance encoding (`56` is encoded as `8`). Configured non-default prefix requests require DHCPv6 mode, even when unchanged.
+Newer appliance versions discard them in other modes on any update, so the
+provider rejects such updates before writing, including unrelated changes. Prefix-only and send-hint
+flags preserve explicit false. Prefix/interface IDs and association ID retain
+empty values as explicit clears. Decimal association IDs must use canonical
+spelling (no leading zeros) and fit 0 through 9223372036854775807. Prefix and
+interface hexadecimal IDs must fit 0 through `0x7fffffffffffffff`: the appliance
+serializes them through signed 64-bit integers even though its XML mask permits
+wider strings. Equivalent hexadecimal spelling is retained across normalized
+readback; bare `0x` has the appliance value zero. These settings do not implicitly change
+`ipv6_mode`, configure DHCPv6 server services, or change child assignments.
 
 > **Connectivity warning:** Interface changes can immediately sever network
 > access. Test with a disposable non-management `optN` before adopting a live

@@ -22,12 +22,30 @@ import (
 // assignmentLookupFields is the public assignment GET allowlist. It matches
 // the resource contract and nothing else. The released NetworkInterface model
 // has no password or write-only secret. Excluded on purpose:
-//   - descr, if, lock, blockpriv, blockbogons, spoofmac, media, mtu, mss
+//   - lock, spoofmac, media, promiscuous mode
 //   - identifier, pending_action, icon, optgroup
-//   - alias, hardware-offload, 6rd/6to4, and dhcp6-ia-pd-len fields
+//   - alias and 6rd/6to4 fields
 //
 // Unsupported tunnel modes fail closed. They are not rewritten into a safe mode.
 var assignmentLookupFields = []string{
+	"device",
+	"description",
+	"mtu",
+	"mss",
+	"block_private",
+	"block_bogons",
+	"override_hardware_settings",
+	"disable_checksum_offloading",
+	"disable_segmentation_offloading",
+	"disable_large_receive_offloading",
+	"vlan_hardware_filtering",
+	"dhcp6_prefix_length",
+	"dhcp6_prefix_only",
+	"dhcp6_send_prefix_hint",
+	"dhcp6_prefix_id",
+	"dhcp6_interface_id",
+	"dhcp6_identity_association_id",
+
 	"id",
 	"name",
 	"enabled",
@@ -76,7 +94,7 @@ func (d *assignmentDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 		return
 	}
 	resp.Schema = dsschema.Schema{
-		MarkdownDescription: "Reads safe enablement and IP settings for an existing OPNsense base interface assignment. Identity is the assignment name (`wan`, `lan`, or `optN`), not a UUID. This data source calls the stable assignment GET and never writes or reconfigures. Device, description, MTU, hardware, tunnel, and response-only fields are not lookup state. Unsupported tunnel modes fail closed.",
+		MarkdownDescription: "Reads safe enablement, interface controls and IP settings for an existing OPNsense base interface assignment. Identity is the assignment name (`wan`, `lan`, or `optN`), not a UUID. This data source calls the stable assignment GET and never writes or reconfigures. Unmodeled hardware settings, tunnel credentials and response-only fields are not lookup state. Unsupported tunnel modes fail closed.",
 		Attributes:          attrs,
 	}
 }
