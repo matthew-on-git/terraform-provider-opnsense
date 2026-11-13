@@ -36,6 +36,7 @@ func DataSources() []func() datasource.DataSource {
 		newDHCPv4SubnetDataSource,
 		newDHCPv4OptionDataSource,
 		newDHCPv4ReservationDataSource,
+		newDHCPv6SettingsDataSource,
 		newDHCPv6SubnetDataSource,
 		newDHCPv6ReservationDataSource,
 		newHAPeerDataSource,
