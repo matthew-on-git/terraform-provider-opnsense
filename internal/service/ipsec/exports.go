@@ -35,5 +35,6 @@ func DataSources() []func() datasource.DataSource {
 		newRemoteDataSource,
 		newVTIDataSource,
 		newKeyPairDataSource,
+		newPSKDataSource,
 	}
 }

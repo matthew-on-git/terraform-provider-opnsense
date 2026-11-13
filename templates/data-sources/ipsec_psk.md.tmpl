@@ -1,0 +1,16 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "IPsec"
+description: |-
+  Look up public metadata for an existing IPsec pre-shared key on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Look up an existing IPsec pre-shared key by UUID. The lookup publishes local identity, remote identity, key type, and description. The pre-shared key value is not lookup state, including when the appliance omits or returns the secret.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_ipsec_psk/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

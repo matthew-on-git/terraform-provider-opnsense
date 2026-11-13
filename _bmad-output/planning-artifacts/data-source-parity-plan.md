@@ -41,7 +41,7 @@ The complete deterministic inventory is the set registered by `OpnsenseProvider.
 | dnsmasq_settings | Dnsmasq | Yes | Singleton | Low | 4 | Implemented by 31.0q as a read-only public allowlist. Live proof remains separate. |
 | interface_assignment | Interfaces | Yes | Name-keyed | Medium | 4 | Implemented by 31.0r as a read-only public allowlist. Identity is `wan`, `lan`, or `optN`, not a UUID. Live proof remains separate. |
 | ipsec_key_pair | IPsec | No | UUID-backed-special | Medium | 4 | Sensitive/write-only fields require careful state expectations. |
-| ipsec_psk | IPsec | No | UUID-backed-special | Medium | 4 | Secret fields require careful state expectations. |
+| ipsec_psk | IPsec | Yes | UUID-backed-special | Medium | 4 | Implemented by 31.0t as a read-only public allowlist. The secret is never lookup state. Live proof remains separate. |
 | kea_ctrl_agent | Kea | No | Singleton | Low | 4 | Singleton read pattern may differ from UUID resources. |
 | kea_dhcpv4_settings | Kea | No | Singleton | Low | 4 | Singleton/settings pattern. |
 | kea_dhcpv6_settings | Kea | No | Singleton | Low | 4 | Singleton/settings pattern. |
@@ -141,7 +141,7 @@ Goal: keep non-standard cases from blocking straightforward UUID-backed data sou
 | quagga_static | `internal/service/quagga/static_general_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
 | unbound_general | `internal/service/unbound/general_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
 | unbound_dnsbl | `internal/service/unbound/dnsbl_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
-| ipsec_psk | `internal/service/ipsec/psk_*` | UUID-backed-special | Data-source docs/example | Secret material is write-only. |
+| ipsec_psk | `internal/service/ipsec/psk_*` | UUID-backed-special | Data-source docs/example | Implemented by 31.0t. Secret material is never lookup state. |
 | ipsec_key_pair | `internal/service/ipsec/keypair_*` | UUID-backed-special | Data-source docs/example | Private key is write-only. |
 | trust_cert | `internal/service/trust/cert_*` | UUID-backed-special | Data-source docs/example | Private key/certificate material sensitivity. |
 

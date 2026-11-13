@@ -21,8 +21,8 @@ func TestDataSources_schemaIDs(t *testing.T) {
 	t.Parallel()
 
 	constructors := DataSources()
-	if len(constructors) != 8 {
-		t.Fatalf("expected 8 IPsec data sources, got %d", len(constructors))
+	if len(constructors) != 9 {
+		t.Fatalf("expected 9 IPsec data sources, got %d", len(constructors))
 	}
 
 	for _, constructor := range constructors {
