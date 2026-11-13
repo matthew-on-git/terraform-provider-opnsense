@@ -60,7 +60,7 @@ resources:
       - {name: Local, tf: local, json: local, type: bool, default: "false", desc: "Serve this host locally without forwarding."}
       - {name: IP, tf: ip, json: ip, type: string, response_type: selectmap, required: true, test_value: '"192.0.2.10"', desc: "IP address or addresses for this host entry."}
       - {name: CNames, tf: cnames, json: cnames, type: string, response_type: selectmap, desc: "Canonical name aliases for this host entry."}
-      - {name: ClientID, tf: client_id, json: client_id, type: string, desc: "DHCP client identifier."}
+      - {name: ClientID, tf: client_id, json: client_id, type: string, omit_unknown: true, test_value: '"00:01:00:01:00:00:00:01:02:00:00:00:00:01"', update_test_value: '""', desc: "DHCP client identifier. Set an empty string to clear an existing identifier; omit to retain the current value."}
       - {name: HWAddr, tf: hwaddr, json: hwaddr, type: string, response_type: selectmap, desc: "Hardware or MAC address values."}
       - {name: LeaseTime, tf: lease_time, json: lease_time, type: int, default: "0", desc: "DHCP lease time for this host entry."}
       - {name: Ignore, tf: ignore, json: ignore, type: bool, default: "false", desc: "Ignore DHCP requests from this host."}

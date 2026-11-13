@@ -23,6 +23,10 @@ func TestAccHost_basic(t *testing.T) {
 				Config: testAccHostConfig,
 				Check:  resource.TestCheckResourceAttrSet("opnsense_dnsmasq_host.test", "id"),
 			},
+			{
+				Config: testAccHostUpdatedConfig,
+				Check:  resource.TestCheckResourceAttrSet("opnsense_dnsmasq_host.test", "id"),
+			},
 			{ResourceName: "opnsense_dnsmasq_host.test", ImportState: true, ImportStateVerify: true},
 		},
 	})
@@ -34,5 +38,16 @@ resource "opnsense_dnsmasq_host" "test" {
   host = "host1"
   domain = "example.com"
   ip = "192.0.2.10"
+  client_id = "00:01:00:01:00:00:00:01:02:00:00:00:00:01"
+}
+`
+
+const testAccHostUpdatedConfig = `
+
+resource "opnsense_dnsmasq_host" "test" {
+  host = "host1"
+  domain = "example.com"
+  ip = "192.0.2.10"
+  client_id = ""
 }
 `

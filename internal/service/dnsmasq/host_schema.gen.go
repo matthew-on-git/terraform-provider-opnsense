@@ -29,7 +29,7 @@ func (r *hostResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"local":       schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Serve this host locally without forwarding."},
 			"ip":          schema.StringAttribute{Required: true, MarkdownDescription: "IP address or addresses for this host entry."},
 			"cnames":      schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Canonical name aliases for this host entry.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"client_id":   schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "DHCP client identifier.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"client_id":   schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "DHCP client identifier. Set an empty string to clear an existing identifier; omit to retain the current value.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"hwaddr":      schema.StringAttribute{Optional: true, Computed: true, MarkdownDescription: "Hardware or MAC address values.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"lease_time":  schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "DHCP lease time for this host entry.", PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()}},
 			"ignore":      schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), MarkdownDescription: "Ignore DHCP requests from this host."},
