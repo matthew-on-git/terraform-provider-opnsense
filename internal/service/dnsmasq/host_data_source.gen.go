@@ -37,7 +37,7 @@ func (d *hostDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 			"local":       dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Serve this host locally without forwarding."},
 			"ip":          dsschema.StringAttribute{Computed: true, MarkdownDescription: "IP address or addresses for this host entry."},
 			"cnames":      dsschema.StringAttribute{Computed: true, MarkdownDescription: "Canonical name aliases for this host entry."},
-			"client_id":   dsschema.StringAttribute{Computed: true, MarkdownDescription: "DHCP client identifier."},
+			"client_id":   dsschema.StringAttribute{Computed: true, MarkdownDescription: "DHCP client identifier. Set an empty string to clear an existing identifier; omit to retain the current value."},
 			"hwaddr":      dsschema.StringAttribute{Computed: true, MarkdownDescription: "Hardware or MAC address values."},
 			"lease_time":  dsschema.Int64Attribute{Computed: true, MarkdownDescription: "DHCP lease time for this host entry."},
 			"ignore":      dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Ignore DHCP requests from this host."},

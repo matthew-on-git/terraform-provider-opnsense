@@ -31,7 +31,7 @@ resource "opnsense_dnsmasq_host" "pxe_server" {
 ### Optional
 
 - `aliases` (String) Legacy aliases for this host entry.
-- `client_id` (String) DHCP client identifier.
+- `client_id` (String) DHCP client identifier. Set an empty string to clear an existing identifier; omit to retain the current value.
 - `cnames` (String) Canonical name aliases for this host entry.
 - `comments` (String) Additional comments for this host entry.
 - `description` (String) Description for this host entry.
