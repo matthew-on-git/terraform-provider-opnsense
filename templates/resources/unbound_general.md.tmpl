@@ -22,3 +22,6 @@ On stable OPNsense releases older than 26.7.7, the established general-branch at
 ## Import
 
 {{codefile "shell" "examples/resources/opnsense_unbound_general/import.sh"}}
+
+Unset advanced integer settings are read as null and omitted from updates, preserving appliance defaults. Explicit zero remains a configured value.
+Empty cache-size and serve-expired tuning strings also retain their appliance-default representation.
