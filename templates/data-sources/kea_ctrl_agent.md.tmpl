@@ -1,0 +1,18 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Kea"
+description: |-
+  Reads Kea DHCP control agent settings on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Reads the Kea DHCP control agent settings singleton. The only accepted identity is `kea-ctrl-agent`. This data source calls the stable control-agent GET and never writes or reconfigures the service.
+
+The public allowlist matches the resource contract: enabled, listen address, and listen port. The released general model has no password or write-only secret. Missing required fields are not replaced with model defaults.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_kea_ctrl_agent/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
