@@ -122,16 +122,15 @@ func (m *AliasResourceModel) fromAPI(_ context.Context, a *aliasAPIResponse, uui
 	m.PathExpression = types.StringValue(a.PathExpression)
 	m.Stats = types.BoolValue(opnsense.StringToBool(a.Counters))
 
-	// Convert SelectedMapList content to types.Set.
-	if len(a.Content) == 0 {
-		m.Content = types.SetValueMust(types.StringType, []attr.Value{})
-	} else {
-		vals := make([]attr.Value, len(a.Content))
-		for i, v := range a.Content {
-			vals[i] = types.StringValue(v)
+	// OPNsense represents empty alias content with a selected empty key.
+	// Filter it only here: empty keys in other selectors may carry meaning.
+	vals := make([]attr.Value, 0, len(a.Content))
+	for _, v := range a.Content {
+		if v != "" {
+			vals = append(vals, types.StringValue(v))
 		}
-		m.Content = types.SetValueMust(types.StringType, vals)
 	}
+	m.Content = types.SetValueMust(types.StringType, vals)
 
 	// Convert SelectedMapList to types.Set.
 	if len(a.Categories) == 0 {

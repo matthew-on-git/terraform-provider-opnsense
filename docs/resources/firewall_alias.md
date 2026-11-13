@@ -89,3 +89,5 @@ Import is supported using the alias UUID from OPNsense.
 # Import an existing firewall alias by its UUID
 terraform import opnsense_firewall_alias.example 12345678-1234-1234-1234-123456789012
 ```
+
+Empty aliases use `content = []`. Selected empty API entries are normalized to an empty set; remove any historical `[""]` workaround when adopting this fix.
