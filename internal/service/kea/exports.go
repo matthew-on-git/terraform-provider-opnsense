@@ -32,6 +32,7 @@ func DataSources() []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		newCtrlAgentDataSource,
 		newDDNSSettingsDataSource,
+		newDHCPv4SettingsDataSource,
 		newDHCPv4SubnetDataSource,
 		newDHCPv4OptionDataSource,
 		newDHCPv4ReservationDataSource,

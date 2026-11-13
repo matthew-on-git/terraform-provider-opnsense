@@ -24,8 +24,8 @@ func TestDataSources_schemaIDs(t *testing.T) {
 	t.Parallel()
 
 	constructors := DataSources()
-	if len(constructors) != 10 {
-		t.Fatalf("expected 10 Kea data sources, got %d", len(constructors))
+	if len(constructors) != 11 {
+		t.Fatalf("expected 11 Kea data sources, got %d", len(constructors))
 	}
 	for _, constructor := range constructors {
 		var metadata datasource.MetadataResponse

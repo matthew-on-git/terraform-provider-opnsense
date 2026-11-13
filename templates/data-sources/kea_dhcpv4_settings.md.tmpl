@@ -1,0 +1,18 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Kea"
+description: |-
+  Reads Kea DHCPv4 general settings on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Reads the Kea DHCPv4 general settings singleton. The only accepted identity is `kea-dhcpv4`. This data source calls the stable DHCPv4 GET and never writes or reconfigures the service.
+
+The public allowlist matches the resource contract: enabled, manual configuration, interfaces, valid lifetime, firewall rules, and DHCP socket type. Socket retry, decline probation, compatibility, lease expiry, and HA nodes are not lookup state. The released general model has no password or write-only secret. Missing required fields are not replaced with model defaults. A blank optional manual configuration stays null.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_kea_dhcpv4_settings/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
