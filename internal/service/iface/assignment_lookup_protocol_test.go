@@ -47,7 +47,7 @@ func TestProtocolAssignmentLookupReadOnly(t *testing.T) {
 	if schema == nil {
 		t.Fatal("interface assignment lookup is not registered")
 	}
-	for _, name := range []string{"password", "descr", "spoofmac", "if", "mtu"} {
+	for _, name := range []string{"password", "descr", "spoofmac", "if", "pending_action", "lock"} {
 		if assignmentSchemaHas(schema, name) {
 			t.Fatalf("excluded field %s is lookup state", name)
 		}
@@ -60,6 +60,24 @@ func TestProtocolAssignmentLookupReadOnly(t *testing.T) {
 		t.Fatal(err, read.Diagnostics)
 	}
 	attrs := assignmentLookupAttrs(t, schema, read.State)
+	for name, want := range map[string]tftypes.Value{
+		"device":                  tftypes.NewValue(tftypes.String, "vtnet2"),
+		"description":             tftypes.NewValue(tftypes.String, "example"),
+		"mtu":                     tftypes.NewValue(tftypes.Number, 1500),
+		"block_private":           tftypes.NewValue(tftypes.Bool, false),
+		"vlan_hardware_filtering": tftypes.NewValue(tftypes.String, "default"),
+		"dhcp6_prefix_length":     tftypes.NewValue(tftypes.String, "56"),
+		"dhcp6_interface_id":      tftypes.NewValue(tftypes.String, "0xa"),
+	} {
+		if !attrs[name].Equal(want) {
+			t.Fatalf("lookup %s = %v, want %v", name, attrs[name], want)
+		}
+	}
+	for _, name := range []string{"mss", "dhcp6_prefix_only", "dhcp6_identity_association_id"} {
+		if !attrs[name].IsNull() {
+			t.Fatalf("missing control %s must remain null", name)
+		}
+	}
 	var id, address string
 	if err := attrs["id"].As(&id); err != nil || id != "opt3" {
 		t.Fatalf("id = %q %v", id, err)
@@ -94,6 +112,7 @@ func protocolAssignment() map[string]any {
 	}
 	return map[string]any{
 		"identifier": "opt3", "if": selected("vtnet2"), "descr": "example", "lock": "1", "enable": "1",
+		"mtu": "1500", "blockpriv": "0", "disablevlanhwfilter": "2", "dhcp6-ia-pd-len": "8", "dhcp6_ifid": "0xa",
 		"spoofmac": "02:00:00:00:00:01", "pending_action": "not-lookup-state",
 		"type4": selected("staticv4"), "ipaddr": "192.0.2.10/24", "gateway": "GW4",
 		"type6": selected(""), "ipaddrv6": "", "gatewayv6": "",

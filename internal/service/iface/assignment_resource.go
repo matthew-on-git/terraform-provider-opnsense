@@ -114,6 +114,9 @@ func (r *assignmentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 	}
 
 	attrs := resp.Schema.Attributes
+	for name, attribute := range assignmentControlAttributes() {
+		attrs[name] = attribute
+	}
 	for name, attribute := range assignmentDelegationAttributes() {
 		attrs[name] = attribute
 	}

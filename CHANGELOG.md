@@ -2,7 +2,17 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.23.0 (Unreleased)
+## 0.24.0 (Unreleased)
+
+FEATURES:
+
+* Extend existing interface assignments with description, MTU/MSS, private/bogon blocking and checksum/segmentation/large-receive offload controls. Omitted settings adopt saved values; explicit false and zero MTU/MSS clears retain intent. Also expose API-advertised device rebinding, three-way VLAN hardware filtering and parent DHCPv6 prefix-delegation controls. Prefix lengths use displayed values (48-64 or none), preserving the API encoding internally. Keep the read-only assignment lookup allowlist aligned with the expanded resource schema; unavailable new controls remain null.
+
+BUG FIXES:
+
+* Reject configured non-default DHCPv6 prefix requests outside DHCPv6 mode before any update, including unrelated changes when the prefix is unchanged, to prevent appliance sanitization from losing the configured value.
+
+## 0.23.0 (2026-11-13)
 
 FEATURES:
 
@@ -12,7 +22,7 @@ UPGRADE NOTES:
 
 * No DHCPv4 settings resource behavior changes. The lookup never writes or reconfigures. Identity is `kea-dhcpv4`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.23.0 publication path after successful main CI. v0.22.0 is already published, so this change does not append to that heading.
 
-## 0.22.0 (Unreleased)
+## 0.22.0 (2026-11-13)
 
 FEATURES:
 
@@ -22,7 +32,7 @@ UPGRADE NOTES:
 
 * No control-agent resource behavior changes. The lookup never writes or reconfigures. Identity is `kea-ctrl-agent`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.22.0 publication path after successful main CI. v0.21.0 is already published, so this change does not append to that heading.
 
-## 0.21.0 (Unreleased)
+## 0.21.0 (2026-11-13)
 
 FEATURES:
 
@@ -32,7 +42,7 @@ UPGRADE NOTES:
 
 * No pre-shared-key resource behavior changes. The lookup never writes or reconfigures. Identity is the pre-shared-key UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.21.0 publication path after successful main CI. v0.20.0 is already published, so this change does not append to that heading.
 
-## 0.20.0 (Unreleased)
+## 0.20.0 (2026-11-12)
 
 FEATURES:
 
@@ -42,7 +52,7 @@ UPGRADE NOTES:
 
 * No key-pair resource behavior changes. The lookup never writes or reconfigures. Identity is the key-pair UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.20.0 publication path after successful main CI. v0.19.0 is already published, so this change does not append to that heading.
 
-## 0.19.0 (Unreleased)
+## 0.19.0 (2026-11-12)
 
 FEATURES:
 
@@ -52,7 +62,7 @@ UPGRADE NOTES:
 
 * No assignment resource behavior changes. The lookup never writes or reconfigures. Empty addresses stay empty strings with null prefix lengths. Identity is the assignment name, not a UUID. Live interface diagnostics remain separate data sources. Fixture and protocol checks are not appliance proof; older firmware, OpenTofu, and tunnel-mode assignments are not claimed. Merging this heading authorizes the automatic v0.19.0 publication path after successful main CI.
 
-## 0.18.0 (Unreleased)
+## 0.18.0 (2026-11-12)
 
 FEATURES:
 
