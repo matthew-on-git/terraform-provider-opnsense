@@ -1,5 +1,5 @@
 # generated: 2026-03-18
-# last_updated: 2026-11-12
+# last_updated: 2026-11-13
 # project: terraform-provider-opnsense
 # project_key: NOKEY
 # tracking_system: file-system
@@ -316,6 +316,7 @@ development_status:
   31-0t-ipsec-psk-lookup: review # source-backed public allowlist; secret excluded; live proof remains separate
   31-0u-kea-ctrl-agent-lookup: review # source-backed public allowlist; no secret in the released general model; live proof remains separate
   31-0v-kea-dhcpv4-settings-lookup: review # source-backed public allowlist; no secret in the released general model; live proof remains separate
+  31-0w-kea-dhcpv6-settings-lookup: review # source-backed public allowlist; socket type absent from stable general model; live proof remains separate
 
   31-1-complete-provider-positioning-docs: backlog
   31-2-existing-provider-migration-guide: backlog

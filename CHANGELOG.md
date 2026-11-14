@@ -2,6 +2,16 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.24.0 (Unreleased)
+
+FEATURES:
+
+* Add a read-only `opnsense_kea_dhcpv6_settings` lookup for the existing singleton. It reads the stable DHCPv6 GET, requires identity `kea-dhcpv6`, and publishes only the public resource allowlist that the released general model returns: enabled, manual configuration, interfaces, valid lifetime, and firewall rules. A disabled server stays false. A blank optional manual configuration stays null. Missing required fields are not replaced with model defaults. Socket retry, decline probation, MAC sources, lease expiry, and HA nodes are not lookup state. DHCP socket type is absent from the stable general model, so it is not lookup state and is not replaced with a default. The released general model has no password or write-only secret.
+
+UPGRADE NOTES:
+
+* No DHCPv6 settings resource behavior changes. The lookup never writes or reconfigures. Identity is `kea-dhcpv6`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.24.0 publication path after successful main CI. v0.23.0 is already published, so this change does not append to that heading.
+
 ## 0.23.0 (Unreleased)
 
 FEATURES:
