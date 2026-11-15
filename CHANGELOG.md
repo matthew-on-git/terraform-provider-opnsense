@@ -2,6 +2,16 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.27.0 (Unreleased)
+
+FEATURES:
+
+* Add a read-only `opnsense_quagga_ospf6_general` lookup for the existing singleton. It reads the stable OSPFv3 GET, requires identity `ospf6`, and publishes only the public resource allowlist that the released OSPFv3 node returns: enabled, router ID, default-route origination, origination metric, and CARP demote. A disabled flag stays false. A blank optional router ID or metric stays null. Literal metric 0 is a real value, not an unset sentinel. Missing required fields are not replaced with model defaults. Child arrays are not lookup state. The released OSPFv3 node has no password or write-only secret.
+
+UPGRADE NOTES:
+
+* No OSPFv3 general resource behavior changes. The lookup never writes or reconfigures. Identity is `ospf6`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.27.0 publication path after successful main CI. v0.26.0 is already published, so this change does not append to that heading.
+
 ## 0.26.0 (Unreleased)
 
 FEATURES:

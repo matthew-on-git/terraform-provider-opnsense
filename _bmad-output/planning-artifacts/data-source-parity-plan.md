@@ -47,7 +47,7 @@ The complete deterministic inventory is the set registered by `OpnsenseProvider.
 | kea_dhcpv6_settings | Kea | Yes | Singleton | Low | 4 | Implemented by 31.0w as a read-only public allowlist. Identity is `kea-dhcpv6`, not a UUID. DHCP socket type is absent from the stable general model. Live proof remains separate. |
 | quagga_bgp_global | Quagga / FRR | Yes | Singleton | Low | 4 | Implemented by 31.0x as a read-only public allowlist. Identity is `bgp`, not a UUID. Bestpath and child arrays are not lookup state. Live proof remains separate. |
 | quagga_general | Quagga / FRR | Yes | Singleton | Low | 4 | Implemented by 31.0y as a read-only public allowlist. Identity is `general`, not a UUID. Volatile daemons and manual configuration are not lookup state. Live proof remains separate. |
-| quagga_ospf6_general | Quagga / FRR | No | Singleton | Low | 4 | Singleton resource; sub-resource data sources exist. |
+| quagga_ospf6_general | Quagga / FRR | Yes | Singleton | Low | 4 | Implemented by 31.0z as a read-only public allowlist. Identity is `ospf6`, not a UUID. Child arrays are not lookup state. Live proof remains separate. |
 | quagga_ospf_general | Quagga / FRR | No | Singleton | Low | 4 | Singleton resource; sub-resource data sources exist. |
 | quagga_rip | Quagga / FRR | No | Singleton | Low | 4 | Singleton resource. |
 | quagga_static | Quagga / FRR | No | Singleton | Low | 4 | Singleton resource. |
@@ -137,7 +137,7 @@ Goal: keep non-standard cases from blocking straightforward UUID-backed data sou
 | quagga_general | `internal/service/quagga/general_data_source.go` | Singleton | Data-source docs/example | Implemented by 31.0y. Identity is `general`. No password or write-only secret in the released general node. Volatile daemons and manual configuration are not lookup state. |
 | quagga_bgp_global | `internal/service/quagga/bgp_global_data_source.go` | Singleton | Data-source docs/example | Implemented by 31.0x. Identity is `bgp`. No password or write-only secret in the released general node. Bestpath is not lookup state. |
 | quagga_ospf_general | `internal/service/quagga/ospf_general_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
-| quagga_ospf6_general | `internal/service/quagga/ospf6_general_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
+| quagga_ospf6_general | `internal/service/quagga/ospf6_general_data_source.go` | Singleton | Data-source docs/example | Implemented by 31.0z. Identity is `ospf6`. No password or write-only secret in the released OSPFv3 node. Child arrays are not lookup state. Literal metric 0 is valid. |
 | quagga_rip | `internal/service/quagga/rip_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
 | quagga_static | `internal/service/quagga/static_general_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
 | unbound_general | `internal/service/unbound/general_*` | Singleton | Data-source docs/example | No UUID lifecycle. |

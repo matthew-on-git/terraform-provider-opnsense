@@ -53,6 +53,7 @@ func DataSources() []func() datasource.DataSource {
 		newBGPNeighborDataSource,
 		newBGPPeerGroupDataSource,
 		newBGPRedistributionDataSource,
+		newOSPF6GeneralDataSource,
 		newOSPF6InterfaceDataSource,
 		newOSPF6NetworkDataSource,
 		newOSPF6PrefixListDataSource,
