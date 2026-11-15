@@ -21,8 +21,8 @@ func TestDataSources_schemaIDs(t *testing.T) {
 	t.Parallel()
 
 	constructors := DataSources()
-	if len(constructors) != 22 {
-		t.Fatalf("expected 22 Quagga data sources, got %d", len(constructors))
+	if len(constructors) != 23 {
+		t.Fatalf("expected 23 Quagga data sources, got %d", len(constructors))
 	}
 
 	for _, constructor := range constructors {
