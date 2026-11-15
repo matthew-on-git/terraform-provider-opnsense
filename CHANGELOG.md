@@ -2,6 +2,16 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.26.0 (Unreleased)
+
+FEATURES:
+
+* Add a read-only `opnsense_quagga_general` lookup for the existing singleton. It reads the stable FRR general GET, requires identity `general`, and publishes only the public resource allowlist that the released general node returns: enabled, profile, CARP, syslog, SNMP, syslog level, and firewall rules. A disabled flag stays false. Missing required fields are not replaced with model defaults. Volatile daemons and manual configuration are not lookup state. The released general node has no password or write-only secret.
+
+UPGRADE NOTES:
+
+* No FRR general resource behavior changes. The lookup never writes or reconfigures. Identity is `general`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.26.0 publication path after successful main CI. v0.25.0 is already published, so this change does not append to that heading.
+
 ## 0.25.0 (Unreleased)
 
 FEATURES:

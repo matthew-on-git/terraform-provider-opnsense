@@ -49,6 +49,7 @@ func DataSources() []func() datasource.DataSource {
 		newBGPASPathDataSource,
 		newBGPCommunityListDataSource,
 		newBGPGlobalDataSource,
+		newGeneralDataSource,
 		newBGPNeighborDataSource,
 		newBGPPeerGroupDataSource,
 		newBGPRedistributionDataSource,

@@ -318,6 +318,7 @@ development_status:
   31-0v-kea-dhcpv4-settings-lookup: review # source-backed public allowlist; no secret in the released general model; live proof remains separate
   31-0w-kea-dhcpv6-settings-lookup: review # source-backed public allowlist; socket type absent from stable general model; live proof remains separate
   31-0x-quagga-bgp-global-lookup: review # source-backed public allowlist; bestpath and child arrays excluded; live proof remains separate
+  31-0y-quagga-general-lookup: review # source-backed public allowlist; volatile daemons and manual_config excluded; live proof remains separate
 
   31-1-complete-provider-positioning-docs: backlog
   31-2-existing-provider-migration-guide: backlog
