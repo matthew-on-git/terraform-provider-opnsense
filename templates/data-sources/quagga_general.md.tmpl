@@ -1,0 +1,18 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Quagga / FRR"
+description: |-
+  Reads FRR general settings on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Reads the FRR general settings singleton. The only accepted identity is `general`. This data source calls the stable Quagga/FRR GET and never writes or reconfigures the service.
+
+The public allowlist is the resource contract that the released general node returns: enabled, profile, CARP, syslog, SNMP, syslog level, and firewall rules. Volatile daemons and manual configuration are not lookup state. The released general node has no password or write-only secret. Missing required fields are not replaced with model defaults. A disabled flag stays false.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_quagga_general/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
