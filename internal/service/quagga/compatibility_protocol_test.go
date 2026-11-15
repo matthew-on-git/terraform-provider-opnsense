@@ -369,7 +369,7 @@ func TestProtocolFRRRevalidatesPackageBeforeMutation(t *testing.T) {
 	if err != nil || frrProtocolErrors(planned.Diagnostics) {
 		t.Fatal(err, planned.Diagnostics)
 	}
-	version = "2.1"
+	version = "2.2"
 	applied, err := server.ApplyResourceChange(context.Background(), &tfprotov6.ApplyResourceChangeRequest{TypeName: name, PriorState: null, PlannedState: planned.PlannedState, Config: config, PlannedPrivate: planned.PlannedPrivate})
 	if err != nil || !frrProtocolErrors(applied.Diagnostics) || writes != 0 {
 		t.Fatal("package changed after planning reached mutation", err, applied.Diagnostics, writes)
@@ -813,8 +813,8 @@ func TestProtocolFRRSingletonAmbiguousUpdateRestartRecovery(t *testing.T) {
 	}
 }
 
-// Reproduce #67 at the provider refresh boundary, not just the version regexp.
-func TestProtocolFRR20PackageRevisionRefresh(t *testing.T) {
+// Reproduce #67 and #104 at provider refresh, not just the version regexp.
+func TestProtocolFRRModernPackageRefresh(t *testing.T) {
 	for _, tc := range []struct {
 		version               string
 		compatibleModel, good bool
@@ -822,7 +822,11 @@ func TestProtocolFRR20PackageRevisionRefresh(t *testing.T) {
 		{"2.0_2", true, true},
 		{"2.0_999", true, true},
 		{"2.0_2", false, false},
-		{"2.1", true, false},
+		{"2.1", true, true},
+		{"2.1_2", true, true},
+		{"2.1", false, false},
+		{"2.2", true, false},
+		{"2.1-devel", true, false},
 		{"2.0_2-devel", true, false},
 	} {
 		t.Run(fmt.Sprintf("%s/model=%t", tc.version, tc.compatibleModel), func(t *testing.T) {

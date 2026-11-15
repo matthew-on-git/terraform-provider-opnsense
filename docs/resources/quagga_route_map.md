@@ -15,21 +15,21 @@ resource UUIDs and their configured `order`; no parallel group owner is introduc
 
 ## Plugin compatibility and activation boundary
 
-Numeric 2.0 package revisions are eligible for capability validation, not blanket
-live-version certification. The existing live proof covers 2.0_1 only; 2.0_2 and
-other numeric revisions have fixture/protocol regression coverage. New plugin
-releases such as 2.1 and prerelease/malformed versions remain rejected.
+Stable 2.0 and 2.1 packages and numeric revisions are eligible for capability
+validation, not blanket live-version certification. The existing live proof covers
+2.0_1 only; 2.1 has source and fixture/protocol coverage. Unknown releases such as
+2.2 and prerelease/malformed versions remain rejected.
 
 BGP owners discover the **installed `os-frr` package** with read-only
 `/api/core/firmware/info` and cross-check the neighbor model. The core firmware
 version does not select the wire format. The compatibility gate accepts stable
-legacy 1.46–1.55 package metadata or 2.0 with numeric package revisions (such as 2.0_2); an absent plugin, unknown future
+legacy 1.46–1.55 package metadata, 2.0 or 2.1 with numeric package revisions (such as 2.0_2 or 2.1_1); an absent plugin, unknown future
 plugin release, malformed revision, contradictory model, permission failure or unresolved configured
 intent rejects writes. Grant read access to firmware package information as well
 as the BGP API. Legacy live acceptance remains unverified; mocks are not appliance
 version proof.
 
-On FRR 2.0, linked policies select **one logical group**, not an arbitrary entry
+On FRR 2.0 and 2.1, linked policies select **one logical group**, not an arbitrary entry
 from multiple differently named groups. Existing entry UUID resources are retained.
 A configured same-group sibling UUID is kept in state only after authoritative
 full-membership verification; fresh imports/data sources expose the API's canonical

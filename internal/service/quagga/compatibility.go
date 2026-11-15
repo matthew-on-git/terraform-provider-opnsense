@@ -28,9 +28,9 @@ type frrCapability struct {
 	InterfaceOptions map[string]bool
 }
 
-// Package revisions do not change the plugin release. Keep 2.0 revisions
-// eligible for modern-model validation without accepting 2.1 or other 2.x APIs.
-var frrPackageVersion = regexp.MustCompile(`^(?:1\.(?:4[6-9]|5[0-5])(?:_[0-9]+)?|2\.0(?:_[0-9]+)?)$`)
+// Package revisions do not change the plugin release. Released 2.0 and 2.1
+// retain the grouped policy/address-family API; still validate the live model.
+var frrPackageVersion = regexp.MustCompile(`^(?:1\.(?:4[6-9]|5[0-5])(?:_[0-9]+)?|2\.[01](?:_[0-9]+)?)$`)
 
 func frrRead(ctx context.Context, c *opnsense.Client, endpoint string, out any) error {
 	// Firmware package metadata can block behind the appliance's pkg/configd
@@ -85,11 +85,11 @@ func discoverFRR(ctx context.Context, c *opnsense.Client) (frrCapability, error)
 			continue
 		}
 		if found || p.Installed != "1" || !frrPackageVersion.MatchString(p.Version) {
-			return result, fmt.Errorf("FRR compatibility requires installed stable os-frr 1.46–1.55 or 2.0 (including package revisions); missing, contradictory or unsupported package metadata")
+			return result, fmt.Errorf("FRR compatibility requires installed stable os-frr 1.46–1.55, 2.0 or 2.1 (including package revisions); missing, contradictory or unsupported package metadata")
 		}
 		found = true
 		result.Version = p.Version
-		result.Grouped = strings.HasPrefix(p.Version, "2.0")
+		result.Grouped = strings.HasPrefix(p.Version, "2.")
 	}
 	if !found {
 		return result, fmt.Errorf("FRR compatibility: installed os-frr package is missing; install and independently verify the plugin before managing BGP")
