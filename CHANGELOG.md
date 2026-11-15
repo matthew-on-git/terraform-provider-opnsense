@@ -2,6 +2,16 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.25.0 (Unreleased)
+
+FEATURES:
+
+* Add a read-only `opnsense_quagga_bgp_global` lookup for the existing singleton. It reads the stable BGP GET, requires identity `bgp`, and publishes only the public resource allowlist that the released general node returns: enabled, AS number, router ID, distance, graceful restart, network import check, enforce first AS, log neighbor changes, networks, and maximum paths. A disabled service stays false. A present blank router ID, distance, or maximum-paths value stays null. Missing required fields are not replaced with model defaults. Bestpath and child arrays are not lookup state. The released general node has no password or write-only secret.
+
+UPGRADE NOTES:
+
+* No BGP global resource behavior changes. The lookup never writes or reconfigures. Identity is `bgp`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.25.0 publication path after successful main CI. v0.24.0 is already published, so this change does not append to that heading.
+
 ## 0.24.0 (Unreleased)
 
 FEATURES:
