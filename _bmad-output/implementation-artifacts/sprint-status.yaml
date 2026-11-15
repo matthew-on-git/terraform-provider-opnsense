@@ -320,6 +320,7 @@ development_status:
   31-0x-quagga-bgp-global-lookup: review # source-backed public allowlist; bestpath and child arrays excluded; live proof remains separate
   31-0y-quagga-general-lookup: review # source-backed public allowlist; volatile daemons and manual_config excluded; live proof remains separate
   31-0z-quagga-ospf6-general-lookup: review # source-backed public allowlist; child arrays excluded; literal metric 0 is valid; live proof remains separate
+  31-0aa-quagga-ospf-general-lookup: review # source-backed public allowlist; passive_interfaces absent from stable node; literal cost 0 fails closed; literal metric 0 is valid; live proof remains separate
 
   31-1-complete-provider-positioning-docs: backlog
   31-2-existing-provider-migration-guide: backlog
