@@ -2,6 +2,16 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.28.0 (Unreleased)
+
+FEATURES:
+
+* Add a read-only `opnsense_quagga_ospf_general` lookup for the existing singleton. It reads the stable OSPF GET, requires identity `ospf`, and publishes only the public resource allowlist that the released OSPF node returns: enabled, router ID, cost reference, adjacency logging, default-route origination, origination metric, and CARP demote. A disabled flag stays false. A blank optional router ID, cost reference, or metric stays null. Literal cost reference 0 fails closed because the model minimum is 1. Literal metric 0 is a real value, not an unset sentinel. Missing required fields are not replaced with model defaults. Child arrays are not lookup state. `passive_interfaces` is absent from the released OSPF node, so it is not lookup state. The released OSPF node has no password or write-only secret.
+
+UPGRADE NOTES:
+
+* No OSPF general resource behavior changes. The lookup never writes or reconfigures. Identity is `ospf`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.28.0 publication path after successful main CI. v0.27.0 is already published, so this change does not append to that heading.
+
 ## 0.27.0 (Unreleased)
 
 FEATURES:

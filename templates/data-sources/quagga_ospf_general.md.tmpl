@@ -1,0 +1,18 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Quagga / FRR"
+description: |-
+  Reads OSPF general settings on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Reads the OSPF general settings singleton. The only accepted identity is `ospf`. This data source calls the stable Quagga/FRR GET and never writes or reconfigures the service.
+
+The public allowlist is the resource contract that the released OSPF node returns: enabled, router ID, cost reference, adjacency logging, default-route origination, origination metric, and CARP demote. Child arrays are not lookup state. `passive_interfaces` is absent from the released OSPF node, so it is not lookup state. The released OSPF node has no password or write-only secret. Missing required fields are not replaced with model defaults. A disabled flag stays false. A blank optional router ID, cost reference, or metric stays null. Literal cost reference 0 fails closed. Literal metric 0 is a real value.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_quagga_ospf_general/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
