@@ -68,6 +68,7 @@ func DataSources() []func() datasource.DataSource {
 		newOSPFRedistributionDataSource,
 		newOSPFRouteMapDataSource,
 		newPrefixListDataSource,
+		newRIPDataSource,
 		newRouteMapDataSource,
 		newStaticRouteDataSource,
 	}

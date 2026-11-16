@@ -2,6 +2,16 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.29.0 (Unreleased)
+
+FEATURES:
+
+* Add a read-only `opnsense_quagga_rip` lookup for the existing singleton. It reads the stable RIP GET, requires identity `rip`, and publishes only the public resource allowlist that the released RIP node returns: enabled, version, networks, redistribute, and default metric. A disabled flag stays false. A blank optional metric stays null. Literal version or metric 0 fails closed because both model minima are 1. Missing required fields are not replaced with model defaults. `passiveinterfaces` is returned by the whole-model GET but is not resource refresh state, so it is not lookup state. The released RIP node has no password or write-only secret.
+
+UPGRADE NOTES:
+
+* No RIP resource behavior changes. The lookup never writes or reconfigures. Identity is `rip`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.29.0 publication path after successful main CI. v0.28.0 is already published, so this change does not append to that heading.
+
 ## 0.28.0 (Unreleased)
 
 FEATURES:
