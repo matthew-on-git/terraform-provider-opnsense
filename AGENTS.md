@@ -22,11 +22,12 @@ See DEVELOPMENT.md for the complete reference.
 
 ## Release Readiness
 
-- For releasable provider changes, update the top `CHANGELOG.md` section in the same PR with an explicit `## X.Y.Z (Unreleased)` heading. Append to an existing unreleased version; otherwise compare published tags and choose the next semantic version. Include migration requirements and the full unreleased scope, not only the latest PR.
-- This heading is an executable release input, not optional housekeeping: successful push CI on `main` triggers `auto-release-tag.yml`, which creates the missing `vX.Y.Z` tag and dispatches `release.yml`. A missing heading skips release; an already-existing tag also skips it. A PR containing a new release heading will publish after merge and successful CI.
-- Before opening a PR, inspect the release version/tag decision and explain any deliberate changelog exemption in the PR. Docs/planning-only changes may be exempt; do not silently omit provider behavior changes.
-- After merge, distinguish CI success, auto-tag/dispatch success, GitHub release/assets and Terraform Registry availability. Verify each before claiming publication. Never add a manual tag while the automatic path is pending; follow the documented recovery procedure if it fails.
-- See [Provider Release Automation](DEVELOPMENT.md#provider-release-automation) for the exact trigger and verification checklist.
+- Use conventional commit messages (including the final squash/merge message). `fix` bumps patch, `feat` bumps minor; `!` / `BREAKING CHANGE:` bumps minor before 1.0 and major thereafter. Include user-visible behavior and migration requirements in the PR/commit body.
+- Contributors do **not** select versions, edit the release manifest, or add versioned Unreleased headings. Release Please accumulates merged changes into one maintainer-reviewed release PR, owning `CHANGELOG.md` and `.release-please-manifest.json`.
+- Review the generated release PR for full scope and migration notes before merging. After its merge passes main CI, automation creates a tag and draft, then explicitly dispatches signed GoReleaser publication. Ordinary feature/fix merges only update the release PR.
+- Run `make check` and `npm ci --prefix test/release && node --test test/release/release.test.cjs` inside the dev-toolchain container before changing release automation.
+- Distinguish main CI, tag/draft creation, signed asset publication and Registry availability. Never race automation with manual tags; recover at the existing verified tag.
+- See [Provider Release Automation](DEVELOPMENT.md#provider-release-automation) for bootstrap, token permissions and recovery.
 
 ## Public Project / Private Consumer Boundary
 

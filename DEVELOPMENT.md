@@ -613,32 +613,90 @@ Agent shim files use a hybrid strategy: critical rules are inlined directly in t
 
 ## Provider Release Automation
 
-The provider uses `.github/workflows/auto-release-tag.yml` and `release.yml`.
-Merging alone is not sufficient: a successful **push** `CI` run on `main`
-triggers Auto Release Tag, which reads a `## X.Y.Z (Unreleased)` heading in
-`CHANGELOG.md`. If the corresponding `vX.Y.Z` tag does not exist, it creates the
-tag at that verified commit and explicitly dispatches Release. GoReleaser then
-builds platform archives, manifest, checksums and their signature for the GitHub
-release consumed by the Terraform Registry. No matching heading or an existing
-tag means no new release. PR CI does not publish releases.
+The provider uses [Release Please](https://github.com/googleapis/release-please)
+(`.github/workflows/release-please.yml`) to own version selection, release PRs
+and changelog entries. This replaces the versioned Unreleased-heading parser.
+Contributors no longer race already-published versions or edit a shared heading.
 
-Before opening a releasable provider PR:
+### Contributor and maintainer flow
 
-1. Compare the current changelog, published versions and remote tags. Reuse an
-   existing unreleased section or choose the next semantic version; do not reuse
-   a published version.
-2. Add user-visible changes and migration notes to that versioned section in the
-   same PR. When preparing a catch-up release, cover every merged provider change
-   since the last release. Explicitly explain docs/planning-only exemptions.
-3. Run `make check` and state the proposed version in the PR. Treat merging a
-   new release heading as authorization for the automatic publication path.
+1. Use conventional commits, including the final squash/merge message: `fix`
+   increments patch, `feat` increments minor, and `!` / `BREAKING CHANGE:`
+   increments minor before 1.0 (major after 1.0). Docs/chore-only changes do not
+   trigger a provider release. Put migration instructions in a `BREAKING CHANGE:`
+   footer when compatibility changes; describe other user-visible details in the
+   PR body. Do not edit `.release-please-manifest.json` or add a release heading.
+2. After successful push CI on current `main`, Release Please creates or updates
+   one release PR from merged conventional commits. Several contributor PRs can
+   accumulate without choosing or rebasing release versions. The release PR
+   updates `CHANGELOG.md` and the manifest, preserving historical entries.
+3. A maintainer reviews the combined scope, generated version and migration
+   notes. Add missing explanatory notes to the generated release PR before
+   merging. Merging this PR authorizes publication, not an ordinary feature merge.
+4. After the merged release PR passes main CI, Release Please creates a `vX.Y.Z`
+   tag at its merge commit and a **draft** GitHub release. The tag is explicitly
+   created even for drafts. It dispatches `release.yml` at that tag; GoReleaser
+   reuses the draft and keeps its generated notes, uploads signed archives,
+   manifest and checksums, then publishes. A draft is not a published release.
+5. Verify the Release run, tag SHA, complete signed assets and exact Terraform
+   Registry version independently. CI success or a tag alone is not publication.
 
-After merge, verify successful main CI, the Auto Release Tag decision and tag
-SHA, then the Release workflow and actual assets. Verify Registry availability
-separately; a green CI run or tag alone is not proof of publication. Do not race
-pending automation with manual tagging. If a correct tag exists without a
-release, investigate dispatch/Release logs and recover that release at the same
-verified tag rather than moving the tag or inventing a new version.
+The serialized Release Please job ignores stale CI completions and requires a
+successful push CI on current main, including for manual dispatch. The publisher
+also requires successful main push CI at the **exact tag commit** and rejects
+branch refs or commits outside main. PR CI/manual CI cannot initiate publication.
 
-After successful publication, finalize the changelog heading with its release
-date. Subsequent provider changes need a new versioned unreleased section.
+### Permissions and bot-triggered CI
+
+The workflow uses the built-in `GITHUB_TOKEN` (no new PAT). Repository Settings →
+Actions → General must permit GitHub Actions to create pull requests. It needs
+contents, issues, pull-requests and actions write permission. If repository or
+organization policy denies PR creation, change that policy before activation.
+
+GitHub suppresses push/PR events created with this token. Consequently automation
+explicitly dispatches `ci.yml` on each generated release PR branch and
+`release.yml` on each created tag. The dispatched CI includes the full DevRail,
+generated-code and release-contract checks. Other push/PR-only workflows do not
+run for bot PRs; branch rules should use these CI checks (or a maintainer can
+trigger the remaining workflows through the normal reviewed PR path).
+No `pull_request_target`, privileged checkout of contributor code or stored PAT
+is needed. Release credentials remain confined to the existing publisher.
+
+### Bootstrap and migration
+
+The initial manifest is `0.28.0`, with bootstrap SHA
+`a5030bf67c7959191eb19b456da9062b1a4fdc03`, the existing v0.28.0 tag target.
+That legacy release remains owned by the old pipeline; do not recreate it.
+Before merging this migration, compare latest remote tags/releases and advance
+**both** bootstrap values together if another legacy release has shipped. This is
+one maintainer migration check, not a contributor version requirement. Thereafter
+Release Please maintains the manifest and ignores the bootstrap boundary once
+normal release history exists. Do not pin `release-as` or `last-release-sha`.
+Historical notes are preserved; old published Unreleased headings are dated.
+
+Existing feature PRs should drop their version selection/manifest edits, retain
+behavior and migration details in their conventional commits/PR description,
+and let the next release PR consolidate them. `make changelog` remains an
+optional git-cliff preview, not the release source of truth.
+
+### Validation and recovery
+
+Run `make check` and, inside the same dev-toolchain container:
+
+```sh
+npm ci --prefix test/release
+node --test test/release/release.test.cjs
+```
+
+The offline tests use the same pinned release-please engine as the action to
+check fix/feature/breaking/docs decisions, combined notes, history preservation,
+bot dispatch wiring, draft/tag behavior and executable CI/publication gates.
+
+For a failed Release Please run, fix the named failure and rerun the job (or
+manually dispatch Release Please); its PR/tag operations are idempotent. If a
+tag/draft already exists but publication/dispatch failed, inspect the tag SHA
+and main CI, then dispatch `release.yml` with **that existing tag**. Do not move
+or delete it, invent a new version, or expect a rerun to emit a second
+`release_created` event. Per-tag concurrency prevents overlapping publishers.
+First post-merge behavior and actual Registry publication must still be verified;
+local contract tests are not a production release demonstration.

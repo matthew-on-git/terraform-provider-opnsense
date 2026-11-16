@@ -24,11 +24,11 @@
 - [ ] Code follows project standards (see DEVELOPMENT.md)
 - [ ] All commits use conventional commit format
 - [ ] Documentation updated (if applicable)
-- [ ] Releasable changes added to `## X.Y.Z (Unreleased)` in CHANGELOG.md; target version stated below (or docs/planning-only exemption explained)
+- [ ] Conventional commit/squash message describes release type; user-visible changes and migration notes included (no contributor-selected version)
 - [ ] No secrets, operator/site inventory, real topology, private adoption plans or operational notes in files, PR text or artifacts; examples are synthetic
 
 ## Release Decision
 
-<!-- Target version and migration notes, or explicit docs/planning-only exemption.
-A new versioned Unreleased heading publishes automatically after merge + successful main CI.
+<!-- Release type (fix/feat/breaking), behavior and migration notes, or docs-only exemption.
+Release Please selects the version and maintains the release PR; only merging that PR authorizes publication.
 See DEVELOPMENT.md#provider-release-automation. -->
