@@ -1,0 +1,15 @@
+{
+  "name": "provider-release-contract-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Offline regression checks for the release automation contract",
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "release-please": "17.6.0",
+    "yaml": "2.9.1"
+  },
+  "overrides": {
+    "minimatch": "11.0.2"
+  }
+}
