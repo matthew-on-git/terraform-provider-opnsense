@@ -251,7 +251,10 @@ func validateUnboundBranchFields(branch string, fields map[string]json.RawMessag
 		if boolFields[key] && value != "0" && value != "1" {
 			return fmt.Errorf("malformed Unbound settings response: %s.%s has invalid boolean %q", branch, key, value)
 		}
-		if intFields[key] {
+		if (intFields[key] || numericStringFields[key]) && string(raw) == "null" {
+			return fmt.Errorf("malformed Unbound settings response: %s.%s must be a string", branch, key)
+		}
+		if intFields[key] && value != "" {
 			number, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
 				return fmt.Errorf("malformed Unbound settings response: %s.%s has invalid integer %q", branch, key, value)
@@ -267,7 +270,7 @@ func validateUnboundBranchFields(branch string, fields map[string]json.RawMessag
 				return fmt.Errorf("malformed Unbound settings response: %s.%s integer %d is outside 0..%d", branch, key, number, maximum)
 			}
 		}
-		if numericStringFields[key] {
+		if numericStringFields[key] && value != "" {
 			if !unboundNumericString.MatchString(value) {
 				return fmt.Errorf("malformed Unbound settings response: %s.%s has invalid numeric value %q", branch, key, value)
 			}
@@ -279,11 +282,14 @@ func validateUnboundBranchFields(branch string, fields map[string]json.RawMessag
 	}
 	if branch == "advanced" {
 		for _, key := range []string{"msgcachesize", "rrsetcachesize"} {
+			if string(fields[key]) == "null" {
+				return fmt.Errorf("malformed Unbound settings response: advanced.%s must be a string", key)
+			}
 			var value string
 			if err := json.Unmarshal(fields[key], &value); err != nil {
 				return fmt.Errorf("malformed Unbound settings response: advanced.%s must be a string: %w", key, err)
 			}
-			if !unboundCacheSize.MatchString(value) {
+			if value != "" && !unboundCacheSize.MatchString(value) {
 				return fmt.Errorf("malformed Unbound settings response: advanced.%s has invalid cache size %q", key, value)
 			}
 		}
@@ -599,6 +605,7 @@ func authoritativeGeneralState(ctx context.Context, client *opnsense.Client) (*G
 	}
 	var state GeneralResourceModel
 	state.fromAPI(ctx, result, generalID)
+	normalizeUnsetGeneralIntegers(&state, result)
 	if !parity {
 		clearGeneralParityState(&state)
 	}
@@ -722,6 +729,7 @@ func (r *generalResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 	state.fromAPI(ctx, result, generalID)
+	normalizeUnsetGeneralIntegers(&state, result)
 	if !parity {
 		clearGeneralParityState(&state)
 	}
