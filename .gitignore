@@ -103,3 +103,6 @@ test/.vagrant/
 _bmad/render/
 # Machine-local relay path written by `bmad-loop init --cli grok`
 .grok/hooks/
+
+# Release automation test dependencies
+/test/release/node_modules/

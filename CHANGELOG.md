@@ -2,17 +2,7 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
-## 0.29.0 (Unreleased)
-
-FEATURES:
-
-* Add a read-only `opnsense_quagga_rip` lookup for the existing singleton. It reads the stable RIP GET, requires identity `rip`, and publishes only the public resource allowlist that the released RIP node returns: enabled, version, networks, redistribute, and default metric. A disabled flag stays false. A blank optional metric stays null. Literal version or metric 0 fails closed because both model minima are 1. Missing required fields are not replaced with model defaults. `passiveinterfaces` is returned by the whole-model GET but is not resource refresh state, so it is not lookup state. The released RIP node has no password or write-only secret.
-
-UPGRADE NOTES:
-
-* No RIP resource behavior changes. The lookup never writes or reconfigures. Identity is `rip`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.29.0 publication path after successful main CI. v0.28.0 is already published, so this change does not append to that heading.
-
-## 0.28.0 (Unreleased)
+## 0.28.0 (2026-11-16)
 
 FEATURES:
 
@@ -22,7 +12,7 @@ UPGRADE NOTES:
 
 * No OSPF general resource behavior changes. The lookup never writes or reconfigures. Identity is `ospf`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.28.0 publication path after successful main CI. v0.27.0 is already published, so this change does not append to that heading.
 
-## 0.27.0 (Unreleased)
+## 0.27.0 (2026-11-15)
 
 FEATURES:
 
@@ -32,7 +22,7 @@ UPGRADE NOTES:
 
 * No OSPFv3 general resource behavior changes. The lookup never writes or reconfigures. Identity is `ospf6`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.27.0 publication path after successful main CI. v0.26.0 is already published, so this change does not append to that heading.
 
-## 0.26.0 (Unreleased)
+## 0.26.0 (2026-11-15)
 
 FEATURES:
 
@@ -42,7 +32,7 @@ UPGRADE NOTES:
 
 * No FRR general resource behavior changes. The lookup never writes or reconfigures. Identity is `general`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.26.0 publication path after successful main CI. v0.25.0 is already published, so this change does not append to that heading.
 
-## 0.25.0 (Unreleased)
+## 0.25.0 (2026-11-15)
 
 FEATURES:
 
@@ -52,7 +42,7 @@ UPGRADE NOTES:
 
 * No BGP global resource behavior changes. The lookup never writes or reconfigures. Identity is `bgp`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.25.0 publication path after successful main CI. v0.24.0 is already published, so this change does not append to that heading.
 
-## 0.24.0 (Unreleased)
+## 0.24.0 (2026-11-14)
 
 FEATURES:
 
@@ -62,7 +52,7 @@ UPGRADE NOTES:
 
 * No DHCPv6 settings resource behavior changes. The lookup never writes or reconfigures. Identity is `kea-dhcpv6`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.24.0 publication path after successful main CI. v0.23.0 is already published, so this change does not append to that heading.
 
-## 0.23.0 (Unreleased)
+## 0.23.0 (2026-11-13)
 
 FEATURES:
 
@@ -72,7 +62,7 @@ UPGRADE NOTES:
 
 * No DHCPv4 settings resource behavior changes. The lookup never writes or reconfigures. Identity is `kea-dhcpv4`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.23.0 publication path after successful main CI. v0.22.0 is already published, so this change does not append to that heading.
 
-## 0.22.0 (Unreleased)
+## 0.22.0 (2026-11-13)
 
 FEATURES:
 
@@ -82,7 +72,7 @@ UPGRADE NOTES:
 
 * No control-agent resource behavior changes. The lookup never writes or reconfigures. Identity is `kea-ctrl-agent`, not a UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.22.0 publication path after successful main CI. v0.21.0 is already published, so this change does not append to that heading.
 
-## 0.21.0 (Unreleased)
+## 0.21.0 (2026-11-13)
 
 FEATURES:
 
@@ -92,7 +82,7 @@ UPGRADE NOTES:
 
 * No pre-shared-key resource behavior changes. The lookup never writes or reconfigures. Identity is the pre-shared-key UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.21.0 publication path after successful main CI. v0.20.0 is already published, so this change does not append to that heading.
 
-## 0.20.0 (Unreleased)
+## 0.20.0 (2026-11-12)
 
 FEATURES:
 
@@ -102,7 +92,7 @@ UPGRADE NOTES:
 
 * No key-pair resource behavior changes. The lookup never writes or reconfigures. Identity is the key-pair UUID. Fixture and protocol checks are not appliance proof. Merging this heading authorizes the automatic v0.20.0 publication path after successful main CI. v0.19.0 is already published, so this change does not append to that heading.
 
-## 0.19.0 (Unreleased)
+## 0.19.0 (2026-11-12)
 
 FEATURES:
 
@@ -112,7 +102,7 @@ UPGRADE NOTES:
 
 * No assignment resource behavior changes. The lookup never writes or reconfigures. Empty addresses stay empty strings with null prefix lengths. Identity is the assignment name, not a UUID. Live interface diagnostics remain separate data sources. Fixture and protocol checks are not appliance proof; older firmware, OpenTofu, and tunnel-mode assignments are not claimed. Merging this heading authorizes the automatic v0.19.0 publication path after successful main CI.
 
-## 0.18.0 (Unreleased)
+## 0.18.0 (2026-11-12)
 
 FEATURES:
 
@@ -216,13 +206,13 @@ FEATURES:
 
 * Added `opnsense_system_gateway_group` resource and UUID-keyed data source for stable OPNsense 26.7.7+, with typed gateway-name tiers, immutable names, strict firmware/model/read validation and durable save/delete activation recovery. Route reconfigure does not apply PF. The 16-step isolated Terraform lifecycle, independent saved-field observations and exact cleanup/restoration passed. Populated first-tier clearing is rejected before any write because the stable API ignores it; later-tier clears are supported. Older versions, OpenTofu and actual traffic failover remain unverified.
 
-## 0.8.1 (Unreleased)
+## 0.8.1 (2026-10-25)
 
 BUG FIXES:
 
 * Accept installed `os-frr` 2.0 numeric package revisions (including `2.0_2`) for existing modern-model capability checks, fixing BGP refresh rejection. New plugin releases such as 2.1, prerelease/malformed versions, uninstalled/contradictory metadata and incompatible models remain rejected. The change has fixture/provider-protocol regression coverage, not a new live appliance or OpenTofu acceptance claim.
 
-## 0.8.0 (Unreleased)
+## 0.8.0 (2026-10-25)
 
 UPGRADE NOTES:
 

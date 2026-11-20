@@ -1,0 +1,78 @@
+# Version selection and changelog ownership live in one generated release PR.
+name: Release Please
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: write
+
+# Serialize all releases, not just runs for the same SHA.
+concurrency:
+  group: release-please-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Require successful CI on current main
+        id: gate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha="$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq .object.sha)"
+          if [[ "$EVENT_NAME" == workflow_run && "$TESTED_SHA" != "$sha" ]]; then
+            printf 'Stale CI completion; waiting for current main.\n'
+            exit 0
+          fi
+          result="$(gh api "repos/$GH_REPO/actions/workflows/ci.yml/runs?branch=main&event=push&head_sha=$sha&per_page=1" --jq '.workflow_runs[0].conclusion')"
+          [[ "$result" == success ]] || { printf 'Current main has not passed CI.\n' >&2; exit 1; }
+          printf 'ready=true\n' >> "$GITHUB_OUTPUT"
+
+      - uses: googleapis/release-please-action@0dfd8538845b8e92600d271a895a5372865d4062 # v5
+        if: steps.gate.outputs.ready == 'true'
+        id: release
+        with:
+          token: ${{ github.token }}
+          target-branch: main
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      # GITHUB_TOKEN-created PRs/tags do not trigger push/PR workflows.
+      - name: Validate generated release PR
+        if: steps.release.outputs.prs_created == 'true'
+        env:
+          RELEASE_PRS: ${{ steps.release.outputs.prs }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r branch; do
+            gh workflow run ci.yml --ref "$branch"
+          done < <(jq -r '.[].headBranchName' <<< "$RELEASE_PRS")
+
+      - name: Build and publish signed release assets
+        if: steps.release.outputs.release_created == 'true'
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run release.yml --ref "$RELEASE_TAG"

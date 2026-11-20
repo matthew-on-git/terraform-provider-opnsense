@@ -42,7 +42,7 @@ The lookup uses the resource's existing `GetSingleton` reader. That helper class
 - [x] Fail closed when a required field is missing or not a documented value. Do not invent model defaults.
 - [x] Keep a blank optional metric null. Fail closed on literal version or metric 0. Keep version 1.
 - [x] Cover schema allowlist, model read, Core read, wrong ID, missing field, blank required, disabled flags, both integer ranges, network shape, and not-found with offline fixtures.
-- [x] Register the data source, example, template, generated page, changelog, and coverage inventory.
+- [x] Register the data source, example, template, generated page, and coverage inventory. Do not add a versioned changelog heading.
 - [ ] Live appliance proof is not part of this draft.
 - [ ] Merge and release remain separate human decisions.
 
@@ -59,4 +59,4 @@ Given a registered RIP resource and the stable RIP GET, when the lookup reads id
 - A null scalar fails closed as malformed, not not-found.
 - Boolean and integer tokens are trimmed once. Network and redistribute keys are not trimmed; a padded key fails closed.
 - Selected-map key order is not stored order. The lookup publishes a set.
-- Merging the new `0.29.0` changelog heading authorizes the automatic publication path after successful main CI. That merge is not authorized here.
+- Current main uses Release Please. This feature merge does not select a version or publish. A later maintainer-reviewed release PR owns the changelog and authorizes publication after its own main CI. That release merge is not authorized here.
