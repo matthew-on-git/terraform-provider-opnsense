@@ -27,6 +27,21 @@ func (d *gatewayDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 	resp.Schema = dsschema.Schema{
 		MarkdownDescription: "Reads an existing system gateway on OPNsense by UUID.",
 		Attributes: map[string]dsschema.Attribute{
+			"latency_low":                  dsschema.StringAttribute{Computed: true, MarkdownDescription: "Low latency threshold in milliseconds. Empty means appliance default."},
+			"latency_high":                 dsschema.StringAttribute{Computed: true, MarkdownDescription: "High latency threshold in milliseconds. Empty means appliance default."},
+			"loss_low":                     dsschema.StringAttribute{Computed: true, MarkdownDescription: "Low packet loss threshold in percent (1-99). Empty means appliance default."},
+			"loss_high":                    dsschema.StringAttribute{Computed: true, MarkdownDescription: "High packet loss threshold in percent (1-100). Empty means appliance default."},
+			"interval":                     dsschema.StringAttribute{Computed: true, MarkdownDescription: "Probe interval in seconds. Empty means appliance default."},
+			"time_period":                  dsschema.StringAttribute{Computed: true, MarkdownDescription: "Time period in seconds over which monitoring results are averaged. Empty means appliance default."},
+			"loss_interval":                dsschema.StringAttribute{Computed: true, MarkdownDescription: "Interval in seconds before a probe is considered lost. Empty means appliance default."},
+			"data_length":                  dsschema.StringAttribute{Computed: true, MarkdownDescription: "Probe payload length in bytes; zero is an explicit value. Empty means appliance default."},
+			"monitor":                      dsschema.StringAttribute{Computed: true, MarkdownDescription: "Monitor IP address. An empty string uses the gateway address."},
+			"far_gateway":                  dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Allow a gateway outside the interface subnet."},
+			"monitor_no_route":             dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Do not add a host route for the monitor address."},
+			"monitor_kill_states":          dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Flush states when the gateway goes down."},
+			"monitor_kill_states_priority": dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Flush states when a higher-priority gateway becomes available."},
+			"force_down":                   dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Treat the gateway as down regardless of monitoring."},
+			"no_sync":                      dsschema.BoolAttribute{Computed: true, MarkdownDescription: "Exclude this gateway from configuration synchronization."},
 			"id": dsschema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "UUID to look up.",

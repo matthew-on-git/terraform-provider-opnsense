@@ -30,12 +30,27 @@ resource "opnsense_system_gateway" "wan_gw" {
 
 ### Optional
 
+- `data_length` (String) Probe payload length in bytes; zero is an explicit value. Canonical signed-64-bit decimal string (no leading zeros); empty selects the appliance default. Omit to retain the saved value.
 - `default_gateway` (Boolean) Mark as default gateway. Defaults to `false`.
 - `description` (String) Description.
 - `enabled` (Boolean) Whether this gateway is enabled. Defaults to `true`.
+- `far_gateway` (Boolean) Allow a gateway outside the interface subnet. Omit to retain the saved value.
+- `force_down` (Boolean) Treat the gateway as down regardless of monitoring. Omit to retain the saved value.
+- `interval` (String) Probe interval in seconds. Canonical signed-64-bit decimal string (no leading zeros); empty selects the appliance default. Omit to retain the saved value.
 - `ip_protocol` (String) IP version: `inet` (IPv4) or `inet6` (IPv6).
+- `latency_high` (String) High latency threshold in milliseconds. Canonical signed-64-bit decimal string (no leading zeros); empty selects the appliance default. Omit to retain the saved value.
+- `latency_low` (String) Low latency threshold in milliseconds. Canonical signed-64-bit decimal string (no leading zeros); empty selects the appliance default. Omit to retain the saved value.
+- `loss_high` (String) High packet loss threshold in percent (1-100). Canonical signed-64-bit decimal string (no leading zeros); empty selects the appliance default. Omit to retain the saved value.
+- `loss_interval` (String) Interval in seconds before a probe is considered lost. Canonical signed-64-bit decimal string (no leading zeros); empty selects the appliance default. Omit to retain the saved value.
+- `loss_low` (String) Low packet loss threshold in percent (1-99). Canonical signed-64-bit decimal string (no leading zeros); empty selects the appliance default. Omit to retain the saved value.
+- `monitor` (String) Monitor IP address. An empty string uses the gateway address. Omit to retain the saved value.
 - `monitor_disable` (Boolean) Disable gateway monitoring. Defaults to `true`.
+- `monitor_kill_states` (Boolean) Flush states when the gateway goes down. Omit to retain the saved value.
+- `monitor_kill_states_priority` (Boolean) Flush states when a higher-priority gateway becomes available. Omit to retain the saved value.
+- `monitor_no_route` (Boolean) Do not add a host route for the monitor address. Omit to retain the saved value.
+- `no_sync` (Boolean) Exclude this gateway from configuration synchronization. Omit to retain the saved value.
 - `priority` (Number) Priority (0-255). Lower = higher priority.
+- `time_period` (String) Time period in seconds over which monitoring results are averaged. Canonical signed-64-bit decimal string (no leading zeros); empty selects the appliance default. Omit to retain the saved value.
 - `weight` (Number) Weight for gateway groups (1-5).
 
 ### Read-Only
