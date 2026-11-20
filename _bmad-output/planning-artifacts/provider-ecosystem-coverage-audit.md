@@ -2,7 +2,7 @@
 
 Pinned baseline: `browningluke/opnsense` v0.26.0 at `33c2a03c2bc1a7339cb5aa5b611e15014e27f7ba` (47 resources, 45 data sources, 1 ephemeral resource, and provider retry configuration).
 
-Current local inventory: **113 resources and 115 data sources**, with 113/115 generated docs. There are **4 resource-only same-name data-source gaps** and the data-only surfaces are `interface`, `interface_all`, `interfaces_overview`, `interfaces_overview_all`, `system_info`, `unbound_settings`.
+Current local inventory: **113 resources and 116 data sources**, with 113/116 generated docs. There are **3 resource-only same-name data-source gaps** and the data-only surfaces are `interface`, `interface_all`, `interfaces_overview`, `interfaces_overview_all`, `system_info`, `unbound_settings`.
 
 ## Ownership Direction
 
@@ -1092,6 +1092,6 @@ Use one provider per appliance and object domain in steady state. Never configur
 
 ## Local Inventory Exceptions
 
-Resource-only same-name data-source gaps (4): `quagga_rip`, `quagga_static`, `unbound_dnsbl`, `unbound_general`.
+Resource-only same-name data-source gaps (3): `quagga_static`, `unbound_dnsbl`, `unbound_general`.
 
 Data-only: `interface`, `interface_all`, `interfaces_overview`, `interfaces_overview_all`, `system_info`, `unbound_settings`.
