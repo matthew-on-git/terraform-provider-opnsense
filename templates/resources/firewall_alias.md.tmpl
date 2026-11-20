@@ -22,3 +22,5 @@ Supported alias types include `host`, `network`, `port`, `url`, `urltable`, `url
 Import is supported using the alias UUID from OPNsense.
 
 {{codefile "shell" "examples/resources/opnsense_firewall_alias/import.sh"}}
+
+Empty aliases use `content = []`. Selected empty API entries are normalized to an empty set; remove any historical `[""]` workaround when adopting this fix.
