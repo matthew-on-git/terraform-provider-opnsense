@@ -70,6 +70,7 @@ func DataSources() []func() datasource.DataSource {
 		newPrefixListDataSource,
 		newRIPDataSource,
 		newRouteMapDataSource,
+		newStaticGeneralDataSource,
 		newStaticRouteDataSource,
 	}
 }
