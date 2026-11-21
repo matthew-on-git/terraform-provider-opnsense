@@ -90,7 +90,7 @@ func TestAdvancedNeighborInvalidIntentAndCapabilities(t *testing.T) {
 	if err := validateAdvancedWire(map[string]string{"listenranges": "192.0.2.0/24,2001:db8::/64"}); err != nil {
 		t.Fatal(err)
 	}
-	for _, version := range []string{"1.46", "1.54_1", "2.0_4"} {
+	for _, version := range []string{"1.46", "1.54_1", "2.0_4", "2.1", "2.1_2"} {
 		if advancedSupported(frrCapability{Version: version}, "weight") {
 			t.Fatal("inferred old package schema")
 		}
@@ -168,7 +168,7 @@ func TestAdvancedNumericAndEnumProofDomains(t *testing.T) {
 }
 
 func TestAdvancedInterfaceProofRejectsMetadata(t *testing.T) {
-	for _, version := range []string{"2.0_1", "2.0_4"} {
+	for _, version := range []string{"2.0_1", "2.0_4", "2.1", "2.1_2"} {
 		for _, metadata := range []string{`{"wan":{"value":"WAN"}}`, `{"wan":{"value":"WAN","selected":null}}`, `{"wan":{"value":"WAN","selected":2}}`, `{"wan":{"selected":0}}`, `{"wan":{"value":"WAN","selected":1},"lan":{"value":"LAN","selected":1}}`, `null`} {
 			api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.URL.Path == "/api/core/firmware/info" {

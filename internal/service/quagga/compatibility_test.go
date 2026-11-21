@@ -28,10 +28,15 @@ func TestFRRInstalledPackageAndReadOnlyCapability(t *testing.T) {
 		{"frr2_revision_2", `[{"name":"os-frr","version":"2.0_2","installed":"1"}]`, `{"family":{"ipv4":{"value":"IPv4","selected":1},"ipv6":{"value":"IPv6","selected":0}}}`, 200, true},
 		{"frr2_revision_999", `[{"name":"os-frr","version":"2.0_999","installed":"1"}]`, `{"family":{"ipv4":{"value":"IPv4","selected":1},"ipv6":{"value":"IPv6","selected":0}}}`, 200, true},
 		{"frr2_revision_model_contradiction", `[{"name":"os-frr","version":"2.0_2","installed":"1"}]`, `{"multiprotocol":"0"}`, 200, false},
+		{"frr21", `[{"name":"os-frr","version":"2.1","installed":"1"}]`, `{"family":{"ipv4":{"value":"IPv4","selected":1},"ipv6":{"value":"IPv6","selected":0}}}`, 200, true},
+		{"frr21_revision", `[{"name":"os-frr","version":"2.1_2","installed":"1"}]`, `{"family":{"ipv4":{"value":"IPv4","selected":1},"ipv6":{"value":"IPv6","selected":0}}}`, 200, true},
+		{"frr21_model_contradiction", `[{"name":"os-frr","version":"2.1","installed":"1"}]`, `{"multiprotocol":"0"}`, 200, false},
+		{"frr21_catalog_not_installed", `[{"name":"os-frr","version":"2.1","installed":"0"}]`, `{}`, 200, false},
+		{"frr21_duplicate", `[{"name":"os-frr","version":"2.1","installed":"1"},{"name":"os-frr","version":"2.1","installed":"1"}]`, `{}`, 200, false},
 		{"legacy", `[{"name":"os-frr","version":"1.55_2","installed":"1"}]`, `{"multiprotocol":"0"}`, 200, true},
 		{"missing", "[]", `{}`, 200, false},
 		{"catalog_not_installed", `[{"name":"os-frr","version":"2.0","installed":"0"}]`, `{}`, 200, false},
-		{"future", `[{"name":"os-frr","version":"2.1","installed":"1"}]`, `{}`, 200, false},
+		{"future", `[{"name":"os-frr","version":"2.2","installed":"1"}]`, `{}`, 200, false},
 		{"malformed_version", `[{"name":"os-frr","version":"2.0-devel","installed":"1"}]`, `{}`, 200, false},
 		{"duplicate", `[{"name":"os-frr","version":"2.0","installed":"1"},{"name":"os-frr","version":"1.55","installed":"1"}]`, `{}`, 200, false},
 		{"contradiction", `[{"name":"os-frr","version":"2.0","installed":"1"}]`, `{"multiprotocol":"0"}`, 200, false},
@@ -60,6 +65,9 @@ func TestFRRInstalledPackageAndReadOnlyCapability(t *testing.T) {
 			got, err := discoverFRR(context.Background(), newTestClient(t, api.URL))
 			if (err == nil) != tc.good {
 				t.Fatalf("got capability %v err %v", got, err)
+			}
+			if tc.good && got.Grouped != strings.HasPrefix(got.Version, "2.") {
+				t.Fatal("package selected wrong wire model", got)
 			}
 			if tc.good && (got.Core != "99.1" || requests != 2) {
 				t.Fatal("core was used as plugin authority or template omitted")
@@ -203,7 +211,7 @@ func TestFRRNeighborPasswordPreservedOutsidePublicModel(t *testing.T) {
 }
 
 func TestFRRSourceRevisionAndMalformedCapabilityBoundaries(t *testing.T) {
-	for _, v := range []string{"2.1", "2.1_1", "2.0.1", "2.0_2-devel", "2.0_2_1", "2.0_-1", "2.0_2,1", "2.00", "1.56", "1.55-devel", "2.0_", ""} {
+	for _, v := range []string{"2.2", "2.2_1", "2.1.1", "2.1-devel", "2.1_", "2.1_2-devel", "2.1_2_1", "2.1_-1", "2.1_2,1", "2.01", "2.0.1", "2.0_2-devel", "2.0_2_1", "2.0_-1", "2.0_2,1", "2.00", "1.56", "1.55-devel", "2.0_", ""} {
 		if frrPackageVersion.MatchString(v) {
 			t.Fatalf("unsupported plugin version accepted: %s", v)
 		}

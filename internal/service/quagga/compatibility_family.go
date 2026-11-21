@@ -18,7 +18,7 @@ import (
 )
 
 func familyAttribute() schema.SetAttribute {
-	return schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, MarkdownDescription: "Activated address families: lowercase `ipv4`, `ipv6`, or both. Omission preserves legacy multi_protocol/transport behavior. Explicit family may differ from transport only on os-frr 2.0."}
+	return schema.SetAttribute{ElementType: types.StringType, Optional: true, Computed: true, MarkdownDescription: "Activated address families: lowercase `ipv4`, `ipv6`, or both. Omission preserves legacy multi_protocol/transport behavior. Explicit family may differ from transport only on os-frr 2.0 and 2.1."}
 }
 
 func legacyFamilies(address string, multi types.Bool) (types.Set, error) {

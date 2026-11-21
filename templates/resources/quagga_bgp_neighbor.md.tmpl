@@ -12,7 +12,7 @@ Manages a BGP neighbor peering session on OPNsense via the FRR/Quagga plugin. Re
 `family` is a typed set of lowercase `ipv4` / `ipv6`. Existing boolean-only
 `multi_protocol` configuration and schema-version-0 state upgrade in place:
 `true` selects both families; `false` selects the transport family (including
-IPv6-only transport). Explicit family may differ from transport on FRR 2.0;
+IPv6-only transport). Explicit family may differ from transport on FRR 2.0 and 2.1;
 legacy plugins reject that single cross-family intent. An explicitly configured
 legacy alias must agree with explicit family. Omitted aliases are not conflicts,
 and unknown configured intent is never treated as false or empty. Import reads
@@ -23,15 +23,15 @@ comparisons are deferred until apply, where unresolved/conflicting intent reject
 
 ## Plugin compatibility and activation boundary
 
-Numeric 2.0 package revisions are eligible for capability validation, not blanket
-live-version certification. The existing live proof covers 2.0_1 only; 2.0_2 and
-other numeric revisions have fixture/protocol regression coverage. New plugin
-releases such as 2.1 and prerelease/malformed versions remain rejected.
+Stable 2.0 and 2.1 packages and numeric revisions are eligible for capability
+validation, not blanket live-version certification. The existing live proof covers
+2.0_1 only; 2.1 has source and fixture/protocol coverage. Unknown releases such as
+2.2 and prerelease/malformed versions remain rejected.
 
 BGP owners discover the **installed `os-frr` package** with read-only
 `/api/core/firmware/info` and cross-check the neighbor model. The core firmware
 version does not select the wire format. The compatibility gate accepts stable
-legacy 1.46–1.55 package metadata or 2.0 with numeric package revisions (such as 2.0_2); an absent plugin, unknown future
+legacy 1.46–1.55 package metadata, 2.0 or 2.1 with numeric package revisions (such as 2.0_2 or 2.1_1); an absent plugin, unknown future
 plugin release, malformed revision, contradictory model, permission failure or unresolved configured
 intent rejects writes. Grant read access to firmware package information as well
 as the BGP API. Legacy live acceptance remains unverified; mocks are not appliance
@@ -41,7 +41,7 @@ has its own 30-second limit, including retries/read-slot waiting, capped by any
 earlier caller deadline. A timeout rejects writes; check the appliance
 firmware/package/configd backend before retrying.
 
-On FRR 2.0, linked policies select **one logical group**, not an arbitrary entry
+On FRR 2.0 and 2.1, linked policies select **one logical group**, not an arbitrary entry
 from multiple differently named groups. Existing entry UUID resources are retained.
 A configured same-group sibling UUID is kept in state only after authoritative
 full-membership verification; fresh imports/data sources expose the API's canonical
@@ -63,11 +63,16 @@ another object. Resolve unsupported configuration/capabilities before retrying;
 reconcile an ambiguous create with no uniquely proven identity rather than blindly
 re-applying. The provider does not install or upgrade plugins, make production adoption or full appliance-proof claims.
 
+The 2.1 contract is checked against [OPNsense plugins 26.7.9](https://github.com/opnsense/plugins/tree/a01a2e8cef738b3762830a7bbfc6e857384328f1/net/frr).
+The added `localasoptions` field remains appliance-managed: this provider does not
+write it. If Local AS Options are configured, the appliance requires a Local AS;
+clear those options outside this resource before clearing `local_as`.
+
 ## Advanced neighbor ownership
 
-The candidate advanced surface requires released FRR 1.55 or 2.0 capabilities;
-older supported base plugins require authoritative field-presence proof before
-advanced writes. New public properties are Optional+Computed without defaults:
+The advanced surface uses pinned FRR 1.55, 2.0 and 2.0_1 capabilities;
+other supported packages, including 2.1, require authoritative field-presence
+proof before advanced writes. New public properties are Optional+Computed without defaults:
 omission adopts remote values, explicit false, weight zero, empty strings and
 empty capability sets are configured intent. Null numeric values remain unset.
 `remote_as` is optional: `remote_as_mode` (`internal` / `external`) takes
