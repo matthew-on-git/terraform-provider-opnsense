@@ -81,8 +81,8 @@ func TestMatrixClassificationExamples(t *testing.T) {
 		t.Fatalf("surface count = %d, want 94", len(audit.Surfaces))
 	}
 
-	if audit.LocalInventory.ResourceCount != 113 || audit.LocalInventory.DataSourceCount != 116 || len(audit.LocalInventory.ResourceOnly) != 3 {
-		t.Fatal("rip lookup inventory must be 113/116 with 3 lookup gaps")
+	if audit.LocalInventory.ResourceCount != 113 || audit.LocalInventory.DataSourceCount != 117 || len(audit.LocalInventory.ResourceOnly) != 2 {
+		t.Fatal("static lookup inventory must be 113/117 with 2 lookup gaps")
 	}
 	for _, kind := range []string{"resource", "data-source"} {
 		surface := findSurface(t, audit, kind, "trust_settings")

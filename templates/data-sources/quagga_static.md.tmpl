@@ -1,0 +1,18 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Quagga / FRR"
+description: |-
+  Reads FRR static routing settings on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Reads the FRR static routing settings singleton. The only accepted identity is `static`. This data source calls the stable Quagga/FRR GET and never writes or reconfigures the service.
+
+The public allowlist is the resource contract that the released staticd node returns: enabled. The routes child array is returned by the whole-model GET but is not resource refresh state, so it is not lookup state. Manage individual routes with `opnsense_quagga_static_route`. The released staticd node has no password or write-only secret. A missing or blank enabled flag fails closed and is not replaced with the model default. A disabled flag stays false.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_quagga_static/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
