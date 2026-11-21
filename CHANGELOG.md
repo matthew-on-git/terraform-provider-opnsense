@@ -2,6 +2,23 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## [0.29.0](https://github.com/matthew-on-git/terraform-provider-opnsense/compare/v0.28.0...v0.29.0) (2026-11-21)
+
+
+### Features
+
+* **quagga:** add read-only RIP lookup ([41578ab](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/41578ab2bccabb299e6e01b0f4b44d175e1e37ad))
+* **quagga:** add read-only RIP lookup ([c386e5b](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/c386e5bdd7415ab5d1676e5c7bcdf51ee8f547a5))
+* **system:** manage gateway monitoring controls ([869c225](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/869c225608d2521fab3ce45fc8cd19a957f3a1ef))
+
+
+### Bug Fixes
+
+* **dnsmasq:** preserve explicit client ID clears ([2e6924f](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/2e6924f50151aa79a7f1dc0bfbfa27af87217528))
+* **firewall:** normalize empty alias content ([94a4a0a](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/94a4a0aa9e4de453165dd4a3e8dfd934fe5d5b9b))
+* **unbound:** preserve unset advanced tuning defaults ([6645414](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/6645414e0af4024a9c22ca17f643fe577adf5ab8))
+* **unbound:** support empty-domain global forwarders ([cdf560a](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/cdf560a313888aa9860622c40a80a511e394daf1))
+
 ## 0.28.0 (2026-11-16)
 
 FEATURES:
