@@ -2,6 +2,20 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## [0.30.0](https://github.com/matthew-on-git/terraform-provider-opnsense/compare/v0.29.0...v0.30.0) (2026-11-21)
+
+
+### Features
+
+* **iface:** extend interface assignment controls ([8dbe0dd](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/8dbe0ddd9da0211d7987794ba1b79e335db8e3d3))
+* **quagga:** add read-only static lookup ([98ae8d8](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/98ae8d8bcaa49af4cff39ebf11a91a52c584de5b))
+* **quagga:** add read-only static lookup ([430143c](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/430143c337d7120d711dbb8d2e213c86a090b849))
+
+
+### Bug Fixes
+
+* **quagga:** support os-frr 2.1 compatibility ([fbb93a7](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/fbb93a78e58c299527ea9320131772a758a05e11))
+
 ## [0.29.0](https://github.com/matthew-on-git/terraform-provider-opnsense/compare/v0.28.0...v0.29.0) (2026-11-21)
 
 
