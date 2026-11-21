@@ -63,6 +63,11 @@ func TestDelegationReadAndRoundTrip(t *testing.T) {
 			if state.IPv6TrackInterface.ValueString() != "wan" || state.IPv6PrefixID.ValueString() != "0x10" || state.IPv6InterfaceID.ValueString() != "0x1" || state.IPv6IdentityAssociationID.ValueString() != "0" || state.IPv6PrefixRange.ValueString() != "" || !state.IPv6AllowManualDHCPv6.ValueBool() {
 				t.Fatalf("delegation fields were not decoded: %+v", state)
 			}
+			if _, err := state.applyToAPI(context.Background(), current); err == nil {
+				t.Fatal("inactive adopted prefix must be rejected before update")
+			}
+			// Explicitly select the default before updating an inactive parent.
+			state.DHCP6PrefixLength = types.StringValue("64")
 			payload, err := state.applyToAPI(context.Background(), current)
 			if err != nil {
 				t.Fatal(err)
@@ -71,6 +76,7 @@ func TestDelegationReadAndRoundTrip(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			expected["dhcp6-ia-pd-len"] = "0"
 			if !reflect.DeepEqual(*payload, expected) {
 				t.Fatalf("no-change round trip altered the assignment: got %#v want %#v", *payload, expected)
 			}

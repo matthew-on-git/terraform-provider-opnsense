@@ -9,7 +9,7 @@ description: |-
 
 Reads enablement and IP settings for an existing base interface assignment. The lookup identity is the assignment name (`wan`, `lan`, or `optN`), the same value used by the resource ID. This data source calls the stable assignment GET and never writes or reconfigures the assignment.
 
-The public allowlist matches the resource contract. Device, description, MTU, hardware offload, tunnel credentials, and response-only fields are not lookup state. The released assignment model has no password or write-only secret. Unsupported tunnel modes fail closed instead of being rewritten into a supported mode. An empty static address stays an empty string with a null prefix length.
+The public allowlist matches the resource contract. Device binding, description, MTU/MSS, filtering/offload controls and parent DHCPv6 delegation settings are included when exposed by the API; missing new controls remain null. Unmodeled hardware settings, tunnel credentials and response-only fields are not lookup state. The released assignment model has no password or write-only secret. Unsupported tunnel modes fail closed instead of being rewritten into a supported mode. An empty static address stays an empty string with a null prefix length.
 
 ## Example Usage
 
@@ -32,11 +32,21 @@ output "assignment_ipv4_mode" {
 
 ### Read-Only
 
+- `block_bogons` (Boolean) Block bogon networks on this interface. Omit to retain the saved value.
+- `block_private` (Boolean) Block private networks on this interface. Omit to retain the saved value.
+- `description` (String) Interface description (letters, digits and underscores). Omit to retain the saved value.
+- `device` (String) Existing device to bind to this assignment; must be advertised by the API before rebinding. Omit to retain the saved value.
+- `dhcp6_identity_association_id` (String) DHCPv6 identity association ID as a canonical nonnegative signed-64-bit decimal string; empty selects the default. Omit to retain the saved value.
 - `dhcp6_information_only` (Boolean) Use DHCPv6 information-only mode.
+- `dhcp6_interface_id` (String) DHCPv6 hexadecimal interface ID (0x prefix), up to 0x7fffffffffffffff because the appliance serializes through a signed 64-bit integer. Empty clears the override. Omit to retain the saved value.
+- `dhcp6_prefix_id` (String) DHCPv6 hexadecimal prefix ID (0x prefix), up to 0x7fffffffffffffff because the appliance serializes through a signed 64-bit integer. Empty clears the override. Omit to retain the saved value.
+- `dhcp6_prefix_length` (String) Requested DHCPv6 prefix length: decimal 48 through 64, or none. Exposes displayed prefix length, not the API encoding. Omit to retain the saved value.
+- `dhcp6_prefix_only` (Boolean) Request only an IPv6 prefix through DHCPv6. Omit to retain the saved value.
 - `dhcp6_rapid_commit` (Boolean) Enable DHCPv6 rapid commit.
 - `dhcp6_request_dns` (Boolean) Request DNS information through DHCPv6.
 - `dhcp6_request_options` (String) OPNsense DHCPv6 request-options value.
 - `dhcp6_send_options` (String) OPNsense DHCPv6 send-options value.
+- `dhcp6_send_prefix_hint` (Boolean) Send the requested prefix length as a DHCPv6 prefix hint. Omit to retain the saved value.
 - `dhcp6_vlan_priority` (String) DHCPv6 VLAN priority: empty (disabled) or `0` through `7`.
 - `dhcp_honor_mtu` (Boolean) Honor the MTU supplied by DHCPv4.
 - `dhcp_hostname` (String) Hostname sent by the DHCPv4 client.
@@ -44,6 +54,9 @@ output "assignment_ipv4_mode" {
 - `dhcp_request_options` (String) OPNsense DHCPv4 request-options value.
 - `dhcp_send_options` (String) OPNsense DHCPv4 send-options value.
 - `dhcp_vlan_priority` (String) DHCPv4 VLAN priority: empty (disabled) or `0` through `7`.
+- `disable_checksum_offloading` (Boolean) Disable hardware checksum offloading when hardware settings are overridden. Omit to retain the saved value.
+- `disable_large_receive_offloading` (Boolean) Disable large receive offloading when hardware settings are overridden. Omit to retain the saved value.
+- `disable_segmentation_offloading` (Boolean) Disable TCP segmentation offloading when hardware settings are overridden. Omit to retain the saved value.
 - `enabled` (Boolean) Whether the assigned interface is enabled.
 - `ipv4_address` (String) Static IPv4 address without a prefix. Valid only with `ipv4_mode = "staticv4"`.
 - `ipv4_gateway` (String) Existing OPNsense IPv4 gateway name. Valid only with `ipv4_mode = "staticv4"`.
@@ -59,4 +72,8 @@ output "assignment_ipv4_mode" {
 - `ipv6_prefix_length` (Number) Static IPv6 prefix length (0-128). Valid only with `ipv6_mode = "staticv6"`.
 - `ipv6_prefix_range` (String) Identity-association prefix range, as a positive decimal string or empty for the appliance default. Strings preserve the distinction between an unset value and a number.
 - `ipv6_track_interface` (String) Upstream assignment for `idassoc6` or legacy `track6`, such as `wan`. Omission preserves the existing parent; these modes require a nonempty parent distinct from this assignment.
+- `mss` (Number) MSS in bytes (576-65535); zero clears the override and uses the system default. Omit to retain the saved value.
+- `mtu` (Number) MTU in bytes (576-65535); zero clears the override and uses the system default. Omit to retain the saved value.
 - `name` (String) Existing immutable assignment name: `wan`, `lan`, or `optN`.
+- `override_hardware_settings` (Boolean) Override global hardware offload settings for this interface. Omit to retain the saved value.
+- `vlan_hardware_filtering` (String) VLAN hardware filtering: enable, disable, or default. Applies when per-interface hardware settings are overridden. Omit to retain the saved value.
