@@ -29,5 +29,6 @@ func DataSources() []func() datasource.DataSource {
 		newACLDataSource,
 		newHostAliasDataSource,
 		newSettingsDataSource,
+		newDNSBLDataSource,
 	}
 }

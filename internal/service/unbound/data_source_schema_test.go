@@ -21,12 +21,13 @@ func TestDataSources_schemaIDs(t *testing.T) {
 	t.Parallel()
 
 	constructors := DataSources()
-	if len(constructors) != 5 {
-		t.Fatalf("expected 5 Unbound data sources, got %d", len(constructors))
+	if len(constructors) != 6 {
+		t.Fatalf("expected 6 Unbound data sources, got %d", len(constructors))
 	}
 	for _, constructor := range constructors[:4] {
 		assertRequiredID(t, constructor())
 	}
+	assertRequiredID(t, constructors[5]())
 	var settingsResp datasource.SchemaResponse
 	constructors[4]().Schema(context.Background(), datasource.SchemaRequest{}, &settingsResp)
 	id, ok := settingsResp.Schema.Attributes["id"].(dsschema.StringAttribute)
