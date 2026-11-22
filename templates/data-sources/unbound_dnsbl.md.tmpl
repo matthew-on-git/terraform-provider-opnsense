@@ -1,0 +1,18 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "DNS"
+description: |-
+  Reads the Unbound DNSBL compatibility owner on OPNsense.
+---
+
+# {{.Name}} ({{.Type}})
+
+Reads the Unbound DNSBL compatibility owner. The only accepted identity is `unbound-dnsbl`. This data source never writes, deletes, or reconfigures the service.
+
+Released core 26.7.8 and 26.7.9 store blocklists as `dnsbl.blocklist` items. The lookup uses the existing search reader and `get_dnsbl` for the sole item, plus the settings GET for `general.safesearch`. It does not call `get_dnsbl` without a UUID. Zero items are not found. More than one item fails closed. The public allowlist is the resource refresh contract. `source_nets`, `cache_ttl`, and `description` are not lookup state. The node has no password or write-only secret. A missing or blank enabled flag fails closed. Optional booleans stay null when blank. An empty address stays empty.
+
+## Example Usage
+
+{{tffile "examples/data-sources/opnsense_unbound_dnsbl/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

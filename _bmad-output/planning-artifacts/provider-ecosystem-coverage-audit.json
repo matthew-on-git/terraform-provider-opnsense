@@ -11,13 +11,12 @@
   },
   "local_inventory": {
     "resource_count": 113,
-    "data_source_count": 117,
+    "data_source_count": 118,
     "resource_doc_count": 113,
-    "data_source_doc_count": 117,
+    "data_source_doc_count": 118,
     "ephemeral_resource_count": 1,
     "ephemeral_resource_doc_count": 1,
     "resource_only_data_source_gaps": [
-      "unbound_dnsbl",
       "unbound_general"
     ],
     "data_source_only": [
