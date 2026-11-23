@@ -31,7 +31,7 @@ func peerSchemaV1() schema.Schema {
 			"enabled":        schema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), MarkdownDescription: "Whether this peer is enabled."},
 			"name":           schema.StringAttribute{Required: true, MarkdownDescription: "Name of the WireGuard peer."},
 			"public_key":     schema.StringAttribute{Required: true, MarkdownDescription: "Base64-encoded 256-bit public key."},
-			"psk":            schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Write-only base64-encoded 256-bit pre-shared key. Blank disables PSK.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
+			"psk":            schema.StringAttribute{Optional: true, Computed: true, Sensitive: true, MarkdownDescription: "Write-only base64-encoded 256-bit pre-shared key. Omission preserves prior state without asserting that an unreadable key is absent. Explicit blank disables PSK.", PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
 			"tunnel_address": schema.SetAttribute{ElementType: types.StringType, Required: true, MarkdownDescription: "Allowed tunnel CIDRs.", Validators: []validator.Set{setvalidator.SizeAtLeast(1)}},
 			"server_address": schema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString(""), MarkdownDescription: "Remote endpoint address."},
 			"server_port":    schema.Int64Attribute{Optional: true, Computed: true, MarkdownDescription: "Remote endpoint port. Null means unset.", Validators: []validator.Int64{int64validator.Between(1, 65535)}},

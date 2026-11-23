@@ -2,6 +2,12 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## 0.30.1 (Unreleased)
+
+### Bug Fixes
+
+- WireGuard peer: stop defaulting an omitted write-only PSK to empty after import. Omitted values preserve prior state; explicit blank still requests removal. No state migration or appliance normalization apply is required.
+
 ## [0.30.0](https://github.com/matthew-on-git/terraform-provider-opnsense/compare/v0.29.0...v0.30.0) (2026-11-21)
 
 
