@@ -473,3 +473,24 @@ func TestProtocolPeerOmittedPSKDoesNotDefaultToClear(t *testing.T) {
 		})
 	}
 }
+
+func TestProtocolNewPeerOmittedPSKPlansBlank(t *testing.T) {
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("unexpected mutation: %s", r.URL.Path)
+		}
+		_, _ = fmt.Fprint(w, `{}`)
+	}))
+	defer api.Close()
+	server, schemas := protocolServer(t, api.URL)
+	const name = "opnsense_wireguard_peer"
+	schema := schemas.ResourceSchemas[name]
+	config := protocolValue(t, schema, map[string]any{"name": "peer", "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=", "tunnel_address": []string{"192.0.2.2/32"}})
+	plan, err := server.PlanResourceChange(context.Background(), &tfprotov6.PlanResourceChangeRequest{TypeName: name, PriorState: &tfprotov6.DynamicValue{JSON: []byte("null")}, ProposedNewState: config, Config: config})
+	if err != nil || protocolErrors(plan.Diagnostics) {
+		t.Fatal(err, plan.Diagnostics)
+	}
+	if got := protocolAttrs(t, schema, plan.PlannedState)["psk"]; !got.Equal(tftypes.NewValue(tftypes.String, "")) {
+		t.Fatalf("new peer PSK = %v, want blank", got)
+	}
+}

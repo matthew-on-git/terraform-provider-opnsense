@@ -7,6 +7,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // An imported write-only key can legitimately be null. The framework's generic
@@ -24,7 +25,11 @@ func (m preserveOmittedPeerPSK) MarkdownDescription(ctx context.Context) string 
 }
 
 func (preserveOmittedPeerPSK) PlanModifyString(_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
-	if req.State.Raw.IsNull() || !req.ConfigValue.IsNull() || !req.PlanValue.IsUnknown() || req.StateValue.IsUnknown() {
+	if !req.ConfigValue.IsNull() || !req.PlanValue.IsUnknown() || req.StateValue.IsUnknown() {
+		return
+	}
+	if req.State.Raw.IsNull() {
+		resp.PlanValue = types.StringValue("")
 		return
 	}
 	resp.PlanValue = req.StateValue
