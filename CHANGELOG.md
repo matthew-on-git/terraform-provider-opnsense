@@ -2,6 +2,13 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## [0.31.1](https://github.com/matthew-on-git/terraform-provider-opnsense/compare/v0.31.0...v0.31.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* **wireguard:** preserve omitted peer PSK intent ([84d138d](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/84d138d20568e959c63e4ed83a68e909f099ba25))
+
 ## [0.31.0](https://github.com/matthew-on-git/terraform-provider-opnsense/compare/v0.30.0...v0.31.0) (2026-11-22)
 
 
