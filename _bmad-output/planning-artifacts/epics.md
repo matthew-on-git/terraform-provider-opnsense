@@ -4,6 +4,7 @@ status: complete
 inputDocuments:
   - "prd.md"
   - "architecture.md"
+  - "pppoe-upstream-api-research.md"
 ---
 
 # terraform-provider-opnsense - Epic Breakdown
@@ -172,6 +173,9 @@ N/A — CLI tool with no user interface. Users interact via HCL configuration fi
 
 **Coverage: 68/68 FRs mapped (100%)**
 
+Post-release extension: FR40 and the existing lifecycle/security requirements are
+also addressed by [Story 31.4](#story-314-pppoe-device-lifecycle-and-assignment-integration); this does not replace the shipped Epic 5 scope.
+
 ## Epic List
 
 ### Epic 1: Provider Scaffold & API Client
@@ -228,6 +232,11 @@ Operator can discover the provider on the Terraform Registry, find comprehensive
 **FRs covered:** FR60-FR61 (remaining data sources), FR66-FR68
 **ARs covered:** AR14, AR16
 **NFRs addressed:** NFR29-30
+
+### Epic 31: Provider Completeness, Positioning, and Migration
+Close API-backed coverage gaps with verified lifecycle behavior; see the
+[post-release catalog](post-release-epics.md#epic-31-provider-completeness-positioning-and-migration).
+**FRs covered by Story 31.4:** FR6–FR12, FR14–FR18, FR40, FR60, FR62–FR64.
 
 ### Epic Dependency Flow
 
@@ -1147,3 +1156,118 @@ So that the provider is installable via `terraform init` and visible to the comm
 **And** the release is published on the Terraform Registry
 **And** `terraform init` with the provider source downloads and installs successfully
 **And** all documentation is visible on the Registry
+
+## Epic 31: Provider Completeness, Positioning, and Migration
+
+Goal: close API-backed appliance-management coverage gaps while preserving safe,
+verifiable lifecycle behavior. The approved post-release catalog and other Epic 31
+stories remain in [Post-v0.1.0 Epic Plan](post-release-epics.md#epic-31-provider-completeness-positioning-and-migration).
+
+### Story 31.4: PPPoE Device Lifecycle and Assignment Integration
+
+As an operator managing API-backed network configuration with Terraform or OpenTofu,
+I want to create, import, update and delete a PPPoE client device and configure its
+interface assignment without losing credentials or unrelated settings,
+so that point-to-point connectivity can be managed declaratively with predictable
+identity, drift detection, activation and recovery.
+
+**Status:** backlog — external upstream API gate; not ready for development.
+
+**Requirements:** FR6–FR12, FR14–FR18 (lifecycle, import, drift, recovery), FR40 (interfaces), FR60 (read-only reference), FR62–FR64 (diagnostics); NFR7–NFR11 (secret handling/TLS/state exposure), NFR24 (full checks). Retain the architecture’s global mutation lock, post-write authoritative read-back and service-specific reconfigure contract.
+
+**Dependencies:** released PPP-device CRUD/read/activation contract, not another
+future provider story. [Core #10973](https://github.com/opnsense/core/issues/10973)
+is preparatory work in milestone 27.1, not proof of API delivery. Existing base
+assignment support is already implemented; this story extends it only once the
+separate PPP-device contract is released and verified.
+
+**Scope:** one bounded PPPoE client owner and integration with the existing
+assignment owner. No PPTP/L2TP, multi-link PPP, production WAN cutover, GUI scraping,
+SSH/config.xml workaround or speculative API endpoint. Discovery of additional
+protocols or independently deliverable capabilities creates separate stories;
+do not expand this story into a generic PPP subsystem.
+
+**Acceptance Criteria:**
+
+**AC1 — Upstream tracking and released contract**
+
+**Given** #115 and upstream #10973,
+**When** this story is resumed,
+**Then** inspect their current discussion, the 27.1 milestone, official roadmap, linked implementation PRs
+and stable core tags; record exact commits and source links. Keep status blocked until a stable
+release exposes authoritative PPP-device create/read/ update/delete and activation behavior. A PPPoE
+assignment validator does not meet this criterion. If the milestone slips or scope changes, update
+the dependency rather than substituting a legacy GUI request.
+
+**AC2 — Contract and ownership design before writes**
+
+**Given** a released API candidate,
+**When** designing support,
+**Then** document actual HTTP methods, request/response envelopes, stable identity, option maps, parent
+port/VLAN references, authentication fields, empty/null/unknown semantics, activation, error
+recovery, in-use deletion and assignment dependencies. Verify that PPP-device definitions and
+interface assignments are distinct owners. Propose a dedicated PPPoE owner on the actual API,
+extending the existing `opnsense_interface_assignment` for supported modes rather than creating a
+second assignment owner. Public Terraform resource names remain provisional until design review.
+Reconcile against current main, open PRs and released resources first.
+
+**AC3 — Identity, lifecycle and backwards compatibility**
+
+**Given** a supported PPPoE device and existing assignment,
+**When** creating, importing, reading, changing, refreshing or deleting them,
+**Then** identity remains stable and subsequent plans converge. Preserve unconfigured API fields and existing
+supported assignment modes. Validate supported parent devices and reject unavailable capabilities
+before mutation. Import must not create a duplicate device. Default destroy must not silently remove
+an in-use device or an adopted assignment; define and test the release-backed delete/detach policy
+explicitly.
+
+**And** the matching read-only data source uses authoritative GET state without
+mutations and excludes secret/write-only response fields (FR60).
+
+**AC4 — Credentials and configured intent**
+
+**Given** secret/redacted/write-only upstream fields,
+**When** importing or refreshing,
+**Then** absence or redaction must not become a configured empty password or cause a credential-clearing
+write. Mark secret schema fields sensitive, sanitize diagnostic bodies, and document Terraform state
+exposure. Prove deliberate rotation and any API-supported explicit clear separately from
+omission/unknown intent. Preserve unrelated credentials and reject ambiguous operations before
+writes. Do not add fixture secrets from an appliance, operator inventory or real account.
+
+**AC5 — Deterministic regression and Core coverage**
+
+**Given** valid and malformed released-contract fixtures,
+**When** tests run,
+**Then** cover schema/registration, mapping, import, no-change plans, refresh, drift, parent changes, secret
+redaction, explicit false/empty values, partial failures, retries, activation failure and
+dependency-aware deletion. Use Terraform Core and OpenTofu lifecycle tests, not only protocol mocks.
+For create-recovery, a counted fake API must prove a failed post-create read/activation does not
+produce duplicate creates or unsafe cleanup. Keep existing assignment regression coverage passing.
+
+**AC6 — Disposable activation and restoration proof**
+
+**Given** a disposable appliance, isolated non-management interfaces, independent console access and a controlled PPPoE peer,
+**When** the owner and assignment are applied and changed,
+**Then** independent API/runtime observations and packet tests prove discovery, negotiation, activation,
+device/address placement, convergence, drift repair, credential rotation and safe teardown. Capture
+firmware/plugin, Terraform/OpenTofu and provider revisions. Restore exact prior configuration and
+runtime state; verify no leftover devices, assignments, routes or credentials. Do not use a
+management or production WAN. Failure to restore blocks completion.
+
+**AC7 — Documentation, release and evidence separation**
+
+**Given** completed implementation and acceptance,
+**When** preparing delivery,
+**Then** update resource/data-source documentation, examples, support matrix and coverage audit without
+overstating versions or packet proof. Run `make check`, generated code/docs verification and exact-
+head hosted checks. Record independent source, fixture, Core, appliance and contributor-reported
+evidence separately. Use conventional commits and the existing Release Please flow; do not select a
+manual version or insert an Unreleased heading. Human merge/publication is separate from
+implementation acceptance. This planning story does not ship PPPoE support.
+
+**Technical research and preparation:**
+[PPPoE upstream API research](pppoe-upstream-api-research.md). This is an existing
+Epic 31 backlog amendment authored using the installed
+`bmad-create-epics-and-stories` template, not a ready-for-dev handoff or a claim
+that a fresh whole-project planning/readiness workflow passed. The maintainer
+must verify the upstream gate before generating an implementation artifact.

@@ -18,7 +18,6 @@
 #
 # Story Status:
 #   - backlog: Story only exists in epic file
-#   - blocked: Researched story exists but an explicit external prerequisite prevents implementation
 #   - ready-for-dev: Story file created in stories folder
 #   - in-progress: Developer actively working on implementation
 #   - review: Ready for code review (via Dev's code-review workflow)
@@ -326,11 +325,10 @@ development_status:
   31-0ac-quagga-static-lookup: review # source-backed public allowlist; routes child array excluded; missing enabled fails closed; live proof remains separate
   31-0ad-unbound-dnsbl-lookup: review # source-backed sole blocklist item plus safesearch; source_nets cache_ttl description excluded; live proof remains separate
 
-  31-0ae-pppoe-device-lifecycle-and-assignment: blocked # upstream core10973 / milestone27.1 planning; stable PPP lifecycle API and disposable proof required
-
   31-1-complete-provider-positioning-docs: backlog
   31-2-existing-provider-migration-guide: backlog
   31-3-example-stacks-for-adoption: backlog
+  31-4-pppoe-device-lifecycle-and-assignment-integration: backlog # external gate: core10973; released PPP lifecycle API required
   epic-31-retrospective: optional
 
   # Epic 32: Release Credibility and v1 Readiness

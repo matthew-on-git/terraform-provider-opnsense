@@ -4,7 +4,7 @@ Checked: 2026-11-24. Provider baseline:
 `84d138d20568e959c63e4ed83a68e909f099ba25`.
 
 Consumer request: [provider #115](https://github.com/matthew-on-git/terraform-provider-opnsense/issues/115).
-Implementation gate: [Story 31.0ae](../implementation-artifacts/31-0ae-pppoe-device-lifecycle-and-assignment.md).
+Backlog story: [Story 31.4](epics.md#story-314-pppoe-device-lifecycle-and-assignment-integration).
 
 ## Upstream does track preparatory work
 
@@ -71,8 +71,58 @@ or permanent promise about upstream plans.
 Next: re-read #10973 and linked work when new implementation or release evidence
 appears. Verify device CRUD, authoritative read, secrets, identity, in-use delete
 and activation on a stable tag and disposable appliance before opening provider
-writes. Keep story 31.0ae blocked until then. Do not submit a duplicate upstream
+writes. Keep Story 31.4 blocked until then. Do not submit a duplicate upstream
 request without rechecking existing tracking and maintainer discussion.
 
 No appliance API calls, mutation, packet tests or credential processing were
 performed for this research. No support or release claim is added by this file.
+
+## Future Implementation Preparation
+
+These notes supplement canonical Story 31.4 in `epics.md`; they are not an
+implementation story or readiness approval. Generate an implementation handoff
+under the configured `implementation_artifacts` only after the upstream gate and
+scope/readiness review pass.
+
+### Preparation Checklist
+
+- [x] Reconcile #115 with current provider assignment restrictions and backlog.
+- [x] Search upstream planning/issues/PRs and inspect stable and master boundaries.
+- [x] Link #10973 / milestone 27.1 and distinguish preparatory work from API delivery.
+- [ ] Recheck tracking after upstream changes; locate actual implementation PRs.
+- [ ] Verify stable API and appliance contract (AC1); record endpoint/field table.
+- [ ] Review separate device/assignment ownership and migration design (AC2).
+- [ ] Implement lifecycle, capability and secret safeguards (AC3–AC4).
+- [ ] Add deterministic regressions and Core/OpenTofu lifecycle checks (AC5).
+- [ ] Complete disposable activation, packet and exact-restoration proof (AC6).
+- [ ] Complete documentation, coverage and exact-head delivery gates (AC7).
+
+### Technical Notes
+
+Existing files to inspect: `internal/service/iface/assignment_resource.go`,
+`assignment_data_source.go`, `assignment_controls.go`, their unit/protocol tests,
+`docs/resources/interface_assignment.md`, and its generation template. The
+resource currently rejects `pppoe`; lookup refresh of unsupported modes also
+fails closed. Keep those guards until the new contract and semantics are proven.
+Do not bypass them by treating PPPoE as DHCP or static IPv4.
+
+The PPP-device record is currently written by legacy `interfaces_ppps_edit.php`;
+`NetworkInterfaceField::pppType()` reads existing `ppps` configuration to validate
+an assignment. Reusing its allowed type does not provision the device.
+
+Non-goals: PPTP/L2TP server or client revival, multi-link PPP, 6rd/6to4, generic GUI
+scraping, config.xml uploads, SSH-backed Terraform resources, real WAN cutovers,
+and unrelated interface-field expansion. PPPoE IPv6, service-name, advanced
+negotiation and multi-link behavior require explicit contracts and scope review;
+do not silently claim them as part of basic PPPoE support.
+
+### Resume and Follow-up Rule
+
+Owner: provider maintainer for gate triage, then an explicitly assigned developer
+for implementation. Resume on a linked upstream API implementation or new stable
+release, not merely a calendar date. Before promoting to ready-for-dev, satisfy
+AC1 and review AC2. If an authoritative read, secret-preservation operation,
+identity, activation or restoration requirement is still absent, retain this
+story as blocked and add a narrowly scoped upstream/follow-up story with exact
+missing behavior and source evidence. Do not mark this feature done because the
+research document or an upstream preparatory issue was closed.
