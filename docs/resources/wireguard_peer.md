@@ -117,7 +117,7 @@ variable "peer_psk" {
 
 - `enabled` (Boolean) Whether this peer is enabled.
 - `keepalive` (Number) Persistent keepalive interval in seconds. Null means unset.
-- `psk` (String, Sensitive) Write-only base64-encoded 256-bit pre-shared key. Blank disables PSK.
+- `psk` (String, Sensitive) Write-only base64-encoded 256-bit pre-shared key. Omission preserves prior state without asserting that an unreadable key is absent. Explicit blank disables PSK.
 - `server_address` (String) Remote endpoint address.
 - `server_port` (Number) Remote endpoint port. Null means unset.
 

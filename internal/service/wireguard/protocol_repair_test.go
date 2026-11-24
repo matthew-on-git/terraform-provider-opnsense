@@ -427,3 +427,70 @@ func TestProtocolConfiguredUnknownKeysRejectPriorReuse(t *testing.T) {
 		}
 	}
 }
+
+// Omitted write-only intent must not manufacture an empty-key update after
+// import/refresh. Explicit blank remains an intentional key removal.
+func TestProtocolPeerOmittedPSKDoesNotDefaultToClear(t *testing.T) {
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("unexpected mutation: %s", r.URL.Path)
+		}
+		_, _ = fmt.Fprint(w, `{}`)
+	}))
+	defer api.Close()
+	server, schemas := protocolServer(t, api.URL)
+	const name = "opnsense_wireguard_peer"
+	schema := schemas.ResourceSchemas[name]
+	key := "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+	for _, tc := range []struct {
+		name              string
+		prior, configured any
+		want              any
+	}{
+		{"imported-null-omitted", nil, nil, nil},
+		{"known-empty-omitted", "", nil, ""},
+		{"known-secret-omitted", key, nil, key},
+		{"explicit-clear", key, "", ""},
+		{"explicit-key", nil, key, key},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			values := map[string]any{"id": "owned", "enabled": false, "name": "peer", "public_key": key, "psk": tc.prior, "tunnel_address": []string{"192.0.2.2/32"}, "servers": []string{}, "server_address": ""}
+			prior := protocolValue(t, schema, values)
+			values["psk"] = tc.configured
+			proposed := protocolValue(t, schema, values)
+			delete(values, "id")
+			delete(values, "servers")
+			config := protocolValue(t, schema, values)
+			plan, err := server.PlanResourceChange(context.Background(), &tfprotov6.PlanResourceChangeRequest{TypeName: name, PriorState: prior, ProposedNewState: proposed, Config: config})
+			if err != nil || protocolErrors(plan.Diagnostics) {
+				t.Fatal(err, plan.Diagnostics)
+			}
+			got := protocolAttrs(t, schema, plan.PlannedState)["psk"]
+			want := tftypes.NewValue(tftypes.String, tc.want)
+			if !got.Equal(want) {
+				t.Fatalf("PSK plan = %v, want %v", got, want)
+			}
+		})
+	}
+}
+
+func TestProtocolNewPeerOmittedPSKPlansBlank(t *testing.T) {
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("unexpected mutation: %s", r.URL.Path)
+		}
+		_, _ = fmt.Fprint(w, `{}`)
+	}))
+	defer api.Close()
+	server, schemas := protocolServer(t, api.URL)
+	const name = "opnsense_wireguard_peer"
+	schema := schemas.ResourceSchemas[name]
+	config := protocolValue(t, schema, map[string]any{"name": "peer", "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=", "tunnel_address": []string{"192.0.2.2/32"}})
+	plan, err := server.PlanResourceChange(context.Background(), &tfprotov6.PlanResourceChangeRequest{TypeName: name, PriorState: &tfprotov6.DynamicValue{JSON: []byte("null")}, ProposedNewState: config, Config: config})
+	if err != nil || protocolErrors(plan.Diagnostics) {
+		t.Fatal(err, plan.Diagnostics)
+	}
+	if got := protocolAttrs(t, schema, plan.PlannedState)["psk"]; !got.Equal(tftypes.NewValue(tftypes.String, "")) {
+		t.Fatalf("new peer PSK = %v, want blank", got)
+	}
+}
