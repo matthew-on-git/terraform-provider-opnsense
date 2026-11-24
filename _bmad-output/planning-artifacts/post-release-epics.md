@@ -114,6 +114,7 @@ Goal: make this provider complete enough to be the default provider choice for a
 | 31.1 Complete Provider Positioning README and Registry Pass | backlog | `_bmad-output/implementation-artifacts/31-1-complete-provider-positioning-docs.md` |
 | 31.2 Existing Provider Migration Guide | backlog | `_bmad-output/implementation-artifacts/31-2-existing-provider-migration-guide.md` |
 | 31.3 Example Stacks for Adoption | backlog | `_bmad-output/implementation-artifacts/31-3-example-stacks-for-adoption.md` |
+| 31.4 PPPoE Device Lifecycle and Assignment Integration | backlog / upstream API gate | [Canonical story](epics.md#story-314-pppoe-device-lifecycle-and-assignment-integration) |
 
 ## Epic 32: Release Credibility and v1 Readiness
 
