@@ -1,5 +1,5 @@
 # generated: 2026-03-18
-# last_updated: 2026-11-13
+# last_updated: 2026-11-24
 # project: terraform-provider-opnsense
 # project_key: NOKEY
 # tracking_system: file-system
@@ -18,6 +18,7 @@
 #
 # Story Status:
 #   - backlog: Story only exists in epic file
+#   - blocked: Researched story exists but an explicit external prerequisite prevents implementation
 #   - ready-for-dev: Story file created in stories folder
 #   - in-progress: Developer actively working on implementation
 #   - review: Ready for code review (via Dev's code-review workflow)
@@ -324,6 +325,8 @@ development_status:
   31-0ab-quagga-rip-lookup: review # source-backed public allowlist; passiveinterfaces excluded; literal version and metric 0 fail closed; live proof remains separate
   31-0ac-quagga-static-lookup: review # source-backed public allowlist; routes child array excluded; missing enabled fails closed; live proof remains separate
   31-0ad-unbound-dnsbl-lookup: review # source-backed sole blocklist item plus safesearch; source_nets cache_ttl description excluded; live proof remains separate
+
+  31-0ae-pppoe-device-lifecycle-and-assignment: blocked # upstream core10973 / milestone27.1 planning; stable PPP lifecycle API and disposable proof required
 
   31-1-complete-provider-positioning-docs: backlog
   31-2-existing-provider-migration-guide: backlog
