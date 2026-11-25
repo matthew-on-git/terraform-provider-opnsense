@@ -2,6 +2,14 @@
 
 All notable changes to the OPNsense Terraform provider are documented here, following the [Terraform provider changelog format](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning).
 
+## [0.32.0](https://github.com/matthew-on-git/terraform-provider-opnsense/compare/v0.31.1...v0.32.0) (2026-11-25)
+
+
+### Features
+
+* **unbound:** add read-only general lookup ([aa8fda0](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/aa8fda00b28c7edf87e6d53208cf58bfe8f68ed3))
+* **unbound:** add read-only general lookup ([1db2db2](https://github.com/matthew-on-git/terraform-provider-opnsense/commit/1db2db2c6d2b3c9a94001720b673cd4ba753638a))
+
 ## [0.31.1](https://github.com/matthew-on-git/terraform-provider-opnsense/compare/v0.31.0...v0.31.1) (2026-11-24)
 
 
