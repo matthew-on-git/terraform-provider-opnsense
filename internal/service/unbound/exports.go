@@ -30,5 +30,6 @@ func DataSources() []func() datasource.DataSource {
 		newHostAliasDataSource,
 		newSettingsDataSource,
 		newDNSBLDataSource,
+		newGeneralDataSource,
 	}
 }

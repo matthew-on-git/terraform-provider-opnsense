@@ -53,7 +53,7 @@ The complete deterministic inventory is the set registered by `OpnsenseProvider.
 | quagga_static | Quagga / FRR | No | Singleton | Low | 4 | Singleton resource. |
 | trust_cert | Trust | No | UUID-backed-special | Medium | 4 | Certificate/key material may include write-only fields. |
 | unbound_dnsbl | Unbound | No | Singleton | Low | 4 | Singleton/blocklist settings. |
-| unbound_general | Unbound | No | Singleton | Low | 4 | Singleton settings. |
+| unbound_general | Unbound | Yes | Singleton | Low | 4 | Implemented by 31.0ae as a read-only public allowlist. Identity is `unbound-general`, not a UUID. Sibling nodes and `safesearch` are not lookup state. Live proof remains separate. |
 
 ## Batch 1: High-Reference Data Sources
 
@@ -140,7 +140,7 @@ Goal: keep non-standard cases from blocking straightforward UUID-backed data sou
 | quagga_ospf6_general | `internal/service/quagga/ospf6_general_data_source.go` | Singleton | Data-source docs/example | Implemented by 31.0z. Identity is `ospf6`. No password or write-only secret in the released OSPFv3 node. Child arrays are not lookup state. Literal metric 0 is valid. |
 | quagga_rip | `internal/service/quagga/rip_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
 | quagga_static | `internal/service/quagga/static_general_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
-| unbound_general | `internal/service/unbound/general_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
+| unbound_general | `internal/service/unbound/general_*` | Singleton | Data-source docs/example | Implemented by 31.0ae. Identity is `unbound-general`. No password or write-only secret in the released general, advanced, ACL-default, or forwarding nodes. `safesearch` and `belownxdomain` are not lookup state. |
 | unbound_dnsbl | `internal/service/unbound/dnsbl_*` | Singleton | Data-source docs/example | No UUID lifecycle. |
 | ipsec_psk | `internal/service/ipsec/psk_*` | UUID-backed-special | Data-source docs/example | Implemented by 31.0t. Secret material is never lookup state. |
 | ipsec_key_pair | `internal/service/ipsec/keypair_*` | UUID-backed-special | Data-source docs/example | Private key is write-only. |
