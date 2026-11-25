@@ -324,6 +324,7 @@ development_status:
   31-0ab-quagga-rip-lookup: review # source-backed public allowlist; passiveinterfaces excluded; literal version and metric 0 fail closed; live proof remains separate
   31-0ac-quagga-static-lookup: review # source-backed public allowlist; routes child array excluded; missing enabled fails closed; live proof remains separate
   31-0ad-unbound-dnsbl-lookup: review # source-backed sole blocklist item plus safesearch; source_nets cache_ttl description excluded; live proof remains separate
+  31-0ae-unbound-general-lookup: review # source-backed public allowlist; safesearch and belownxdomain excluded; live proof remains separate
 
   31-1-complete-provider-positioning-docs: backlog
   31-2-existing-provider-migration-guide: backlog
