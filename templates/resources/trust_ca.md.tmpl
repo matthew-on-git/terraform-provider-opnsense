@@ -20,13 +20,16 @@ routine description edit as a generation trigger.
 
 ## Release-specific limitation
 
-The provider retains its original unpatched OPNsense 26.7.8 key requirement.
-The released 26.7.8_2 controller corrects that upstream condition, but keyless
-provider support has not been enabled. Keyless import and metadata updates of
-an existing keyless CA are rejected rather than generating a substitute key or
-using raw configuration writes. Import with a matching certificate and key is
-exercised by the 26.7.8_2 live matrix. Older firmware and OpenTofu execution
-are not established by that proof.
+Certificate-only CA import and keyless description updates are allowed only
+when GET `/api/core/firmware/info` returns a unique installed `opnsense`
+package revision of `26.7.8_2` or newer. Original OPNsense 26.7.8, `26.7.8_1`,
+and older packages still fail closed before POST with the historical key
+requirement. `product_version` alone cannot distinguish those packages; a
+missing, duplicate, uninstalled, or malformed package revision is diagnosed
+without mutation. The provider never invents a substitute key or writes raw
+configuration XML. Matching certificate and private-key import remains
+compatible on every supported release. Live keyless, older-firmware, and
+OpenTofu execution are not established by this source increment.
 
 ## Sensitive material
 

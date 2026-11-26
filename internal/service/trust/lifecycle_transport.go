@@ -217,7 +217,7 @@ func trustOption(options, value string) bool {
 	return false
 }
 
-func trustAction(p map[string]string, kind string, create, explicit bool) error {
+func trustAction(p map[string]string, kind string, create, explicit, keyless bool) error {
 	action := p["action"]
 	if _, provided := p["action"]; create && provided && strings.TrimSpace(action) == "" {
 		return errors.New("trust action must be nonempty when configured")
@@ -262,9 +262,13 @@ func trustAction(p map[string]string, kind string, create, explicit bool) error 
 	switch action {
 	case "existing":
 		if p["prv_payload"] == "" {
-			return errors.New("certificate-only CA import and keyless CA metadata updates are not supported by this provider; the original OPNsense 26.7.8 keyless validation was corrected in 26.7.8_2, but provider support remains deferred; a matching private key is required, never regenerate as a workaround")
+			if !keyless {
+				return errTrustKeylessUnpatched
+			}
+			required = []string{"crt_payload"}
+		} else {
+			required = []string{"crt_payload", "prv_payload"}
 		}
-		required = []string{"crt_payload", "prv_payload"}
 	case "internal": // Released subject fields are optional, including common name.
 	case "ocsp":
 		required = []string{"caref"}
