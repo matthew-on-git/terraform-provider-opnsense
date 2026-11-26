@@ -299,7 +299,7 @@ development_status:
   31-0c-openvpn-field-and-key-parity: done # repair 2 converged; six rows promoted after digest-bound live proof and exact-tree gates
   31-0d-unbound-settings-and-forward-parity: done # PR61 merged; repair 7 exact-tree/live proof and four-layer convergence passed
   31-0e-wireguard-field-and-settings-parity: done # PR63 merged; published since v0.7.0, exact live proof recorded
-  31-0f-trust-lifecycle-and-settings-parity: in-progress # six-field settings increment; CA/cert actions and disposable proof outstanding
+  31-0f-trust-lifecycle-and-settings-parity: in-progress # keyless CA gated on firmware/info package revision; live/compat proof outstanding
   31-0g-ipsec-field-parity: backlog              # P1 — audit-derived; before 31.1
   31-0h-quagga-bgp-field-parity: in-progress     # compatibility PR64/69 released by v0.8.1; advanced parity remains; operator adoption is private
   31-0i-live-interface-data-sources: review          # implementation/reviews/local gates complete; exact-head hosted CI and maintainer merge separate

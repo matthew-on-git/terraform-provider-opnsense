@@ -12,7 +12,7 @@ OPNsense 26.7.8 resolves to `96978001a8343669154e4492172ce0a07dac7e4b`.
 
 ## Historical unpatched keyless-CA limitation
 
-CA controller lines 117–129 check a nonempty key for parse errors, then unconditionally require exactly one private-key section. An empty key therefore fails with zero sections even for a valid certificate. This also affects metadata updates of an existing keyless CA through `existing`. The provider must diagnose this before mutation, not regenerate the CA or invent a private key. The later patched-package correction is documented below; the provider still requires a separate implementation and proof increment before enabling keyless import.
+CA controller lines 117–129 check a nonempty key for parse errors, then unconditionally require exactly one private-key section. An empty key therefore fails with zero sections even for a valid certificate. This also affects metadata updates of an existing keyless CA through `existing`. The provider must diagnose this before mutation, not regenerate the CA or invent a private key. The later patched-package correction is documented below; the provider enables certificate-only CA import and keyless description updates only when GET `/api/core/firmware/info` reports a unique installed `opnsense` package revision of `26.7.8_2` or newer. Original `26.7.8` still fails closed before mutation. Missing package-revision metadata is diagnosed rather than inferred from `product_version`.
 
 ## One-time keys
 
@@ -38,8 +38,10 @@ original `26.7.8`, other suffixes and malformed versions before snapshot or
 provider mutation. The prior frozen-runner attempt against the actual package
 failed its exact-version gate; that failure is retained privately, not replaced
 with a network-discovery blocker or counted as successful matrix evidence.
-The provider still rejects keyless CA import/update before mutation: the
-official controller correction does not enable this deferred provider feature.
+The provider still rejects keyless CA import/update before mutation unless GET
+`/api/core/firmware/info` reports a unique installed `opnsense` package of
+`26.7.8_2` or newer: the official controller correction does not by itself
+enable the feature, and `product_version` is not a sufficient discriminator.
 That actual non-skipped run subsequently passed; see the
 [execution checkpoint](spec-31-0f-live-acceptance-repair.md#parent-real-execution-checkpoint-2026-11-04)
 for its source digest, covered actions and exact zero/restoration evidence.

@@ -1276,7 +1276,7 @@
       ],
       "field_evidence": {
         "shared": "Released26.7.8 Trust source-backed action/read continuation. Configured operation intent is distinct from inferred editor actions and lifetime template defaults.",
-        "baseline_only": "Full non-skipped 26.7.8_2 action/settings/adoption/destroy/restoration matrix passed; see 31-0f-live-proof.json. Keyless CA import/update remains a provider implementation gate despite the patched controller correction; no XML or fabricated key workaround.",
+        "baseline_only": "Full non-skipped 26.7.8_2 action/settings/adoption/destroy/restoration matrix passed; see 31-0f-live-proof.json. Certificate-only CA import/update is gated on the installed opnsense package revision from GET /api/core/firmware/info: original 26.7.8 still fails closed before POST; 26.7.8_2 and later may import or update description without a key. Missing package revision is diagnosed without mutation. No XML or fabricated key workaround. Live keyless proof remains unexecuted.",
         "local_only": "Separate returned public/sensitive observations preserve configured PEM and operation intent; explicit operation token distinguishes repeat operations from description updates.",
         "lifecycle": "Single-attempt UUID-backed create/update/delete; ordinary description changes do not regenerate/sign/reissue. Successful add identity and available one-time key are retained before read-back.",
         "sensitive_write_only": "All supplied and returned private-key material is Sensitive. Configured PEM inputs retain text; response-only generated keys are retained in resource state, never synthesized by lookup or retransmitted."
@@ -1334,7 +1334,7 @@
       ],
       "field_evidence": {
         "shared": "Released26.7.8 Trust source-backed action/read continuation. Configured operation intent is distinct from inferred editor actions and lifetime template defaults.",
-        "baseline_only": "Full non-skipped 26.7.8_2 action/settings/adoption/destroy/restoration matrix passed; see 31-0f-live-proof.json. Keyless CA import/update remains a provider implementation gate despite the patched controller correction; no XML or fabricated key workaround.",
+        "baseline_only": "Full non-skipped 26.7.8_2 action/settings/adoption/destroy/restoration matrix passed; see 31-0f-live-proof.json. Certificate-only CA import/update is gated on the installed opnsense package revision from GET /api/core/firmware/info: original 26.7.8 still fails closed before POST; 26.7.8_2 and later may import or update description without a key. Missing package revision is diagnosed without mutation. No XML or fabricated key workaround. Live keyless proof remains unexecuted.",
         "local_only": "Separate returned public/sensitive observations preserve configured PEM and operation intent; explicit operation token distinguishes repeat operations from description updates.",
         "lifecycle": "Single-attempt UUID-backed create/update/delete; ordinary description changes do not regenerate/sign/reissue. Successful add identity and available one-time key are retained before read-back.",
         "sensitive_write_only": "All supplied and returned private-key material is Sensitive. Configured PEM inputs retain text; response-only generated keys are retained in resource state, never synthesized by lookup or retransmitted."
@@ -2806,7 +2806,7 @@
       ],
       "field_evidence": {
         "shared": "Released26.7.8 Trust source-backed action/read continuation. Configured operation intent is distinct from inferred editor actions and lifetime template defaults.",
-        "baseline_only": "Full non-skipped 26.7.8_2 action/settings/adoption/destroy/restoration matrix passed; see 31-0f-live-proof.json. Keyless CA import/update remains a provider implementation gate despite the patched controller correction; no XML or fabricated key workaround.",
+        "baseline_only": "Full non-skipped 26.7.8_2 action/settings/adoption/destroy/restoration matrix passed; see 31-0f-live-proof.json. Certificate-only CA import/update is gated on the installed opnsense package revision from GET /api/core/firmware/info: original 26.7.8 still fails closed before POST; 26.7.8_2 and later may import or update description without a key. Missing package revision is diagnosed without mutation. No XML or fabricated key workaround. Live keyless proof remains unexecuted.",
         "local_only": "Separate returned public/sensitive observations preserve configured PEM and operation intent; explicit operation token distinguishes repeat operations from description updates.",
         "lifecycle": "Read-only UUID lookup; no mutation, activation or recovery. One-time local keys cannot be recovered by GET.",
         "sensitive_write_only": "All supplied and returned private-key material is Sensitive. Configured PEM inputs retain text; response-only generated keys are retained in resource state, never synthesized by lookup or retransmitted."
@@ -2864,7 +2864,7 @@
       ],
       "field_evidence": {
         "shared": "Released26.7.8 Trust source-backed action/read continuation. Configured operation intent is distinct from inferred editor actions and lifetime template defaults.",
-        "baseline_only": "Full non-skipped 26.7.8_2 action/settings/adoption/destroy/restoration matrix passed; see 31-0f-live-proof.json. Keyless CA import/update remains a provider implementation gate despite the patched controller correction; no XML or fabricated key workaround.",
+        "baseline_only": "Full non-skipped 26.7.8_2 action/settings/adoption/destroy/restoration matrix passed; see 31-0f-live-proof.json. Certificate-only CA import/update is gated on the installed opnsense package revision from GET /api/core/firmware/info: original 26.7.8 still fails closed before POST; 26.7.8_2 and later may import or update description without a key. Missing package revision is diagnosed without mutation. No XML or fabricated key workaround. Live keyless proof remains unexecuted.",
         "local_only": "Separate returned public/sensitive observations preserve configured PEM and operation intent; explicit operation token distinguishes repeat operations from description updates.",
         "lifecycle": "Read-only UUID lookup; no mutation, activation or recovery. One-time local keys cannot be recovered by GET.",
         "sensitive_write_only": "All supplied and returned private-key material is Sensitive. Configured PEM inputs retain text; response-only generated keys are retained in resource state, never synthesized by lookup or retransmitted."

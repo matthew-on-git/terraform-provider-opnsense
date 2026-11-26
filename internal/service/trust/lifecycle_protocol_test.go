@@ -28,6 +28,9 @@ type lifecycleAPI struct {
 	kind                        string
 	posts                       []map[string]string
 	reads                       int
+	firmwareGets                int
+	firmwarePackage             string
+	firmwareJSON                string
 	badRead                     string
 	failWrite                   int
 	reply                       string
@@ -61,6 +64,18 @@ func (a *lifecycleAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	case "/api/core/firmware/status":
 		_, _ = fmt.Fprint(w, `{"product":{"product_name":"OPNsense","product_version":"26.7.8"}}`)
+		return
+	case "/api/core/firmware/info":
+		a.firmwareGets++
+		if a.firmwareJSON != "" {
+			_, _ = fmt.Fprint(w, a.firmwareJSON)
+			return
+		}
+		if a.firmwarePackage == "" {
+			http.Error(w, "wrong method", 400)
+			return
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"product_version": "26.7.8", "package": []map[string]string{{"name": "opnsense", "version": a.firmwarePackage, "installed": "1"}}})
 		return
 	}
 	if strings.Contains(r.URL.Path, "/get/") {
@@ -931,6 +946,90 @@ func TestTrustLifecycleProtocolDeleteReconcilesOnlyAffirmativeAbsence(t *testing
 			})
 		}
 	}
+}
+
+func TestTrustLifecycleProtocolKeylessCAPackageGate(t *testing.T) {
+	cert, key := selfSignedPEM(t, "example.test")
+	t.Run("old-version-fail-before-post", func(t *testing.T) {
+		for _, version := range []string{"26.7.8", "26.7.8_1", "26.7.7"} {
+			a := &lifecycleAPI{kind: "ca", firmwarePackage: version}
+			h := httptest.NewServer(a)
+			s, schemas := settingsServer(t, h.URL)
+			sc := schemas.ResourceSchemas["opnsense_trust_ca"]
+			config := settingsValue(t, sc, map[string]any{"description": "fixture", "action": "existing", "certificate": cert})
+			prior := settingsNull(t, sc)
+			result := lifecycleApply(t, s, "ca", prior, lifecyclePlan(t, s, "ca", sc, prior, config), config)
+			h.Close()
+			if !settingsErrors(result.Diagnostics) || len(a.posts) != 0 || a.firmwareGets == 0 {
+				t.Fatal(version, "wrote or skipped firmware/info", result.Diagnostics, a.posts, a.firmwareGets)
+			}
+			if !strings.Contains(result.Diagnostics[0].Detail, "26.7.8") {
+				t.Fatal(version, "missing original 26.7.8 diagnosis", result.Diagnostics)
+			}
+		}
+	})
+	t.Run("missing-discriminator-fail-before-post", func(t *testing.T) {
+		rows := []struct {
+			name string
+			api  *lifecycleAPI
+		}{
+			{"no-info", &lifecycleAPI{kind: "ca"}},
+			{"product-only", &lifecycleAPI{kind: "ca", firmwareJSON: `{"product_version":"26.7.8"}`}},
+			{"empty-package", &lifecycleAPI{kind: "ca", firmwareJSON: `{"product_version":"26.7.8","package":[]}`}},
+			{"uninstalled", &lifecycleAPI{kind: "ca", firmwareJSON: `{"package":[{"name":"opnsense","version":"26.7.8_2","installed":"0"}]}`}},
+			{"malformed", &lifecycleAPI{kind: "ca", firmwareJSON: `{"package":[{"name":"opnsense","version":"26.7.8-beta","installed":"1"}]}`}},
+			{"duplicate", &lifecycleAPI{kind: "ca", firmwareJSON: `{"package":[{"name":"opnsense","version":"26.7.8_2","installed":"1"},{"name":"opnsense","version":"26.7.8_2","installed":"1"}]}`}},
+		}
+		for _, row := range rows {
+			h := httptest.NewServer(row.api)
+			s, schemas := settingsServer(t, h.URL)
+			sc := schemas.ResourceSchemas["opnsense_trust_ca"]
+			config := settingsValue(t, sc, map[string]any{"description": "fixture", "action": "existing", "certificate": cert})
+			prior := settingsNull(t, sc)
+			result := lifecycleApply(t, s, "ca", prior, lifecyclePlan(t, s, "ca", sc, prior, config), config)
+			h.Close()
+			if !settingsErrors(result.Diagnostics) || len(row.api.posts) != 0 || row.api.firmwareGets == 0 {
+				t.Fatal(row.name, "wrote or skipped firmware/info", result.Diagnostics, row.api.posts)
+			}
+			if !strings.Contains(result.Diagnostics[0].Detail, "26.7.8_2") {
+				t.Fatal(row.name, "missing discriminator diagnosis", result.Diagnostics)
+			}
+		}
+	})
+	t.Run("patched-import-and-description-update", func(t *testing.T) {
+		for _, version := range []string{"26.7.8_2", "26.7.9"} {
+			a := &lifecycleAPI{kind: "ca", firmwarePackage: version}
+			h := httptest.NewServer(a)
+			s, schemas := settingsServer(t, h.URL)
+			sc := schemas.ResourceSchemas["opnsense_trust_ca"]
+			config := settingsValue(t, sc, map[string]any{"description": "fixture", "action": "existing", "certificate": cert})
+			prior := settingsNull(t, sc)
+			created := lifecycleApply(t, s, "ca", prior, lifecyclePlan(t, s, "ca", sc, prior, config), config)
+			if settingsErrors(created.Diagnostics) || len(a.posts) != 1 || a.posts[0]["action"] != "existing" || a.posts[0]["crt_payload"] != cert || a.posts[0]["prv_payload"] != "" || a.posts[0]["key_type"] != "" {
+				t.Fatal(version, "keyless import missing or regenerated", created.Diagnostics, a.posts)
+			}
+			fields := map[string]any{"description": "renamed", "action": "existing", "certificate": cert}
+			config = settingsValue(t, sc, fields)
+			updated := lifecycleApply(t, s, "ca", created.NewState, lifecyclePlan(t, s, "ca", sc, created.NewState, config), config)
+			h.Close()
+			if settingsErrors(updated.Diagnostics) || len(a.posts) != 2 || a.posts[1]["action"] != "existing" || a.posts[1]["descr"] != "renamed" || a.posts[1]["prv_payload"] != "" || a.posts[1]["key_type"] != "" {
+				t.Fatal(version, "keyless description update regenerated or skipped", updated.Diagnostics, a.posts)
+			}
+		}
+	})
+	t.Run("matching-key-skips-firmware-info", func(t *testing.T) {
+		a := &lifecycleAPI{kind: "ca", firmwarePackage: "26.7.8_2"}
+		h := httptest.NewServer(a)
+		defer h.Close()
+		s, schemas := settingsServer(t, h.URL)
+		sc := schemas.ResourceSchemas["opnsense_trust_ca"]
+		config := settingsValue(t, sc, map[string]any{"description": "fixture", "action": "existing", "certificate": cert, "private_key": key})
+		prior := settingsNull(t, sc)
+		result := lifecycleApply(t, s, "ca", prior, lifecyclePlan(t, s, "ca", sc, prior, config), config)
+		if settingsErrors(result.Diagnostics) || len(a.posts) != 1 || a.firmwareGets != 0 {
+			t.Fatal("matching-key import probed firmware or failed", result.Diagnostics, a.posts, a.firmwareGets)
+		}
+	})
 }
 
 func lifecycleCSRWithKey(t *testing.T, keyPEM string) string {

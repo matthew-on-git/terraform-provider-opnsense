@@ -65,7 +65,10 @@ The full parent remains **in-progress**. Buildable scope includes CA root,
 intermediate, OCSP and matching-key import; certificate internal/local-only,
 CSR/sign/import/reissue/manual lifecycles; safe metadata updates, separate
 returned public/sensitive values and certificate lookup. OPNsense 26.7.8's
-certificate-only CA import restriction remains a provider limitation. The later patched package fixes the upstream condition, but this provider capability has not been enabled.
+certificate-only CA import restriction remains a provider limitation on original
+26.7.8. The later patched package fixes the upstream condition; the provider now
+gates certificate-only import and keyless description updates on the installed
+`opnsense` package revision from firmware/info. Live keyless proof remains unexecuted.
 
 Disposable action/settings proof remains **unexecuted**: no newly reserved,
 identity-bound runtime has been established. The acceptance runner refuses to

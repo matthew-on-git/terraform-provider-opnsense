@@ -55,7 +55,7 @@ func (r *certResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 	payload, err := plan.payload()
 	if err == nil {
-		err = trustAction(payload, "cert", true, true)
+		err = trustAction(payload, "cert", true, true, false)
 	}
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Trust operation", err.Error())
@@ -171,7 +171,7 @@ func (r *certResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if plan.GeneratedPrivateKey.IsUnknown() || plan.GeneratedPrivateKey.IsNull() {
 		plan.GeneratedPrivateKey = state.GeneratedPrivateKey
 	}
-	if err = trustAction(payload, "cert", false, explicit); err != nil {
+	if err = trustAction(payload, "cert", false, explicit, false); err != nil {
 		resp.Diagnostics.AddError("Invalid Trust operation", err.Error())
 		return
 	}

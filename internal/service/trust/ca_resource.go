@@ -64,7 +64,7 @@ func (r *caResource) Create(ctx context.Context, req resource.CreateRequest, res
 	}
 	payload, err := plan.payload()
 	if err == nil {
-		err = trustAction(payload, "ca", true, true)
+		err = trustPrepareCAAction(ctx, r.client, payload, true, true)
 	}
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Trust operation", err.Error())
@@ -164,7 +164,7 @@ func (r *caResource) Update(ctx context.Context, req resource.UpdateRequest, res
 		payload["crt_payload"] = current["crt_payload"]
 		payload["prv_payload"] = current["prv_payload"]
 	}
-	if err = trustAction(payload, "ca", false, explicit); err != nil {
+	if err = trustPrepareCAAction(ctx, r.client, payload, false, explicit); err != nil {
 		resp.Diagnostics.AddError("Invalid Trust operation", err.Error())
 		return
 	}
